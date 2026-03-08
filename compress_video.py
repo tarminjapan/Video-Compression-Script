@@ -6,9 +6,9 @@ FFmpegを使用した動画圧縮スクリプト
 - 音声: MP3 (最大192kbps)
 """
 
+import argparse
 import subprocess
 import sys
-import argparse
 from pathlib import Path
 
 
@@ -159,18 +159,21 @@ def compress_video(input_path, output_path=None, crf=25, audio_bitrate="192k"):
     print("圧縮を開始します...")
 
     # ffmpegコマンドを実行
+    process = None
     try:
         process = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,  # stdinを閉じてブロックを防止
             encoding="utf-8",
             errors="replace",
         )
 
         # リアルタイムで進捗を表示
-        for line in process.stdout:
-            print(line, end="")
+        if process.stdout:
+            for line in process.stdout:
+                print(line, end="")
 
         process.wait()
 
@@ -197,7 +200,8 @@ def compress_video(input_path, output_path=None, crf=25, audio_bitrate="192k"):
         sys.exit(1)
     except KeyboardInterrupt:
         print("\n\nユーザーによって圧縮が中断されました。")
-        process.terminate()
+        if process is not None:
+            process.terminate()
         sys.exit(1)
 
 
