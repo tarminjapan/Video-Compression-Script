@@ -12,6 +12,30 @@ import sys
 from pathlib import Path
 
 
+# ============================================
+# 設定値・定数（ここを変更してカスタマイズ）
+# ============================================
+
+# 解像度設定（2K = 2560x1440）
+MAX_WIDTH = 2560  # 最大幅
+MAX_HEIGHT = 1440  # 最大高さ
+
+# ビデオコーデック設定
+VIDEO_CODEC = "libsvtav1"  # ビデオコーデック（SVT-AV1）
+DEFAULT_CRF = 25  # CRF値（0-63、低いほど高品質・大容量、高いほど低品質・小容量）
+VIDEO_PRESET = 6  # エンコード速度プリセット（0-13、高いほど高速）
+
+# オーディオコーデック設定
+AUDIO_CODEC = "libmp3lame"  # オーディオコーデック（MP3）
+DEFAULT_AUDIO_BITRATE = "192k"  # デフォルト音声ビットレート
+
+# CRF値の範囲
+CRF_MIN = 0
+CRF_MAX = 63
+
+# ============================================
+
+
 def get_video_info(video_path):
     """
     ffprobeを使用して動画情報を取得
@@ -45,19 +69,24 @@ def get_video_info(video_path):
     return None
 
 
-def calculate_scaled_resolution(width, height, max_width=2560, max_height=1440):
+def calculate_scaled_resolution(width, height, max_width=None, max_height=None):
     """
     アスペクト比を維持したまま縮小後の解像度を計算
 
     引数:
         width (int): 元の幅
         height (int): 元の高さ
-        max_width (int): 許可される最大幅 (2K = 2560)
-        max_height (int): 許可される最大高さ (2K = 1440)
+        max_width (int): 許可される最大幅（デフォルト: MAX_WIDTH）
+        max_height (int): 許可される最大高さ（デフォルト: MAX_HEIGHT）
 
     戻り値:
         tuple: (縮小後の幅, 縮小後の高さ) または 縮小不要な場合はNone
     """
+    # デフォルト値を設定
+    if max_width is None:
+        max_width = MAX_WIDTH
+    if max_height is None:
+        max_height = MAX_HEIGHT
     # 縮小が必要か確認
     if width <= max_width and height <= max_height:
         return None
@@ -76,16 +105,21 @@ def calculate_scaled_resolution(width, height, max_width=2560, max_height=1440):
     return (scaled_width, scaled_height)
 
 
-def compress_video(input_path, output_path=None, crf=25, audio_bitrate="192k"):
+def compress_video(input_path, output_path=None, crf=None, audio_bitrate=None):
     """
     FFmpegとAV1コーデックを使用して動画を圧縮
 
     引数:
         input_path (str): 入力動画ファイルのパス
         output_path (str): 出力動画ファイルのパス（オプション）
-        crf (int): AV1のCRF値（デフォルト: 25）
-        audio_bitrate (str): 音声ビットレート（デフォルト: 192k）
+        crf (int): AV1のCRF値（デフォルト: DEFAULT_CRF）
+        audio_bitrate (str): 音声ビットレート（デフォルト: DEFAULT_AUDIO_BITRATE）
     """
+    # デフォルト値を設定
+    if crf is None:
+        crf = DEFAULT_CRF
+    if audio_bitrate is None:
+        audio_bitrate = DEFAULT_AUDIO_BITRATE
     input_path = Path(input_path)
 
     # 入力ファイルを検証
@@ -127,27 +161,27 @@ def compress_video(input_path, output_path=None, crf=25, audio_bitrate="192k"):
     else:
         print("縮小は不要です（解像度が既に2K以下）")
 
-    # ビデオコーデック設定（SVT-AV1）
+    # ビデオコーデック設定
     cmd.extend(
         [
             "-c:v",
-            "libsvtav1",  # 高速AV1コーデック（SVT-AV1）
+            VIDEO_CODEC,
             "-crf",
-            str(crf),  # 品質設定（低いほど高品質、高いほど小サイズ）
+            str(crf),
             "-b:v",
             "0",  # ビットレートベースのエンコーディングを無効化（CRFモード）
             "-preset",
-            "6",  # エンコード速度プリセット（0-13、高いほど高速）
+            str(VIDEO_PRESET),
         ]
     )
 
-    # オーディオコーデック設定（MP3）
+    # オーディオコーデック設定
     cmd.extend(
         [
             "-c:a",
-            "libmp3lame",  # MP3コーデック
+            AUDIO_CODEC,
             "-b:a",
-            audio_bitrate,  # 音声ビットレート
+            audio_bitrate,
         ]
     )
 
@@ -217,7 +251,7 @@ def main():
         """,
     )
 
-    parser.add_argument("input", help="入力動画ファイルのパス")
+    parser.add_argument("input", nargs="?", help="入力動画ファイルのパス")
     parser.add_argument(
         "-o",
         "--output",
@@ -226,23 +260,33 @@ def main():
     parser.add_argument(
         "--crf",
         type=int,
-        default=25,
-        help="AV1 CRF値（0-63、低いほど高品質、高いほど小サイズ、デフォルト: 25）",
+        default=DEFAULT_CRF,
+        help=f"AV1 CRF値（{CRF_MIN}-{CRF_MAX}、低いほど高品質、高いほど小サイズ、デフォルト: {DEFAULT_CRF}）",
     )
     parser.add_argument(
-        "--audio-bitrate", default="192k", help="音声ビットレート（デフォルト: 192k）"
+        "--audio-bitrate",
+        default=DEFAULT_AUDIO_BITRATE,
+        help=f"音声ビットレート（デフォルト: {DEFAULT_AUDIO_BITRATE}）",
     )
 
     args = parser.parse_args()
 
+    # 入力ファイルパスを取得（引数がない場合はコンソールで入力）
+    input_path = args.input
+    if input_path is None:
+        input_path = input("圧縮する動画ファイルのパスを入力してください: ").strip()
+        if not input_path:
+            print("エラー: 入力ファイルのパスが指定されていません。")
+            sys.exit(1)
+
     # CRF値を検証
-    if not 0 <= args.crf <= 63:
-        print("エラー: CRFは0から63の間でなければなりません")
+    if not CRF_MIN <= args.crf <= CRF_MAX:
+        print(f"エラー: CRFは{CRF_MIN}から{CRF_MAX}の間でなければなりません")
         sys.exit(1)
 
     # 圧縮を実行
     compress_video(
-        input_path=args.input,
+        input_path=input_path,
         output_path=args.output,
         crf=args.crf,
         audio_bitrate=args.audio_bitrate,
