@@ -111,6 +111,11 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
         str(video_path),
     ]
 
+    width = None
+    height = None
+    fps = None
+    duration = None
+
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         output = result.stdout.strip()
@@ -122,8 +127,6 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
                 height = int(remaining[0])
 
                 # Parse FPS (format: 30/1 or 29.97)
-                fps = None
-                duration = None
                 if len(remaining) > 1:
                     fps_str = remaining[1]
                     if "/" in fps_str:
@@ -141,16 +144,42 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
                         duration = float(remaining[2])
                     except ValueError:
                         pass
-
-                return {
-                    "width": width,
-                    "height": height,
-                    "fps": fps,
-                    "duration": duration,
-                }
     except subprocess.CalledProcessError as e:
         print(f"Error getting video info: {e.stderr}")
         sys.exit(1)
+
+    # If duration not found in stream, try format-level duration
+    if duration is None:
+        format_cmd = [
+            ffprobe_path,
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "csv=p=0",
+            str(video_path),
+        ]
+        try:
+            format_result = subprocess.run(
+                format_cmd, capture_output=True, text=True, check=True
+            )
+            format_output = format_result.stdout.strip()
+            if format_output:
+                try:
+                    duration = float(format_output)
+                except ValueError:
+                    pass
+        except subprocess.CalledProcessError:
+            pass  # Ignore errors, duration will remain None
+
+    if width is not None and height is not None:
+        return {
+            "width": width,
+            "height": height,
+            "fps": fps,
+            "duration": duration,
+        }
 
     return None
 
@@ -211,13 +240,17 @@ def parse_bitrate(bitrate_str):
         return int(bitrate_str)
 
 
-def update_progress(line, total_duration):
+def update_progress(line, total_duration, stats=None):
     """
     Parse progress from FFmpeg log and display progress bar.
 
     Args:
         line (str): FFmpeg output line
         total_duration (float): Total video duration in seconds
+        stats (dict): Dictionary to collect statistics (fps_list, speed_list, frame_list)
+
+    Returns:
+        bool: True if progress was displayed, False otherwise
     """
     # Parse time= pattern (e.g., time=00:00:02.33 or time=N/A)
     time_match = re.search(r"time=(\d+):(\d+):(\d+\.?\d*)", line)
@@ -233,11 +266,21 @@ def update_progress(line, total_duration):
 
         # Extract fps
         fps_match = re.search(r"fps=\s*([\d.]+)", line)
-        fps = fps_match.group(1) if fps_match else "0"
+        fps = float(fps_match.group(1)) if fps_match else 0.0
 
         # Extract speed
         speed_match = re.search(r"speed=\s*([\d.]+)x", line)
-        speed = speed_match.group(1) if speed_match else "0"
+        speed = float(speed_match.group(1)) if speed_match else 0.0
+
+        # Extract frame count
+        frame_match = re.search(r"frame=\s*(\d+)", line)
+        frame = int(frame_match.group(1)) if frame_match else 0
+
+        # Collect statistics if stats dictionary is provided
+        if stats is not None and fps > 0 and speed > 0:
+            stats["fps_list"].append(fps)
+            stats["speed_list"].append(speed)
+            stats["frame_list"].append(frame)
 
         # Extract elapsed time and calculate estimated remaining time
         elapsed_match = re.search(r"elapsed=(\d+):(\d+):(\d+\.?\d*)", line)
@@ -266,19 +309,34 @@ def update_progress(line, total_duration):
         total_min = int(total_duration // 60)
         total_sec = total_duration % 60
 
-        # Extract frame count
-        frame_match = re.search(r"frame=\s*(\d+)", line)
-        frame = frame_match.group(1) if frame_match else "0"
-
         # Update the same line (return to beginning of line with \r)
         sys.stdout.write(
             f"\r  [{bar}] {progress:5.1f}% | "
             f"{current_min:02d}:{current_sec:04.1f}/{total_min:02d}:{total_sec:04.1f} | "
-            f"ETA {eta_str} | {fps} fps | {speed}x | Frame: {frame}"
+            f"ETA {eta_str} | {fps:.0f} fps | {speed:.2f}x | Frame: {frame}"
         )
         sys.stdout.flush()
         return True
     return False
+
+
+def show_final_progress(total_duration):
+    """
+    Display 100% progress bar after completion.
+
+    Args:
+        total_duration (float): Total video duration in seconds
+    """
+    bar = "█" * PROGRESS_BAR_LENGTH
+    total_min = int(total_duration // 60)
+    total_sec = total_duration % 60
+
+    sys.stdout.write(
+        f"\r  [{bar}] 100.0% | "
+        f"{total_min:02d}:{total_sec:04.1f}/{total_min:02d}:{total_sec:04.1f} | "
+        f"ETA 00:00.0 | -- fps | --x | Frame: --"
+    )
+    sys.stdout.flush()
 
 
 def compress_video(
@@ -443,6 +501,8 @@ def compress_video(
 
     # Execute ffmpeg command
     process = None
+    stats = {"fps_list": [], "speed_list": [], "frame_list": []}
+
     try:
         process = subprocess.Popen(
             cmd,
@@ -457,7 +517,7 @@ def compress_video(
         if process.stdout:
             for line in process.stdout:
                 # Try to parse and display progress
-                if not update_progress(line, total_duration):
+                if not update_progress(line, total_duration, stats):
                     # Only show non-progress lines that are errors or important info
                     line_stripped = line.strip()
                     if line_stripped and (
@@ -467,9 +527,12 @@ def compress_video(
                         print(f"\n  {line_stripped}")
 
         process.wait()
-        print()  # New line after progress bar
 
         if process.returncode == 0:
+            # Show 100% progress bar
+            if total_duration > 0:
+                show_final_progress(total_duration)
+            print()  # New line after progress bar
             print("-" * 60)
             print("✓ Compression completed successfully!")
             print(f"  Output: {output_path}")
@@ -482,6 +545,15 @@ def compress_video(
             print(f"  Input size: {input_size:.2f} MB")
             print(f"  Output size: {output_size:.2f} MB")
             print(f"  Compression: {compression_ratio:.1f}% reduction")
+
+            # Display average statistics
+            if stats["fps_list"]:
+                avg_fps = sum(stats["fps_list"]) / len(stats["fps_list"])
+                avg_speed = sum(stats["speed_list"]) / len(stats["speed_list"])
+                total_frames = stats["frame_list"][-1] if stats["frame_list"] else 0
+                print(
+                    f"  Avg encoding speed: {avg_fps:.1f} fps, {avg_speed:.2f}x | Total frames: {total_frames}"
+                )
         else:
             print(f"\n✗ Compression failed (return code: {process.returncode})")
             sys.exit(1)
