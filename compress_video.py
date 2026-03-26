@@ -982,7 +982,7 @@ Examples:
             ffprobe_path=ffprobe_path,
         )
     else:
-        print(f"Error: Unsupported file type. Supported formats:")
+        print("Error: Unsupported file type. Supported formats:")
         print(f"  Video: {', '.join(sorted(VIDEO_EXTENSIONS))}")
         print(f"  Audio: {', '.join(sorted(AUDIO_EXTENSIONS))}")
         sys.exit(1)

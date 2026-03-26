@@ -283,7 +283,7 @@ python compress_video.py recording.wav --audio-bitrate 192k
 
 - AV1 encoding is CPU-intensive; high-resolution videos may take longer to process
 - Press Ctrl+C during encoding to interrupt the process
-- If the output file already exists, it will be overwritten (`-y` option)
++ If the output file already exists, it will be overwritten automatically
 
 ## Troubleshooting
 
