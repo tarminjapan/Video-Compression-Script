@@ -23,6 +23,8 @@ A Python script for video and audio compression using FFmpeg with SVT-AV1 codec 
 ### Common Features
 
 - **Progress Display**: Real-time progress bar with ETA, FPS, and speed indicators
+- **Volume Adjustment**: Automatic or manual volume gain for better audio clarity
+- **Noise Reduction**: Audio denoise filter to reduce background noise
 
 ## Prerequisites
 
@@ -161,6 +163,56 @@ python compress_video.py input_video.mp4 --resolution 1920x1080
 python compress_video.py input_video.mp4 --fps 30
 ```
 
+### Volume Adjustment
+
+The script supports automatic or manual volume adjustment for better audio clarity.
+
+**Analyze volume only (no compression):**
+
+```bash
+python compress_video.py --analyze-volume
+```
+
+**Automatic volume adjustment:**
+
+```bash
+python compress_video.py meeting.mp4 --volume-gain auto
+```
+
+**Manual volume adjustment (multiplier):**
+
+```bash
+python compress_video.py meeting.mp4 --volume-gain 2.0
+```
+
+**Manual volume adjustment (dB):**
+
+```bash
+python compress_video.py meeting.mp4 --volume-gain 10dB
+```
+
+### Noise Reduction
+
+Reduce background noise for clearer audio.
+
+**Enable noise reduction (default level 0.15):**
+
+```bash
+python compress_video.py meeting.mp4 --denoise
+```
+
+**Custom noise reduction level (0.0-1.0):**
+
+```bash
+python compress_video.py meeting.mp4 --denoise 0.3
+```
+
+### Combine Volume Adjustment and Noise Reduction
+
+```bash
+python compress_video.py meeting.mp4 --volume-gain auto --denoise 0.2
+```
+
 ### All Options Combined
 
 ```bash
@@ -178,6 +230,9 @@ python compress_video.py input_video.mp4 -o output_video.mp4 --crf 23 --audio-bi
 | `--no-audio` | Disable audio track (video only) | Audio enabled |
 | `--fps` | Maximum FPS (max: 120, video only) | Original FPS |
 | `--resolution` | Maximum resolution in WxH format (e.g., 1920x1080, video only) | 3840x2160 |
+| `--volume-gain` | Volume gain: multiplier (e.g., `2.0`), dB (e.g., `10dB`), or `auto` | Disabled |
+| `--analyze-volume` | Analyze volume level and show recommended gain (no compression) | Disabled |
+| `--denoise` | Enable audio noise reduction (level: 0.0-1.0) | Disabled |
 
 ## Help
 
@@ -231,6 +286,25 @@ During compression, a real-time progress bar is displayed showing:
 - Encoding FPS
 - Speed multiplier
 - Frame count
+
+### Volume Adjustment
+
+The script can analyze audio levels and automatically adjust volume for better clarity:
+
+- **Auto Mode**: Analyzes the audio and calculates optimal gain to reach target loudness (-16dB)
+- **Multiplier Mode**: Specify a multiplier like `2.0` to double the volume
+- **dB Mode**: Specify gain in decibels like `10dB`
+- **Analysis Only**: Use `--analyze-volume` to see current levels and recommended gain without compression
+
+The automatic gain calculation prevents clipping by considering the maximum volume level.
+
+### Noise Reduction
+
+The script uses FFmpeg's `afftdn` filter for audio noise reduction:
+
+- **Level Range**: 0.0 (minimal) to 1.0 (aggressive)
+- **Default Level**: 0.15 (light noise reduction)
+- Higher values remove more noise but may affect audio quality
 
 ## Examples
 

@@ -39,6 +39,21 @@ DEFAULT_MP3_BITRATE = "192k"  # Default MP3 bitrate
 MP3_BITRATE_MIN = 32  # Minimum MP3 bitrate in kbps
 MP3_BITRATE_MAX = 320  # Maximum MP3 bitrate in kbps
 
+# Volume adjustment settings
+DEFAULT_VOLUME_GAIN = (
+    None  # Default: disabled (None, or value like "2.0", "10dB", "auto")
+)
+TARGET_VOLUME_LEVEL = -16  # Target loudness in dB (standard for speech/dialogue)
+MAX_VOLUME_LEVEL = -1  # Maximum volume level to prevent clipping (dB)
+
+# Denoise settings
+DEFAULT_DENOISE = None  # Default: disabled (None or 0.0-1.0)
+DENOISE_MIN = 0.0  # Minimum denoise level
+DENOISE_MAX = 1.0  # Maximum denoise level
+DEFAULT_DENOISE_LEVEL = (
+    0.15  # Default denoise level when --denoise is used without value
+)
+
 # Supported file extensions
 VIDEO_EXTENSIONS = {
     ".mp4",
@@ -481,10 +496,181 @@ def get_audio_info(audio_path, ffprobe_path="ffprobe"):
     }
 
 
+def analyze_volume_level(input_path, ffmpeg_path="ffmpeg"):
+    """
+    Analyze audio volume level using FFmpeg's volumedetect filter.
+
+    Args:
+        input_path (str): Path to input file (video or audio)
+        ffmpeg_path (str): Path to ffmpeg executable
+
+    Returns:
+        dict: mean_volume (dB), max_volume (dB), recommended_gain (dB)
+    """
+    cmd = [
+        ffmpeg_path,
+        "-i",
+        str(input_path),
+        "-af",
+        "volumedetect",
+        "-vn",
+        "-sn",
+        "-dn",
+        "-f",
+        "null",
+        "-",
+    ]
+
+    mean_volume = None
+    max_volume = None
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,  # volumedetect outputs to stderr, return code may be 0
+        )
+
+        # Parse volumedetect output from stderr
+        output = result.stderr
+
+        # Parse mean_volume (e.g., [Parsed_volumedetect_0 @ ...] mean_volume: -27.5 dB)
+        mean_match = re.search(r"mean_volume:\s*(-?[\d.]+)\s*dB", output)
+        if mean_match:
+            mean_volume = float(mean_match.group(1))
+
+        # Parse max_volume (e.g., [Parsed_volumedetect_0 @ ...] max_volume: -5.2 dB)
+        max_match = re.search(r"max_volume:\s*(-?[\d.]+)\s*dB", output)
+        if max_match:
+            max_volume = float(max_match.group(1))
+
+    except FileNotFoundError:
+        print(
+            "Error: FFmpeg not found. Please ensure FFmpeg is installed and added to PATH."
+        )
+        sys.exit(1)
+
+    # Calculate recommended gain
+    recommended_gain = None
+    if mean_volume is not None and max_volume is not None:
+        recommended_gain = calculate_recommended_gain(mean_volume, max_volume)
+
+    return {
+        "mean_volume": mean_volume,
+        "max_volume": max_volume,
+        "recommended_gain": recommended_gain,
+    }
+
+
+def calculate_recommended_gain(mean_volume, max_volume):
+    """
+    Calculate recommended volume gain based on current audio levels.
+
+    Args:
+        mean_volume (float): Current mean volume in dB
+        max_volume (float): Current max volume in dB
+
+    Returns:
+        float: Recommended gain in dB
+    """
+    # Calculate gain needed to reach target level
+    gain_for_target = TARGET_VOLUME_LEVEL - mean_volume
+
+    # Calculate maximum safe gain (to prevent clipping)
+    # Leave 1dB headroom from 0dB
+    max_safe_gain = MAX_VOLUME_LEVEL - max_volume
+
+    # Use the smaller of the two to prevent clipping
+    recommended_gain = min(gain_for_target, max_safe_gain)
+
+    # Round to 1 decimal place
+    recommended_gain = round(recommended_gain, 1)
+
+    return recommended_gain
+
+
+def parse_volume_gain(gain_str):
+    """
+    Parse volume gain string and return gain in dB.
+
+    Args:
+        gain_str (str): Gain string (e.g., "2.0", "10dB", "auto")
+
+    Returns:
+        tuple: (gain_db, is_auto) where gain_db is the gain in dB,
+               and is_auto is True if "auto" was specified
+    """
+    if gain_str is None:
+        return None, False
+
+    gain_str = gain_str.strip()
+
+    # Check for auto mode
+    if gain_str.lower() == "auto":
+        return None, True
+
+    # Check for dB suffix
+    if gain_str.lower().endswith("db"):
+        try:
+            return float(gain_str[:-2]), False
+        except ValueError:
+            print(f"Error: Invalid dB value '{gain_str}'")
+            sys.exit(1)
+
+    # Treat as multiplier (convert to dB)
+    try:
+        multiplier = float(gain_str)
+        if multiplier <= 0:
+            print("Error: Volume multiplier must be positive")
+            sys.exit(1)
+        # Convert multiplier to dB: dB = 20 * log10(multiplier)
+        import math
+
+        gain_db = 20 * math.log10(multiplier)
+        return round(gain_db, 1), False
+    except ValueError:
+        print(f"Error: Invalid volume gain value '{gain_str}'")
+        sys.exit(1)
+
+
+def build_audio_filter(volume_gain_db=None, denoise_level=None):
+    """
+    Build audio filter string for FFmpeg.
+
+    Args:
+        volume_gain_db (float): Volume gain in dB (None = no adjustment)
+        denoise_level (float): Denoise level 0.0-1.0 (None = no denoise)
+
+    Returns:
+        str: Audio filter string or None if no filters needed
+    """
+    audio_filters = []
+
+    # Add denoise filter if specified
+    if denoise_level is not None and denoise_level > 0:
+        # Map 0.0-1.0 to noise reduction amount
+        # Higher level = more aggressive noise reduction
+        noise_reduction = int(denoise_level * 97)  # 0-97 range for afftdn
+        audio_filters.append(f"afftdn=nr={noise_reduction}")
+
+    # Add volume filter if specified
+    if volume_gain_db is not None:
+        audio_filters.append(f"volume={volume_gain_db}dB")
+
+    if audio_filters:
+        return ",".join(audio_filters)
+
+    return None
+
+
 def compress_audio(
     input_path,
     output_path=None,
     bitrate=None,
+    volume_gain=None,
+    denoise=None,
+    analyze_only=False,
     ffmpeg_path="ffmpeg",
     ffprobe_path="ffprobe",
 ):
@@ -495,6 +681,9 @@ def compress_audio(
         input_path (str): Input audio file path
         output_path (str): Output audio file path (optional)
         bitrate (str): MP3 bitrate (default: DEFAULT_MP3_BITRATE)
+        volume_gain (str): Volume gain (e.g., "2.0", "10dB", "auto", None)
+        denoise (float): Denoise level 0.0-1.0 (None = disabled)
+        analyze_only (bool): Only analyze volume, don't compress
         ffmpeg_path (str): Path to ffmpeg executable
         ffprobe_path (str): Path to ffprobe executable
     """
@@ -542,6 +731,49 @@ def compress_audio(
     if total_duration:
         print(f"Duration: {format_time(total_duration)}")
 
+    # Handle volume analysis only mode
+    if analyze_only:
+        print("\nAnalyzing volume level...")
+        volume_info = analyze_volume_level(input_path, ffmpeg_path)
+
+        if volume_info["mean_volume"] is not None:
+            print("-" * 60)
+            print("Volume Analysis Results:")
+            print(f"  Mean volume: {volume_info['mean_volume']:.1f} dB")
+            print(f"  Max volume:  {volume_info['max_volume']:.1f} dB")
+            if volume_info["recommended_gain"] is not None:
+                print(f"  Recommended gain: {volume_info['recommended_gain']:+.1f} dB")
+                print(f"  Target level: {TARGET_VOLUME_LEVEL} dB")
+            print("-" * 60)
+        else:
+            print("Error: Could not analyze volume level.")
+        return
+
+    # Parse volume gain
+    volume_gain_db = None
+    if volume_gain is not None:
+        volume_gain_db, is_auto = parse_volume_gain(volume_gain)
+        if is_auto:
+            # Analyze and calculate auto gain
+            print("\nAnalyzing volume level for auto gain...")
+            volume_info = analyze_volume_level(input_path, ffmpeg_path)
+            if volume_info["recommended_gain"] is not None:
+                volume_gain_db = volume_info["recommended_gain"]
+                print(f"Auto volume gain: {volume_gain_db:+.1f} dB")
+                print(f"  Current mean volume: {volume_info['mean_volume']:.1f} dB")
+                print(f"  Current max volume: {volume_info['max_volume']:.1f} dB")
+            else:
+                print("Warning: Could not analyze volume, skipping volume adjustment")
+
+    # Validate denoise level
+    if denoise is not None:
+        if denoise < DENOISE_MIN or denoise > DENOISE_MAX:
+            print(
+                f"Warning: Denoise level capped to {DENOISE_MIN}-{DENOISE_MAX} (requested: {denoise})"
+            )
+            denoise = max(DENOISE_MIN, min(DENOISE_MAX, denoise))
+        print(f"Denoise level: {denoise}")
+
     # Validate and cap bitrate
     bitrate_kbps = parse_bitrate(bitrate)
     if bitrate_kbps < MP3_BITRATE_MIN:
@@ -555,6 +787,11 @@ def compress_audio(
 
     # Build ffmpeg command
     cmd = [ffmpeg_path, "-i", str(input_path), "-y"]  # -y to overwrite output
+
+    # Build audio filter
+    audio_filter = build_audio_filter(volume_gain_db, denoise)
+    if audio_filter:
+        cmd.extend(["-af", audio_filter])
 
     # MP3 codec settings
     cmd.extend(
@@ -647,6 +884,9 @@ def compress_video(
     audio_enabled=True,
     max_fps=None,
     resolution=None,
+    volume_gain=None,
+    denoise=None,
+    analyze_only=False,
     ffmpeg_path="ffmpeg",
     ffprobe_path="ffprobe",
 ):
@@ -661,6 +901,9 @@ def compress_video(
         audio_enabled (bool): Whether to include audio (default: True)
         max_fps (int): Maximum FPS (default: None = keep original)
         resolution (str): Custom resolution in WxH format (default: None)
+        volume_gain (str): Volume gain (e.g., "2.0", "10dB", "auto", None)
+        denoise (float): Denoise level 0.0-1.0 (None = disabled)
+        analyze_only (bool): Only analyze volume, don't compress
         ffmpeg_path (str): Path to ffmpeg executable
         ffprobe_path (str): Path to ffprobe executable
     """
@@ -702,6 +945,49 @@ def compress_video(
         print(f"Original FPS: {original_fps:.2f}")
     if total_duration:
         print(f"Duration: {format_time(total_duration)}")
+
+    # Handle volume analysis only mode
+    if analyze_only:
+        print("\nAnalyzing volume level...")
+        volume_info = analyze_volume_level(input_path, ffmpeg_path)
+
+        if volume_info["mean_volume"] is not None:
+            print("-" * 60)
+            print("Volume Analysis Results:")
+            print(f"  Mean volume: {volume_info['mean_volume']:.1f} dB")
+            print(f"  Max volume:  {volume_info['max_volume']:.1f} dB")
+            if volume_info["recommended_gain"] is not None:
+                print(f"  Recommended gain: {volume_info['recommended_gain']:+.1f} dB")
+                print(f"  Target level: {TARGET_VOLUME_LEVEL} dB")
+            print("-" * 60)
+        else:
+            print("Error: Could not analyze volume level.")
+        return
+
+    # Parse volume gain
+    volume_gain_db = None
+    if volume_gain is not None:
+        volume_gain_db, is_auto = parse_volume_gain(volume_gain)
+        if is_auto:
+            # Analyze and calculate auto gain
+            print("\nAnalyzing volume level for auto gain...")
+            volume_info = analyze_volume_level(input_path, ffmpeg_path)
+            if volume_info["recommended_gain"] is not None:
+                volume_gain_db = volume_info["recommended_gain"]
+                print(f"Auto volume gain: {volume_gain_db:+.1f} dB")
+                print(f"  Current mean volume: {volume_info['mean_volume']:.1f} dB")
+                print(f"  Current max volume: {volume_info['max_volume']:.1f} dB")
+            else:
+                print("Warning: Could not analyze volume, skipping volume adjustment")
+
+    # Validate denoise level
+    if denoise is not None:
+        if denoise < DENOISE_MIN or denoise > DENOISE_MAX:
+            print(
+                f"Warning: Denoise level capped to {DENOISE_MIN}-{DENOISE_MAX} (requested: {denoise})"
+            )
+            denoise = max(DENOISE_MIN, min(DENOISE_MAX, denoise))
+        print(f"Denoise level: {denoise}")
 
     # Parse custom resolution if provided
     custom_max_width = None
@@ -777,6 +1063,11 @@ def compress_video(
                 f"Warning: Audio bitrate capped to {MAX_AUDIO_BITRATE}k (requested: {audio_bitrate})"
             )
             audio_bitrate = f"{MAX_AUDIO_BITRATE}k"
+
+        # Build audio filter for volume and denoise
+        audio_filter = build_audio_filter(volume_gain_db, denoise)
+        if audio_filter:
+            cmd.extend(["-af", audio_filter])
 
         cmd.extend(
             [
@@ -887,6 +1178,17 @@ Examples:
   %(prog)s music.mp3 --audio-bitrate 128k
   %(prog)s audio.wav --audio-bitrate 192k
   %(prog)s song.flac -o compressed.mp3
+
+  # Volume adjustment
+  %(prog)s meeting.mp4 --volume-gain auto
+  %(prog)s meeting.mp4 --volume-gain 10dB
+  %(prog)s meeting.mp4 --volume-gain 2.0
+  %(prog)s audio.mp3 --analyze-volume
+
+  # Noise reduction
+  %(prog)s meeting.mp4 --denoise
+  %(prog)s meeting.mp4 --denoise 0.3
+  %(prog)s meeting.mp4 --volume-gain auto --denoise 0.2
         """,
     )
 
@@ -924,6 +1226,25 @@ Examples:
         default=None,
         help="Maximum resolution in WxH format (e.g., 1920x1080, default: 3840x2160)",
     )
+    parser.add_argument(
+        "--volume-gain",
+        type=str,
+        default=None,
+        help="Volume gain: multiplier (e.g., '2.0'), dB (e.g., '10dB'), or 'auto' for automatic adjustment",
+    )
+    parser.add_argument(
+        "--analyze-volume",
+        action="store_true",
+        help="Analyze volume level and show recommended gain (no compression)",
+    )
+    parser.add_argument(
+        "--denoise",
+        type=float,
+        nargs="?",
+        const=DEFAULT_DENOISE_LEVEL,
+        default=None,
+        help=f"Enable audio noise reduction (level: {DENOISE_MIN}-{DENOISE_MAX}, default: {DEFAULT_DENOISE_LEVEL})",
+    )
 
     args = parser.parse_args()
 
@@ -950,6 +1271,9 @@ Examples:
             input_path=input_path,
             output_path=args.output,
             bitrate=args.audio_bitrate,
+            volume_gain=args.volume_gain,
+            denoise=args.denoise,
+            analyze_only=args.analyze_volume,
             ffmpeg_path=ffmpeg_path,
             ffprobe_path=ffprobe_path,
         )
@@ -978,6 +1302,9 @@ Examples:
             audio_enabled=audio_enabled,
             max_fps=max_fps,
             resolution=args.resolution,
+            volume_gain=args.volume_gain,
+            denoise=args.denoise,
+            analyze_only=args.analyze_volume,
             ffmpeg_path=ffmpeg_path,
             ffprobe_path=ffprobe_path,
         )

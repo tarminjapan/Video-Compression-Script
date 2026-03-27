@@ -23,6 +23,8 @@ FFmpegを使用した動画・音声圧縮用Pythonスクリプト（動画: SVT
 ### 共通機能
 
 - **進捗表示**: ETA、FPS、速度インジケーター付きのリアルタイムプログレスバー
+- **音量調整**: 自動または手動での音量ゲイン調整で音声を聞き取りやすく
+- **ノイズ除去**: 背景ノイズを低減するオーディオノイズフィルター
 
 ## 前提条件
 
@@ -161,6 +163,56 @@ python compress_video.py input_video.mp4 --resolution 1920x1080
 python compress_video.py input_video.mp4 --fps 30
 ```
 
+### 音量調整
+
+スクリプトは自動または手動での音量調整に対応しており、音声を聞き取りやすくします。
+
+**音量解析のみ（圧縮なし）:**
+
+```bash
+python compress_video.py --analyze-volume
+```
+
+**自動音量調整:**
+
+```bash
+python compress_video.py meeting.mp4 --volume-gain auto
+```
+
+**手動音量調整（倍率指定）:**
+
+```bash
+python compress_video.py meeting.mp4 --volume-gain 2.0
+```
+
+**手動音量調整（dB指定）:**
+
+```bash
+python compress_video.py meeting.mp4 --volume-gain 10dB
+```
+
+### ノイズ除去
+
+背景ノイズを低減し、クリアな音声にします。
+
+**ノイズ除去を有効化（デフォルトレベル 0.15）:**
+
+```bash
+python compress_video.py meeting.mp4 --denoise
+```
+
+**カスタムノイズ除去レベル（0.0-1.0）:**
+
+```bash
+python compress_video.py meeting.mp4 --denoise 0.3
+```
+
+### 音量調整とノイズ除去の組み合わせ
+
+```bash
+python compress_video.py meeting.mp4 --volume-gain auto --denoise 0.2
+```
+
 ### 全オプションの組み合わせ
 
 ```bash
@@ -178,6 +230,9 @@ python compress_video.py input_video.mp4 -o output_video.mp4 --crf 23 --audio-bi
 | `--no-audio` | オーディオトラックを無効化（動画のみ） | オーディオ有効 |
 | `--fps` | 最大FPS（最大: 120、動画のみ） | 元のFPS |
 | `--resolution` | WxH形式の最大解像度（例: 1920x1080、動画のみ） | 3840x2160 |
+| `--volume-gain` | 音量ゲイン: 倍率（例: `2.0`）、dB（例: `10dB`）、または `auto` | 無効 |
+| `--analyze-volume` | 音量レベルを解析し推奨ゲインを表示（圧縮なし） | 無効 |
+| `--denoise` | オーディオノイズ除去を有効化（レベル: 0.0-1.0） | 無効 |
 
 ## ヘルプ
 
@@ -231,6 +286,25 @@ python compress_video.py --help
 - エンコードFPS
 - 速度倍率
 - フレーム数
+
+### 音量調整
+
+スクリプトは音声レベルを解析し、聞き取りやすくするために自動的に音量を調整できます：
+
+- **自動モード**: 音声を解析し、目標音圧レベル（-16dB）に到達するための最適なゲインを計算
+- **倍率モード**: `2.0` のような倍率を指定して音量を調整
+- **dBモード**: `10dB` のようにデシベルで指定
+- **解析のみ**: `--analyze-volume` を使用すると、圧縮せずに現在のレベルと推奨ゲインを表示
+
+自動ゲイン計算では、最大音量レベルを考慮してクリッピング（音割れ）を防止します。
+
+### ノイズ除去
+
+スクリプトはFFmpegの `afftdn` フィルターを使用してオーディオノイズを低減します：
+
+- **レベル範囲**: 0.0（最小）〜 1.0（最大）
+- **デフォルトレベル**: 0.15（軽いノイズ除去）
+- 値が大きいほどノイズを除去しますが、音質に影響する可能性があります
 
 ## 使用例
 
