@@ -126,6 +126,16 @@ python compress_video.py input_video.mp4 --crf 23
 - CRF 26-40: 中品質
 - CRF 40-63: 低品質（ファイルサイズ小）
 
+### エンコードプリセットの変更
+
+```bash
+python compress_video.py input_video.mp4 --preset 10
+```
+
+- Preset 0-4: エンコード速度が遅い、圧縮効率が高い（ファイルサイズ小）
+- Preset 5-7: デフォルト（速度と圧縮のバランス）
+- Preset 8-13: エンコード速度が速い、圧縮効率が低い（ファイルサイズ大）
+
 ### オーディオビットレートの変更（動画）
 
 ```bash
@@ -226,6 +236,7 @@ python compress_video.py input_video.mp4 -o output_video.mp4 --crf 23 --audio-bi
 | `input` | 入力動画/音声ファイルパス（任意、未指定時は入力を求められます） | - |
 | `-o`, `--output` | 出力ファイルパス | 動画: `{入力ファイル名}_compressed.{拡張子}`, 音声: `{入力ファイル名}_compressed.mp3` |
 | `--crf` | AV1 CRF値（0-63、動画のみ） | 25 |
+| `--preset` | エンコード速度プリセット（0-13、高い値=高速、動画のみ） | 6 |
 | `--audio-bitrate` | オーディオビットレート（動画: 最大320k、音声: 32k-320k） | 192k |
 | `--no-audio` | オーディオトラックを無効化（動画のみ） | オーディオ有効 |
 | `--fps` | 最大FPS（最大: 120、動画のみ） | 元のFPS |

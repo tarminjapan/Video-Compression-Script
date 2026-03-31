@@ -126,6 +126,16 @@ python compress_video.py input_video.mp4 --crf 23
 - CRF 26-40: Medium quality
 - CRF 40-63: Low quality (smaller file size)
 
+### Change Encoding Preset
+
+```bash
+python compress_video.py input_video.mp4 --preset 10
+```
+
+- Preset 0-4: Slower encoding, better compression efficiency (smaller file)
+- Preset 5-7: Default (balance between speed and compression)
+- Preset 8-13: Faster encoding, lower compression efficiency (larger file)
+
 ### Change Audio Bitrate (Video)
 
 ```bash
@@ -226,6 +236,7 @@ python compress_video.py input_video.mp4 -o output_video.mp4 --crf 23 --audio-bi
 | `input` | Input video/audio file path (optional, will prompt if not provided) | - |
 | `-o`, `--output` | Output file path | Video: `{input_filename}_compressed.{extension}`, Audio: `{input_filename}_compressed.mp3` |
 | `--crf` | AV1 CRF value (0-63, video only) | 25 |
+| `--preset` | Encoding speed preset (0-13, higher = faster, video only) | 6 |
 | `--audio-bitrate` | Audio bitrate (video: max 320k, audio: 32k-320k) | 192k |
 | `--no-audio` | Disable audio track (video only) | Audio enabled |
 | `--fps` | Maximum FPS (max: 120, video only) | Original FPS |

@@ -882,6 +882,7 @@ def compress_video(
     input_path,
     output_path=None,
     crf=None,
+    preset=None,
     audio_bitrate=None,
     audio_enabled=True,
     max_fps=None,
@@ -899,6 +900,7 @@ def compress_video(
         input_path (str): Input video file path
         output_path (str): Output video file path (optional)
         crf (int): AV1 CRF value (default: DEFAULT_CRF)
+        preset (int): Encoding preset (default: VIDEO_PRESET)
         audio_bitrate (str): Audio bitrate (default: DEFAULT_AUDIO_BITRATE)
         audio_enabled (bool): Whether to include audio (default: True)
         max_fps (int): Maximum FPS (default: None = keep original)
@@ -912,6 +914,8 @@ def compress_video(
     # Set default values
     if crf is None:
         crf = DEFAULT_CRF
+    if preset is None:
+        preset = VIDEO_PRESET
     if audio_bitrate is None:
         audio_bitrate = DEFAULT_AUDIO_BITRATE
     input_path = Path(input_path)
@@ -1052,7 +1056,7 @@ def compress_video(
             "-b:v",
             "0",  # Disable bitrate-based encoding (CRF mode)
             "-preset",
-            str(VIDEO_PRESET),
+            str(preset),
         ]
     )
 
@@ -1207,6 +1211,12 @@ Examples:
         help=f"AV1 CRF value ({CRF_MIN}-{CRF_MAX}, lower = higher quality, higher = smaller size, default: {DEFAULT_CRF})",
     )
     parser.add_argument(
+        "--preset",
+        type=int,
+        default=VIDEO_PRESET,
+        help=f"Encoding speed preset (0-13, higher = faster encoding but larger file, default: {VIDEO_PRESET})",
+    )
+    parser.add_argument(
         "--audio-bitrate",
         default=DEFAULT_AUDIO_BITRATE,
         help=f"Audio bitrate (video: default {DEFAULT_AUDIO_BITRATE}, max {MAX_AUDIO_BITRATE}k | audio/MP3: {MP3_BITRATE_MIN}k-{MP3_BITRATE_MAX}k)",
@@ -1300,6 +1310,7 @@ Examples:
             input_path=input_path,
             output_path=args.output,
             crf=args.crf,
+            preset=args.preset,
             audio_bitrate=args.audio_bitrate,
             audio_enabled=audio_enabled,
             max_fps=max_fps,
