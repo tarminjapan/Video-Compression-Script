@@ -17,7 +17,7 @@ from .config import (
     VIDEO_CODEC,
     VIDEO_PRESET,
 )
-from .ffmpeg import get_video_info
+from .ffmpeg import get_detailed_media_info, get_video_info
 from .progress import show_final_progress, update_progress
 from .utils import calculate_scaled_resolution, format_time, parse_bitrate
 from .volume import (
@@ -26,6 +26,236 @@ from .volume import (
     parse_volume_gain,
     validate_denoise_level,
 )
+
+
+def format_bitrate(bitrate):
+    """Format bitrate to human readable string."""
+    if bitrate is None:
+        return "Unknown"
+    try:
+        bitrate = int(bitrate)
+        if bitrate >= 1000000:
+            return f"{bitrate / 1000000:.2f} Mbps"
+        elif bitrate >= 1000:
+            return f"{bitrate / 1000:.0f} kbps"
+        else:
+            return f"{bitrate} bps"
+    except (ValueError, TypeError):
+        return "Unknown"
+
+
+def format_duration(seconds):
+    """Format duration seconds to HH:MM:SS.ms format."""
+    if seconds is None:
+        return "Unknown"
+    try:
+        seconds = float(seconds)
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = seconds % 60
+        if hours > 0:
+            return f"{hours:02d}:{minutes:02d}:{secs:06.3f}"
+        else:
+            return f"{minutes:02d}:{secs:06.3f}"
+    except (ValueError, TypeError):
+        return "Unknown"
+
+
+def format_file_size(size_bytes):
+    """Format file size to human readable string."""
+    if size_bytes is None:
+        return "Unknown"
+    try:
+        size_bytes = float(size_bytes)
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
+            if size_bytes < 1024.0:
+                return f"{size_bytes:.2f} {unit}"
+            size_bytes /= 1024.0
+        return f"{size_bytes:.2f} PB"
+    except (ValueError, TypeError):
+        return "Unknown"
+
+
+def analyze_media(
+    input_path,
+    ffmpeg_path="ffmpeg",
+    ffprobe_path="ffprobe",
+):
+    """
+    Analyze media file and display detailed information.
+
+    Args:
+        input_path (str): Input media file path
+        ffmpeg_path (str): Path to ffmpeg executable
+        ffprobe_path (str): Path to ffprobe executable
+    """
+    input_path = Path(input_path)
+
+    # Validate input file
+    if not input_path.exists():
+        print(f"Error: Input file '{input_path}' does not exist.")
+        sys.exit(1)
+
+    print("=" * 60)
+    print("MEDIA ANALYSIS")
+    print("=" * 60)
+    print(f"\nFile: {input_path.name}")
+    print(f"Path: {input_path.parent}")
+    print("-" * 60)
+
+    # Get detailed media info
+    media_info = get_detailed_media_info(input_path, ffprobe_path)
+
+    if not media_info:
+        print("Error: Could not retrieve media information.")
+        sys.exit(1)
+
+    # Format information
+    format_info = media_info.get("format", {})
+    streams = media_info.get("streams", [])
+
+    # General file information
+    print("\n[General Information]")
+    print(f"  Format:         {format_info.get('format_long_name', 'Unknown')}")
+    print(f"  Format (short): {format_info.get('format_name', 'Unknown')}")
+    print(f"  Duration:       {format_duration(format_info.get('duration'))}")
+    print(f"  File size:      {format_file_size(format_info.get('size'))}")
+    print(f"  Overall bitrate:{format_bitrate(format_info.get('bit_rate'))}")
+
+    # Number of streams
+    nb_streams = format_info.get("nb_streams", 0)
+    print(
+        f"  Streams:        {nb_streams} ({sum(1 for s in streams if s.get('codec_type') == 'video')} video, {sum(1 for s in streams if s.get('codec_type') == 'audio')} audio)"
+    )
+
+    # Metadata
+    tags = format_info.get("tags", {})
+    if tags:
+        print("\n[Metadata]")
+        for key, value in tags.items():
+            print(f"  {key}: {value}")
+
+    # Analyze each stream
+    for i, stream in enumerate(streams):
+        codec_type = stream.get("codec_type", "unknown")
+        print("\n" + "-" * 60)
+        print(f"[Stream #{i}] Type: {codec_type.upper()}")
+        print("-" * 60)
+
+        if codec_type == "video":
+            print(
+                f"  Codec:          {stream.get('codec_long_name', stream.get('codec_name', 'Unknown'))}"
+            )
+            print(f"  Codec (short):  {stream.get('codec_name', 'Unknown')}")
+            print(f"  Profile:        {stream.get('profile', 'Unknown')}")
+            print(f"  Level:          {stream.get('level', 'Unknown')}")
+
+            # Resolution
+            width = stream.get("width")
+            height = stream.get("height")
+            if width and height:
+                print(f"  Resolution:     {width} x {height}")
+
+            # Aspect ratio
+            dar = stream.get("display_aspect_ratio")
+            if dar:
+                print(f"  Aspect Ratio:   {dar}")
+
+            # Frame rate
+            fps_str = stream.get("r_frame_rate") or stream.get("avg_frame_rate")
+            if fps_str:
+                if "/" in fps_str:
+                    num, den = fps_str.split("/")
+                    try:
+                        if float(den) != 0:
+                            fps = float(num) / float(den)
+                            print(f"  Frame Rate:     {fps:.3f} fps ({fps_str})")
+                        else:
+                            print(f"  Frame Rate:     {fps_str}")
+                    except ValueError:
+                        print(f"  Frame Rate:     {fps_str}")
+                else:
+                    print(f"  Frame Rate:     {fps_str} fps")
+
+            # Bit depth
+            bits_per_raw = stream.get("bits_per_raw_sample") or stream.get(
+                "bits_per_sample"
+            )
+            if bits_per_raw:
+                print(f"  Bit Depth:      {bits_per_raw}-bit")
+
+            # Color information
+            pix_fmt = stream.get("pix_fmt")
+            if pix_fmt:
+                print(f"  Pixel Format:   {pix_fmt}")
+
+            color_space = stream.get("color_space")
+            if color_space:
+                print(f"  Color Space:    {color_space}")
+
+            color_range = stream.get("color_range")
+            if color_range:
+                print(f"  Color Range:    {color_range}")
+
+            # Bitrate
+            bitrate = stream.get("bit_rate")
+            if bitrate:
+                print(f"  Bitrate:        {format_bitrate(bitrate)}")
+
+            # Encoding
+            is_hdr = stream.get("color_transfer") in ["smpte2084", "arib-std-b67"]
+            if is_hdr:
+                print(
+                    f"  HDR:            Yes ({stream.get('color_transfer', 'Unknown')})"
+                )
+
+        elif codec_type == "audio":
+            print(
+                f"  Codec:          {stream.get('codec_long_name', stream.get('codec_name', 'Unknown'))}"
+            )
+            print(f"  Codec (short):  {stream.get('codec_name', 'Unknown')}")
+            print(f"  Profile:        {stream.get('profile', 'Unknown')}")
+
+            # Sample rate
+            sample_rate = stream.get("sample_rate")
+            if sample_rate:
+                print(f"  Sample Rate:    {sample_rate} Hz")
+
+            # Channels
+            channels = stream.get("channels")
+            channel_layout = stream.get("channel_layout")
+            if channels:
+                ch_str = f"{channels} channels"
+                if channel_layout:
+                    ch_str += f" ({channel_layout})"
+                print(f"  Channels:       {ch_str}")
+
+            # Bit depth
+            bits_per_sample = stream.get("bits_per_sample") or stream.get(
+                "bits_per_raw_sample"
+            )
+            if bits_per_sample and int(bits_per_sample) > 0:
+                print(f"  Bit Depth:      {bits_per_sample}-bit")
+
+            # Bitrate
+            bitrate = stream.get("bit_rate")
+            if bitrate:
+                print(f"  Bitrate:        {format_bitrate(bitrate)}")
+
+            # Language
+            language = stream.get("tags", {}).get("language")
+            if language:
+                print(f"  Language:       {language}")
+
+        # Stream tags/metadata
+        stream_tags = stream.get("tags", {})
+        if stream_tags and codec_type not in ["video", "audio"]:
+            for key, value in stream_tags.items():
+                print(f"  {key}: {value}")
+
+    print("\n" + "=" * 60)
+    print("Analysis completed.")
+    print("=" * 60)
 
 
 def compress_video(

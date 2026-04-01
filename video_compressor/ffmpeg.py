@@ -133,6 +133,41 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
     return None
 
 
+def get_detailed_media_info(media_path, ffprobe_path="ffprobe"):
+    """
+    Get detailed media information using ffprobe.
+
+    Args:
+        media_path (str): Path to media file (video or audio)
+        ffprobe_path (str): Path to ffprobe executable
+
+    Returns:
+        dict: Detailed media information including codecs, bitrate, etc.
+    """
+    import json
+    import subprocess
+
+    cmd = [
+        ffprobe_path,
+        "-v",
+        "quiet",
+        "-print_format",
+        "json",
+        "-show_format",
+        "-show_streams",
+        str(media_path),
+    ]
+
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        data = json.loads(result.stdout)
+        return data
+    except subprocess.CalledProcessError:
+        return None
+    except json.JSONDecodeError:
+        return None
+
+
 def get_audio_info(audio_path, ffprobe_path="ffprobe"):
     """
     Get audio information using ffprobe.

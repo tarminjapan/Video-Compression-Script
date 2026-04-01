@@ -19,7 +19,7 @@ from .config import (
 )
 from .ffmpeg import get_ffmpeg_executables
 from .utils import get_file_type
-from .video import compress_video
+from .video import analyze_media, compress_video
 
 
 def main():
@@ -106,6 +106,11 @@ Examples:
         help="Analyze volume level and show recommended gain (no compression)",
     )
     parser.add_argument(
+        "--analyze",
+        action="store_true",
+        help="Analyze media file and show detailed information (codec, resolution, bitrate, etc.)",
+    )
+    parser.add_argument(
         "--denoise",
         type=float,
         nargs="?",
@@ -129,6 +134,15 @@ Examples:
 
     # Remove surrounding double quotes
     input_path = input_path.strip('"')
+
+    # Handle --analyze option
+    if args.analyze:
+        analyze_media(
+            input_path=input_path,
+            ffmpeg_path=ffmpeg_path,
+            ffprobe_path=ffprobe_path,
+        )
+        return
 
     # Determine file type
     file_type = get_file_type(input_path)

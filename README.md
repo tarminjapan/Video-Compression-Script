@@ -183,6 +183,53 @@ The script supports automatic or manual volume adjustment for better audio clari
 python -m video_compressor --analyze-volume
 ```
 
+**Analyze media file only (no compression):**
+
+```bash
+python -m video_compressor --analyze input.mp4
+```
+
+This will display detailed information including:
+
+- File format (full name, short name)
+- Duration
+- File size
+- Overall bitrate
+
+For each video stream:
+
+- Codec name (full name, short name)
+- Profile
+- Level
+- Resolution
+- Aspect ratio
+- Frame rate
+- Bit depth
+- Pixel format
+- Color space
+- Color range
+- Bitrate
+- HDR information
+
+For each audio stream:
+
+- Codec name (full name, short name)
+- Profile
+- Sample rate
+- Channels
+- Channel layout
+- Bit depth
+- Bitrate
+- Language
+
+Metadata (if present):
+
+- Title
+- Artist
+- Album
+- Creation date
+- Other
+
 **Automatic volume adjustment:**
 
 ```bash
@@ -243,6 +290,7 @@ python -m video_compressor input_video.mp4 -o output_video.mp4 --crf 23 --audio-
 | `--resolution` | Maximum resolution in WxH format (e.g., 1920x1080, video only) | 3840x2160 |
 | `--volume-gain` | Volume gain: multiplier (e.g., `2.0`), dB (e.g., `10dB`), or `auto` | Disabled |
 | `--analyze-volume` | Analyze volume level and show recommended gain (no compression) | Disabled |
+| `--analyze` | Analyze media file and show detailed information (codec, resolution, bitrate, etc.) | Disabled |
 | `--denoise` | Enable audio noise reduction (level: 0.0-1.0) | Disabled |
 
 ## Help
