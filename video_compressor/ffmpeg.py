@@ -66,7 +66,14 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
     duration = None
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        )
         output = result.stdout.strip()
         if output:
             parts = output.split("x")
@@ -111,7 +118,12 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
         ]
         try:
             format_result = subprocess.run(
-                format_cmd, capture_output=True, text=True, check=True
+                format_cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=True,
             )
             format_output = format_result.stdout.strip()
             if format_output:
@@ -159,7 +171,14 @@ def get_detailed_media_info(media_path, ffprobe_path="ffprobe"):
     ]
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        )
         data = json.loads(result.stdout)
         return data
     except subprocess.CalledProcessError:
@@ -203,7 +222,14 @@ def get_audio_info(audio_path, ffprobe_path="ffprobe"):
     channels = None
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        )
         output = result.stdout.strip()
         if output:
             lines = output.split("\n")
@@ -246,7 +272,12 @@ def get_audio_info(audio_path, ffprobe_path="ffprobe"):
         ]
         try:
             format_result = subprocess.run(
-                format_cmd, capture_output=True, text=True, check=True
+                format_cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=True,
             )
             format_output = format_result.stdout.strip()
             if format_output:
