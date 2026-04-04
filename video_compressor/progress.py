@@ -4,6 +4,7 @@ Progress bar display functionality.
 
 import re
 import sys
+import time
 
 from .config import PROGRESS_BAR_LENGTH
 from .utils import format_time
@@ -51,6 +52,32 @@ def update_progress(line, total_duration, stats=None):
             stats["speed_list"].append(speed)
             stats["frame_list"].append(frame)
 
+            # Record data with wall-clock timestamp for rolling average
+            now = time.monotonic()
+            stats["rolling_data"].append((now, fps, speed))
+
+        # Calculate rolling average for display (last 60 seconds)
+        if stats is not None and stats["rolling_data"]:
+            now = time.monotonic()
+            cutoff = now - 60.0
+            # Remove entries older than 60 seconds
+            stats["rolling_data"] = [
+                entry for entry in stats["rolling_data"] if entry[0] >= cutoff
+            ]
+            if stats["rolling_data"]:
+                display_fps = sum(e[1] for e in stats["rolling_data"]) / len(
+                    stats["rolling_data"]
+                )
+                display_speed = sum(e[2] for e in stats["rolling_data"]) / len(
+                    stats["rolling_data"]
+                )
+            else:
+                display_fps = fps
+                display_speed = speed
+        else:
+            display_fps = fps
+            display_speed = speed
+
         # Extract elapsed time and calculate estimated remaining time
         elapsed_match = re.search(r"elapsed=(\d+):(\d+):(\d+\.?\d*)", line)
         eta_str = "--:--"
@@ -82,7 +109,7 @@ def update_progress(line, total_duration, stats=None):
         sys.stdout.write(
             f"\r  [{bar}] {progress:5.1f}% | "
             f"{current_min:02d}:{current_sec:04.1f}/{total_min:02d}:{total_sec:04.1f} | "
-            f"ETA {eta_str} | {fps:.0f} fps | {speed:.2f}x | Frame: {frame}"
+            f"ETA {eta_str} | {display_fps:.0f} fps | {display_speed:.2f}x | Frame: {frame}"
         )
         sys.stdout.flush()
         return True

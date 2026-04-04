@@ -18,12 +18,14 @@ from .config import (
     VIDEO_PRESET,
 )
 from .ffmpeg import get_ffmpeg_executables
-from .utils import get_file_type
+from .utils import get_file_type, print_banner
 from .video import analyze_media, compress_video
 
 
 def main():
     """Main entry point for the CLI."""
+    print_banner()
+
     parser = argparse.ArgumentParser(
         description="Compress video/audio using FFmpeg (AV1 for video, MP3 for audio)",
         formatter_class=argparse.RawDescriptionHelpFormatter,

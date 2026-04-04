@@ -4,7 +4,49 @@ Utility functions for video compression.
 
 from pathlib import Path
 
+from . import __version__
 from .config import AUDIO_EXTENSIONS, VIDEO_EXTENSIONS
+
+# ============================================
+# ASCII Art Banner
+# ============================================
+# ANSI color codes
+_CYAN = "\033[96m"
+_BLUE = "\033[94m"
+_MAGENTA = "\033[95m"
+_DIM = "\033[2m"
+_BOLD = "\033[1m"
+_RESET = "\033[0m"
+
+_ASCII_BANNER = r"""
+   __  __          __
+  /\ \/\ \  __    /\ \
+  \ \ \ \ \/\_\   \_\ \     __    ___
+   \ \ \ \ \/\ \  /'_` \  /'__`\ / __`\
+    \ \ \_/ \ \ \/\ \L\ \/\  __//\ \L\ \
+     \ `\___/\ \_\ \___,_\ \____\ \____/
+      `\/__/  \/_/\/__,_ /\/____/\/___/
+  ____
+ /\  _`\
+ \ \ \/\_\    ___     ___ ___   _____   _ __    __    ____    ____    ___   _ __ 
+  \ \ \/_/_  / __`\ /' __` __`\/\ '__`\/\`'__\/'__`\ /',__\  /',__\  / __`\/\`'__\
+   \ \ \L\ \/\ \L\ \/\ \/\ \/\ \ \ \L\ \ \ \//\  __//\__, `\/\__, `\/\ \L\ \ \ \/
+    \ \____/\ \____/\ \_\ \_\ \_\ \ ,__/\ \_\\ \____\/\____/\/\____/\ \____/\_\ \
+     \/___/  \/___/  \/_/\/_/\/_/\ \ \/  \/_/ \/____/\/___/  \/___/  \/___/  \/_/
+                                  \ \_\
+                                   \/_/"""
+
+
+def print_banner():
+    """Print a styled ASCII art banner for Video Compressor."""
+    line = "─" * 62
+    print(f"{_DIM}{line}{_RESET}")
+    print(f"{_CYAN}{_BOLD}{_ASCII_BANNER}{_RESET}")
+    print()
+    print(f"{_BLUE}{_BOLD}  ▸ Video Compressor v{__version__}{_RESET}")
+    print(f"{_DIM}  ▸ Video / Audio Compression Tool{_RESET}")
+    print(f"{_DIM}{line}{_RESET}")
+    print()
 
 
 def format_time(seconds):
