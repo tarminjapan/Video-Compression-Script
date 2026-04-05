@@ -415,6 +415,10 @@ def compress_video(
         print(f"Limiting FPS from {original_fps:.2f} to {max_fps}")
         fps_filter = f"fps={max_fps}"
         video_filters.append(fps_filter)
+    elif max_fps is not None and not original_fps:
+        print(f"Warning: FPS unknown, applying FPS limit of {max_fps} as a precaution")
+        fps_filter = f"fps={max_fps}"
+        video_filters.append(fps_filter)
     elif max_fps is not None:
         print(
             f"FPS limit: {max_fps} (original: {f'{original_fps:.2f}' if original_fps else 'unknown'})"
