@@ -30,6 +30,7 @@ classifiers = [
 dev = [
     "ruff>=0.11",
     "pre-commit>=4.0",
+    "pyright>=1.1",
 ]
 
 [project.scripts]
@@ -121,4 +122,4 @@ reportUntypedFunctionDecorator = "none"
 # Scripts
 # =============================================================================
 [tool.setuptools.packages.find]
-include = ["video_compressor*", "gui*"]
+include = ["video_compressor", "gui"]

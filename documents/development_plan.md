@@ -435,9 +435,7 @@ AmeCompression/
 
 - `pyinstaller` >= 6.0
 - `pytest` >= 7.0
-- `black`（フォーマッター）
-- `isort`（インポート整理）
-- `flake8` or `ruff`（リンター）
+- `ruff`（フォーマッター & リンター）
 
 ---
 
