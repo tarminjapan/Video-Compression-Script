@@ -1,0 +1,156 @@
+{
+    "app": {
+        "title": "AmeCompression",
+        "version": "Version {version}",
+        "description": "Video & Audio Compression Tool"
+    },
+    "nav": {
+        "video": "Video Compression",
+        "audio": "Audio Compression",
+        "settings": "Settings",
+        "about": "About"
+    },
+    "file": {
+        "select": "Select File",
+        "select_multiple": "Select Files",
+        "drop_here": "Drag & drop files here",
+        "or": "or",
+        "browse": "Browse",
+        "output_folder": "Output Folder",
+        "name": "Name",
+        "size": "Size",
+        "format": "Format",
+        "duration": "Duration",
+        "remove": "Remove",
+        "clear_all": "Clear All",
+        "no_files": "No files selected",
+        "selected_count": "{count} file(s) selected"
+    },
+    "video_settings": {
+        "title": "Video Compression Settings",
+        "crf": "CRF (Quality)",
+        "crf_range": "Lower = Higher Quality / Larger File",
+        "preset": "Encoding Preset",
+        "preset_range": "Higher = Faster Encoding",
+        "audio_bitrate": "Audio Bitrate",
+        "disable_audio": "Disable Audio",
+        "max_resolution": "Max Resolution",
+        "max_fps": "Max FPS",
+        "resolution": {
+            "4k": "4K (3840x2160)",
+            "2k": "2K (2560x1440)",
+            "1080p": "1080p (1920x1080)",
+            "720p": "720p (1280x720)",
+            "480p": "480p (854x480)",
+            "original": "Original",
+            "custom": "Custom"
+        },
+        "fps_options": {
+            "30": "30 FPS",
+            "60": "60 FPS",
+            "120": "120 FPS",
+            "unlimited": "Unlimited"
+        }
+    },
+    "audio_settings": {
+        "title": "Audio Compression Settings",
+        "bitrate": "Bitrate",
+        "keep_metadata": "Keep Metadata",
+        "input_info": "Input File Info",
+        "output_preview": "Output Preview"
+    },
+    "volume": {
+        "title": "Volume Adjustment",
+        "mode": "Mode",
+        "modes": {
+            "disabled": "Disabled",
+            "auto": "Auto (Normalize)",
+            "multiplier": "Multiplier",
+            "db": "Decibels (dB)"
+        },
+        "multiplier_label": "Volume Multiplier",
+        "db_label": "Volume (dB)",
+        "analyze": "Analyze Volume",
+        "analyzing": "Analyzing...",
+        "current_level": "Current Level",
+        "recommended_gain": "Recommended Gain"
+    },
+    "denoise": {
+        "title": "Noise Reduction",
+        "enable": "Enable Noise Reduction",
+        "level": "Noise Reduction Level",
+        "presets": {
+            "light": "Light",
+            "medium": "Medium",
+            "strong": "Strong"
+        }
+    },
+    "compress": {
+        "start": "Start Compression",
+        "cancel": "Cancel",
+        "compressing": "Compressing...",
+        "progress": "Progress",
+        "eta": "ETA",
+        "fps": "FPS",
+        "speed": "Speed",
+        "complete": "Compression Complete!",
+        "failed": "Compression Failed",
+        "cancelled": "Compression Cancelled",
+        "original_size": "Original Size",
+        "compressed_size": "Compressed Size",
+        "reduction": "Reduction",
+        "elapsed_time": "Elapsed Time",
+        "batch_summary": "Batch Summary",
+        "batch_success": "{count} file(s) succeeded",
+        "batch_failed": "{count} file(s) failed",
+        "batch_skipped": "{count} file(s) skipped"
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "theme": "Theme",
+        "themes": {
+            "dark": "Dark",
+            "light": "Light",
+            "system": "System"
+        },
+        "ffmpeg_path": "FFmpeg Path",
+        "auto_detect": "Auto Detect",
+        "output_default": "Default Output Folder",
+        "default_compression": "Default Compression Settings",
+        "save": "Save Settings",
+        "reset": "Reset to Defaults",
+        "saved": "Settings saved.",
+        "reset_confirm": "Reset all settings to defaults?"
+    },
+    "status": {
+        "ffmpeg_detected": "FFmpeg: Detected",
+        "ffmpeg_not_found": "FFmpeg: Not Found",
+        "ready": "Ready",
+        "processing": "Processing..."
+    },
+    "common": {
+        "ok": "OK",
+        "cancel": "Cancel",
+        "close": "Close",
+        "yes": "Yes",
+        "no": "No",
+        "apply": "Apply",
+        "error": "Error",
+        "warning": "Warning",
+        "info": "Information",
+        "loading": "Loading...",
+        "none": "None",
+        "default": "Default",
+        "custom": "Custom"
+    },
+    "errors": {
+        "ffmpeg_not_found": "FFmpeg not found. Please install FFmpeg or set the path in Settings.",
+        "invalid_file": "Unsupported file format: {extension}",
+        "input_not_found": "Input file not found: {path}",
+        "output_exists": "Output file already exists: {path}",
+        "compression_failed": "Compression failed: {error}",
+        "no_input": "No input file specified.",
+        "permission_denied": "Permission denied: {path}"
+    }
+}

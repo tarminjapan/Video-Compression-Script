@@ -1,0 +1,156 @@
+{
+    "app": {
+        "title": "AmeCompression",
+        "version": "バージョン {version}",
+        "description": "動画・音声 圧縮ツール"
+    },
+    "nav": {
+        "video": "動画圧縮",
+        "audio": "音声圧縮",
+        "settings": "設定",
+        "about": "バージョン情報"
+    },
+    "file": {
+        "select": "ファイルを選択",
+        "select_multiple": "ファイルを複数選択",
+        "drop_here": "ファイルをドラッグ＆ドロップ",
+        "or": "または",
+        "browse": "参照",
+        "output_folder": "出力フォルダー",
+        "name": "名前",
+        "size": "サイズ",
+        "format": "形式",
+        "duration": "再生時間",
+        "remove": "削除",
+        "clear_all": "すべてクリア",
+        "no_files": "ファイルが選択されていません",
+        "selected_count": "{count} 個のファイルが選択されました"
+    },
+    "video_settings": {
+        "title": "動画圧縮設定",
+        "crf": "CRF（品質）",
+        "crf_range": "低い = 高品質 / 大きいファイル",
+        "preset": "エンコードプリセット",
+        "preset_range": "高い = 高速エンコード",
+        "audio_bitrate": "音声ビットレート",
+        "disable_audio": "音声を無効化",
+        "max_resolution": "最大解像度",
+        "max_fps": "最大FPS",
+        "resolution": {
+            "4k": "4K（3840x2160）",
+            "2k": "2K（2560x1440）",
+            "1080p": "1080p（1920x1080）",
+            "720p": "720p（1280x720）",
+            "480p": "480p（854x480）",
+            "original": "元のサイズ",
+            "custom": "カスタム"
+        },
+        "fps_options": {
+            "30": "30 FPS",
+            "60": "60 FPS",
+            "120": "120 FPS",
+            "unlimited": "制限なし"
+        }
+    },
+    "audio_settings": {
+        "title": "音声圧縮設定",
+        "bitrate": "ビットレート",
+        "keep_metadata": "メタデータを保持",
+        "input_info": "入力ファイル情報",
+        "output_preview": "出力プレビュー"
+    },
+    "volume": {
+        "title": "音量調整",
+        "mode": "モード",
+        "modes": {
+            "disabled": "無効",
+            "auto": "自動（ノーマライズ）",
+            "multiplier": "倍率",
+            "db": "デシベル（dB）"
+        },
+        "multiplier_label": "音量倍率",
+        "db_label": "音量（dB）",
+        "analyze": "音量を解析",
+        "analyzing": "解析中...",
+        "current_level": "現在のレベル",
+        "recommended_gain": "推奨ゲイン"
+    },
+    "denoise": {
+        "title": "ノイズ除去",
+        "enable": "ノイズ除去を有効にする",
+        "level": "ノイズ除去レベル",
+        "presets": {
+            "light": "弱",
+            "medium": "中",
+            "strong": "強"
+        }
+    },
+    "compress": {
+        "start": "圧縮開始",
+        "cancel": "キャンセル",
+        "compressing": "圧縮中...",
+        "progress": "進捗",
+        "eta": "残り時間",
+        "fps": "FPS",
+        "speed": "速度",
+        "complete": "圧縮完了！",
+        "failed": "圧縮失敗",
+        "cancelled": "圧縮がキャンセルされました",
+        "original_size": "元のサイズ",
+        "compressed_size": "圧縮後のサイズ",
+        "reduction": "削減率",
+        "elapsed_time": "経過時間",
+        "batch_summary": "バッチ処理サマリー",
+        "batch_success": "{count} 件成功",
+        "batch_failed": "{count} 件失敗",
+        "batch_skipped": "{count} 件スキップ"
+    },
+    "settings": {
+        "title": "設定",
+        "language": "言語",
+        "theme": "テーマ",
+        "themes": {
+            "dark": "ダーク",
+            "light": "ライト",
+            "system": "システム"
+        },
+        "ffmpeg_path": "FFmpeg パス",
+        "auto_detect": "自動検出",
+        "output_default": "デフォルト出力フォルダー",
+        "default_compression": "デフォルト圧縮設定",
+        "save": "設定を保存",
+        "reset": "初期設定に戻す",
+        "saved": "設定を保存しました。",
+        "reset_confirm": "すべての設定を初期値に戻しますか？"
+    },
+    "status": {
+        "ffmpeg_detected": "FFmpeg: 検出済み",
+        "ffmpeg_not_found": "FFmpeg: 見つかりません",
+        "ready": "準備完了",
+        "processing": "処理中..."
+    },
+    "common": {
+        "ok": "OK",
+        "cancel": "キャンセル",
+        "close": "閉じる",
+        "yes": "はい",
+        "no": "いいえ",
+        "apply": "適用",
+        "error": "エラー",
+        "warning": "警告",
+        "info": "情報",
+        "loading": "読み込み中...",
+        "none": "なし",
+        "default": "デフォルト",
+        "custom": "カスタム"
+    },
+    "errors": {
+        "ffmpeg_not_found": "FFmpegが見つかりません。FFmpegをインストールするか、設定でパスを指定してください。",
+        "invalid_file": "サポートされていないファイル形式: {extension}",
+        "input_not_found": "入力ファイルが見つかりません: {path}",
+        "output_exists": "出力ファイルが既に存在します: {path}",
+        "compression_failed": "圧縮に失敗しました: {error}",
+        "no_input": "入力ファイルが指定されていません。",
+        "permission_denied": "アクセス権限がありません: {path}"
+    }
+}
