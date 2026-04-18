@@ -10,9 +10,6 @@
       100
     ]
   },
-  "ruff.nativeServer": true,
-  "ruff.line-length": 100,
-  "python.analysis.typeCheckingMode": "basic",
   "python.analysis.autoImportCompletions": true,
   "python.analysis.diagnosticMode": "workspace",
   "files.encoding": "utf8",
