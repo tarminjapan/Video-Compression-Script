@@ -6,16 +6,15 @@
       "source.fixAll": "explicit",
       "source.organizeImports": "explicit"
     },
-    "editor.rulers": [100]
+    "editor.rulers": [
+      100
+    ]
   },
-
+  "ruff.nativeServer": true,
   "ruff.line-length": 100,
-  "ruff.showNotifications": "onError",
-
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.autoImportCompletions": true,
   "python.analysis.diagnosticMode": "workspace",
-
   "files.encoding": "utf8",
   "files.eol": "\n",
   "files.insertFinalNewline": true,
@@ -25,10 +24,8 @@
     "*.yaml": "yaml",
     "*.yml": "yaml"
   },
-
   "editor.renderWhitespace": "boundary",
   "editor.bracketPairColorization.enabled": true,
-
   "search.exclude": {
     "**/__pycache__": true,
     "**/.ruff_cache": true,
