@@ -2,7 +2,11 @@
 FFmpeg executable detection and path management.
 """
 
+import contextlib
+import json
 import platform
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -44,9 +48,6 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
     Returns:
         dict: Video width, height, duration, fps
     """
-    import subprocess
-    import sys
-
     cmd = [
         ffprobe_path,
         "-v",
@@ -90,16 +91,12 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
                         if float(den) != 0:
                             fps = float(num) / float(den)
                     else:
-                        try:
+                        with contextlib.suppress(ValueError):
                             fps = float(fps_str)
-                        except ValueError:
-                            pass
 
                 if len(remaining) > 2:
-                    try:
+                    with contextlib.suppress(ValueError):
                         duration = float(remaining[2])
-                    except ValueError:
-                        pass
     except subprocess.CalledProcessError as e:
         print(f"Error getting video info: {e.stderr}")
         sys.exit(1)
@@ -127,10 +124,8 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
             )
             format_output = format_result.stdout.strip()
             if format_output:
-                try:
+                with contextlib.suppress(ValueError):
                     duration = float(format_output)
-                except ValueError:
-                    pass
         except subprocess.CalledProcessError:
             pass  # Ignore errors, duration will remain None
 
@@ -156,9 +151,6 @@ def get_detailed_media_info(media_path, ffprobe_path="ffprobe"):
     Returns:
         dict: Detailed media information including codecs, bitrate, etc.
     """
-    import json
-    import subprocess
-
     cmd = [
         ffprobe_path,
         "-v",
@@ -198,9 +190,6 @@ def get_audio_info(audio_path, ffprobe_path="ffprobe"):
     Returns:
         dict: Audio duration, bitrate, sample_rate, channels
     """
-    import subprocess
-    import sys
-
     cmd = [
         ffprobe_path,
         "-v",
@@ -250,10 +239,8 @@ def get_audio_info(audio_path, ffprobe_path="ffprobe"):
                         pass
                 elif len(parts) == 1 and parts[0]:
                     # Format duration (fallback)
-                    try:
+                    with contextlib.suppress(ValueError):
                         duration = float(parts[0])
-                    except ValueError:
-                        pass
     except subprocess.CalledProcessError as e:
         print(f"Error getting audio info: {e.stderr}")
         sys.exit(1)
@@ -281,10 +268,8 @@ def get_audio_info(audio_path, ffprobe_path="ffprobe"):
             )
             format_output = format_result.stdout.strip()
             if format_output:
-                try:
+                with contextlib.suppress(ValueError):
                     duration = float(format_output)
-                except ValueError:
-                    pass
         except subprocess.CalledProcessError:
             pass
 

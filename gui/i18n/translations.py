@@ -194,8 +194,7 @@ class TranslationManager:
         """
         if lang not in _SUPPORTED_LANGUAGES:
             raise ValueError(
-                f"Unsupported language: {lang}. "
-                f"Supported: {', '.join(_SUPPORTED_LANGUAGES)}"
+                f"Unsupported language: {lang}. Supported: {', '.join(_SUPPORTED_LANGUAGES)}"
             )
         self._current_lang = lang
         self._save_language_preference()

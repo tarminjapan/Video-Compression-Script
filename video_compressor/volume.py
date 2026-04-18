@@ -8,10 +8,10 @@ import subprocess
 import sys
 
 from .config import (
-    TARGET_VOLUME_LEVEL,
-    MAX_VOLUME_LEVEL,
-    DENOISE_MIN,
     DENOISE_MAX,
+    DENOISE_MIN,
+    MAX_VOLUME_LEVEL,
+    TARGET_VOLUME_LEVEL,
 )
 
 
@@ -67,9 +67,7 @@ def analyze_volume_level(input_path, ffmpeg_path="ffmpeg"):
             max_volume = float(max_match.group(1))
 
     except FileNotFoundError:
-        print(
-            "Error: FFmpeg not found. Please ensure FFmpeg is installed and added to PATH."
-        )
+        print("Error: FFmpeg not found. Please ensure FFmpeg is installed and added to PATH.")
         sys.exit(1)
 
     # Calculate recommended gain

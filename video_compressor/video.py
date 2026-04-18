@@ -8,12 +8,9 @@ from pathlib import Path
 
 from .config import (
     AUDIO_CODEC,
-    CRF_MAX,
-    CRF_MIN,
     DEFAULT_AUDIO_BITRATE,
     DEFAULT_CRF,
     MAX_AUDIO_BITRATE,
-    MAX_FPS,
     VIDEO_CODEC,
     VIDEO_PRESET,
 )
@@ -189,9 +186,7 @@ def analyze_media(
                     print(f"  Frame Rate:     {fps_str} fps")
 
             # Bit depth
-            bits_per_raw = stream.get("bits_per_raw_sample") or stream.get(
-                "bits_per_sample"
-            )
+            bits_per_raw = stream.get("bits_per_raw_sample") or stream.get("bits_per_sample")
             if bits_per_raw:
                 print(f"  Bit Depth:      {bits_per_raw}-bit")
 
@@ -216,9 +211,7 @@ def analyze_media(
             # Encoding
             is_hdr = stream.get("color_transfer") in ["smpte2084", "arib-std-b67"]
             if is_hdr:
-                print(
-                    f"  HDR:            Yes ({stream.get('color_transfer', 'Unknown')})"
-                )
+                print(f"  HDR:            Yes ({stream.get('color_transfer', 'Unknown')})")
 
         elif codec_type == "audio":
             print(
@@ -242,9 +235,7 @@ def analyze_media(
                 print(f"  Channels:       {ch_str}")
 
             # Bit depth
-            bits_per_sample = stream.get("bits_per_sample") or stream.get(
-                "bits_per_raw_sample"
-            )
+            bits_per_sample = stream.get("bits_per_sample") or stream.get("bits_per_raw_sample")
             if bits_per_sample and int(bits_per_sample) > 0:
                 print(f"  Bit Depth:      {bits_per_sample}-bit")
 
@@ -320,9 +311,7 @@ def compress_video(
 
     # Set default output path
     if output_path is None:
-        output_path = (
-            input_path.parent / f"{input_path.stem}_compressed{input_path.suffix}"
-        )
+        output_path = input_path.parent / f"{input_path.stem}_compressed{input_path.suffix}"
     else:
         output_path = Path(output_path)
 
@@ -451,9 +440,7 @@ def compress_video(
         )
         video_filters.append(f"scale={scaled_width}:{scaled_height}")
     else:
-        settings_rows.append(
-            ("Resolution: ", f"{original_width}x{original_height} (no change)")
-        )
+        settings_rows.append(("Resolution: ", f"{original_width}x{original_height} (no change)"))
 
     # Add FPS filter if needed
     fps_label = ""
@@ -489,9 +476,7 @@ def compress_video(
         ]
     )
 
-    settings_rows.append(
-        ("Video:      ", f"{VIDEO_CODEC.upper()} | CRF {crf} | Preset {preset}")
-    )
+    settings_rows.append(("Video:      ", f"{VIDEO_CODEC.upper()} | CRF {crf} | Preset {preset}"))
 
     # Audio codec settings
     if audio_enabled:
@@ -516,9 +501,7 @@ def compress_video(
                 audio_bitrate,
             ]
         )
-        settings_rows.append(
-            ("Audio:      ", f"{AUDIO_CODEC.upper()} @ {audio_bitrate}")
-        )
+        settings_rows.append(("Audio:      ", f"{AUDIO_CODEC.upper()} @ {audio_bitrate}"))
     else:
         cmd.extend(["-an"])  # No audio
         settings_rows.append(("Audio:      ", "Disabled"))
@@ -558,8 +541,7 @@ def compress_video(
                     # Only show non-progress lines that are errors or important info
                     line_stripped = line.strip()
                     if line_stripped and (
-                        "error" in line_stripped.lower()
-                        or "warning" in line_stripped.lower()
+                        "error" in line_stripped.lower() or "warning" in line_stripped.lower()
                     ):
                         print(f"\n  {line_stripped}")
 
@@ -608,9 +590,7 @@ def compress_video(
             sys.exit(1)
 
     except FileNotFoundError:
-        print(
-            "\n  Error: FFmpeg not found. Please ensure FFmpeg is installed and added to PATH."
-        )
+        print("\n  Error: FFmpeg not found. Please ensure FFmpeg is installed and added to PATH.")
         sys.exit(1)
     except KeyboardInterrupt:
         print("\n\n  Compression interrupted by user.")

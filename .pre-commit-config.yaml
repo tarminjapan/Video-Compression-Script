@@ -1,0 +1,42 @@
+# =============================================================================
+# Pre-commit Hooks for AmeCompression
+# =============================================================================
+# インストール: pre-commit install
+# 手動実行: pre-commit run --all-files
+# =============================================================================
+
+repos:
+  # Ruff - フォーマッター & リンター
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.8
+    hooks:
+      # フォーマット (black/isort 代替)
+      - id: ruff-format
+        args: [--check]
+      # リント (flake8 代替)
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
+  # Pyright - 静的型チェック (Pylance エンジン)
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright (static type checker)
+        entry: python -m pyright
+        language: system
+        types: [python]
+        pass_filenames: false
+
+  # 基本的なチェック (行末空白、YAML等)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key

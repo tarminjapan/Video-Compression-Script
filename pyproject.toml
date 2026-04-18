@@ -1,0 +1,124 @@
+# =============================================================================
+# AmeCompression - Project Configuration
+# =============================================================================
+
+[project]
+name = "ame-compression"
+version = "1.0.6"
+description = "Video/Audio compression tool using FFmpeg with SVT-AV1 codec (video) and MP3 codec (audio)"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "tarminjapan" },
+]
+keywords = ["video", "audio", "compression", "ffmpeg", "av1", "mp3"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Multimedia :: Sound/Audio",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.11",
+    "pre-commit>=4.0",
+]
+
+[project.scripts]
+ame-compression = "video_compressor.cli:main"
+
+# =============================================================================
+# Ruff - Linter & Formatter (replaces black, isort, flake8, etc.)
+# =============================================================================
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["video_compressor", "gui"]
+
+# Exclude patterns
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "build",
+    "dist",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+# Rule selection:
+#   E/W  - pycodestyle (style)
+#   F    - pyflakes (logical errors)
+#   I    - isort (import ordering)
+#   UP   - pyupgrade (modernize syntax)
+#   B    - flake8-bugbear (common pitfalls)
+#   SIM  - flake8-simplify (code simplification)
+#   RUF  - ruff-specific rules
+#   ERA  - eradicate (commented-out code)
+#   T20  - flake8-print (print statements - warning only for library code)
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "RUF", "ERA"]
+
+# Phase 2 で段階的に導入予定:
+#   ANN  - flake8-annotations (type annotations)
+#   D    - pydocstyle (docstring conventions)
+#   S    - flake8-bandit (security)
+#   PERF - perflint (performance)
+
+ignore = [
+    "E501",    # line too long (handled by formatter)
+    "T201",    # print() statements - CLI toolなので許容
+]
+
+# Allow fix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused imports in __init__.py
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # unused imports in __init__.py
+"__main__.py" = ["T201"]  # print in entry point is fine
+
+[tool.ruff.lint.isort]
+known-first-party = ["video_compressor", "gui"]
+
+[tool.ruff.format]
+# Use double quotes for consistency
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+# =============================================================================
+# Pyright (Pylance static type checker)
+# =============================================================================
+[tool.pyright]
+# Mode: "basic" is forgiving; upgrade to "standard" or "strict" as types are added
+typeCheckingMode = "basic"
+pythonVersion = "3.10"
+pythonPlatform = "All"
+
+# Include/exclude paths
+include = ["video_compressor", "gui"]
+exclude = ["**/__pycache__", ".venv"]
+
+# Gradual typing: suppress errors for untyped code
+reportMissingTypeStubs = "none"
+reportUnknownMemberType = "none"
+reportUnknownVariableType = "none"
+reportUnknownArgumentType = "none"
+reportUntypedFunctionDecorator = "none"
+
+# =============================================================================
+# Scripts
+# =============================================================================
+[tool.setuptools.packages.find]
+include = ["video_compressor*", "gui*"]

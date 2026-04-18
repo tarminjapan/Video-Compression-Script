@@ -36,9 +36,7 @@ MP3_BITRATE_MAX = 320  # Maximum MP3 bitrate in kbps
 # ============================================
 # Volume Adjustment Settings
 # ============================================
-DEFAULT_VOLUME_GAIN = (
-    None  # Default: disabled (None, or value like "2.0", "10dB", "auto")
-)
+DEFAULT_VOLUME_GAIN = None  # Default: disabled (None, or value like "2.0", "10dB", "auto")
 TARGET_VOLUME_LEVEL = -16  # Target loudness in dB (standard for speech/dialogue)
 MAX_VOLUME_LEVEL = -1  # Maximum volume level to prevent clipping (dB)
 
@@ -48,9 +46,7 @@ MAX_VOLUME_LEVEL = -1  # Maximum volume level to prevent clipping (dB)
 DEFAULT_DENOISE = None  # Default: disabled (None or 0.0-1.0)
 DENOISE_MIN = 0.0  # Minimum denoise level
 DENOISE_MAX = 1.0  # Maximum denoise level
-DEFAULT_DENOISE_LEVEL = (
-    0.15  # Default denoise level when --denoise is used without value
-)
+DEFAULT_DENOISE_LEVEL = 0.15  # Default denoise level when --denoise is used without value
 
 # ============================================
 # Supported File Extensions

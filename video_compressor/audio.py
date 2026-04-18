@@ -95,11 +95,7 @@ def compress_audio(
         analysis_rows.append(("Sample rate:", f"{sample_rate} Hz"))
     if channels:
         channel_str = (
-            "Mono"
-            if channels == 1
-            else "Stereo"
-            if channels == 2
-            else f"{channels} channels"
+            "Mono" if channels == 1 else "Stereo" if channels == 2 else f"{channels} channels"
         )
         analysis_rows.append(("Channels:   ", channel_str))
     if total_duration:
@@ -244,8 +240,7 @@ def compress_audio(
                     # Only show non-progress lines that are errors or important info
                     line_stripped = line.strip()
                     if line_stripped and (
-                        "error" in line_stripped.lower()
-                        or "warning" in line_stripped.lower()
+                        "error" in line_stripped.lower() or "warning" in line_stripped.lower()
                     ):
                         print(f"\n  {line_stripped}")
 
@@ -283,9 +278,7 @@ def compress_audio(
             sys.exit(1)
 
     except FileNotFoundError:
-        print(
-            "\n  Error: FFmpeg not found. Please ensure FFmpeg is installed and added to PATH."
-        )
+        print("\n  Error: FFmpeg not found. Please ensure FFmpeg is installed and added to PATH.")
         sys.exit(1)
     except KeyboardInterrupt:
         print("\n\n  Compression interrupted by user.")

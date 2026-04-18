@@ -19,7 +19,7 @@ from .config import (
     VIDEO_PRESET,
 )
 from .ffmpeg import get_ffmpeg_executables
-from .utils import get_file_type, parse_input_paths, print_banner, print_header
+from .utils import get_file_type, parse_input_paths, print_banner
 from .video import analyze_media, compress_video
 
 # ANSI color codes for summary
@@ -79,9 +79,7 @@ def resolve_output_path(input_path, output_arg, num_files):
     print(
         f"  {_YELLOW}Warning: --output specifies a file but {num_files} input files given.{_RESET}"
     )
-    print(
-        f"  {_YELLOW}Use a directory path for --output when processing multiple files.{_RESET}"
-    )
+    print(f"  {_YELLOW}Use a directory path for --output when processing multiple files.{_RESET}")
     sys.exit(1)
 
 
@@ -331,9 +329,7 @@ Examples:
     failures = []
 
     for i, input_path in enumerate(input_paths, 1):
-        print(
-            f"\n  {_BOLD}[{i}/{num_files}]{_RESET} Processing: {_DIM}{input_path}{_RESET}"
-        )
+        print(f"\n  {_BOLD}[{i}/{num_files}]{_RESET} Processing: {_DIM}{input_path}{_RESET}")
         print(f"  {_CYAN}{'─' * 48}{_RESET}")
 
         # Resolve output path for this file
