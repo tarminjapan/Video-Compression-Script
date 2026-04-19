@@ -5,6 +5,7 @@ Video compression view placeholder.
 import customtkinter as ctk
 
 from ..i18n import t
+from ..theme.fonts import DEFAULT_FONT_FAMILY
 
 
 class VideoView(ctk.CTkFrame):
@@ -18,6 +19,6 @@ class VideoView(ctk.CTkFrame):
         label = ctk.CTkLabel(
             self,
             text=t("nav.video"),
-            font=ctk.CTkFont(size=18, weight="bold"),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=18, weight="bold"),
         )
         label.grid(row=0, column=0)

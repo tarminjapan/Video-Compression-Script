@@ -13,11 +13,14 @@ from .. import __version__
 from ..ffmpeg import get_ffmpeg_executables
 from .i18n import TranslationManager, t
 from .theme import get_theme_options, load_theme_preference, save_theme_preference
+from .theme.fonts import DEFAULT_FONT_FAMILY
 from .views.audio_view import AudioView
 from .views.settings_view import SettingsView
 from .views.video_view import VideoView
 
 _SIDEBAR_WIDTH = 200
+
+_STATUS_TEXT_COLOR = ("gray30", "gray60")
 
 
 class App(ctk.CTk):
@@ -62,7 +65,7 @@ class App(ctk.CTk):
         self._title_label = ctk.CTkLabel(
             header,
             text=t("app.title"),
-            font=ctk.CTkFont(size=18, weight="bold"),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=18, weight="bold"),
         )
         self._title_label.grid(row=0, column=0, padx=(16, 8), pady=10, sticky="w")
 
@@ -70,6 +73,7 @@ class App(ctk.CTk):
             header,
             text=self._language_label(),
             width=80,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13),
             command=self._toggle_language,
         )
         self._language_btn.grid(row=0, column=2, padx=(4, 8), pady=10)
@@ -78,6 +82,7 @@ class App(ctk.CTk):
             header,
             text=self._theme_label(),
             width=80,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13),
             command=self._toggle_theme,
         )
         self._theme_btn.grid(row=0, column=3, padx=(4, 16), pady=10)
@@ -99,7 +104,10 @@ class App(ctk.CTk):
                 sidebar,
                 text=t(translation_key),
                 fg_color="transparent",
+                text_color=("gray10", "gray90"),
                 anchor="w",
+                font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=14),
+                hover_color=("gray75", "gray30"),
                 command=lambda k=key: self._switch_view(k),
             )
             btn.grid(row=idx, column=0, padx=8, pady=(8, 0), sticky="ew")
@@ -114,16 +122,16 @@ class App(ctk.CTk):
         self._ffmpeg_label = ctk.CTkLabel(
             status_frame,
             text=ffmpeg_status,
-            font=ctk.CTkFont(size=11),
-            text_color="gray",
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
+            text_color=_STATUS_TEXT_COLOR,
         )
         self._ffmpeg_label.grid(row=0, column=0, padx=10, pady=4, sticky="w")
 
         self._version_label = ctk.CTkLabel(
             status_frame,
             text=t("app.version", version=__version__),
-            font=ctk.CTkFont(size=11),
-            text_color="gray",
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
+            text_color=_STATUS_TEXT_COLOR,
         )
         self._version_label.grid(row=0, column=1, padx=10, pady=4, sticky="e")
         status_frame.grid_columnconfigure(0, weight=1)
