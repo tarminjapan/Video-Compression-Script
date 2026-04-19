@@ -7,100 +7,85 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    timeout-minutes: 5
     steps:
       - name: Prepare truncated body
         id: truncate
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          BODY="${{ github.event.pull_request.body }}"
+          BODY="$PR_BODY"
           if [ ${#BODY} -gt 200 ]; then
-            echo "body_truncated=${BODY:0:200}..." >> $GITHUB_OUTPUT
-          else
-            echo "body_truncated=$BODY" >> $GITHUB_OUTPUT
+            BODY="${BODY:0:200}..."
           fi
+          {
+            echo "body_truncated<<EOF"
+            echo "$BODY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Send rich embed message to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY_TRUNCATED: ${{ steps.truncate.outputs.body_truncated || '（本文なし）' }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_AVATAR: ${{ github.event.pull_request.user.avatar_url }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_ADDITIONS: ${{ github.event.pull_request.additions }}
+          PR_DELETIONS: ${{ github.event.pull_request.deletions }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') || '（なし）' }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_MERGEABLE: ${{ github.event.pull_request.mergeable }}
+          PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
         run: |
-          payload=$(cat <<EOF
-          {
-            "embeds": [
-              {
-                "title": "新しい Pull Request が作成されました",
-                "description": "リポジトリに新しい Pull Request が追加されました。内容をご確認ください。",
-                "color": 5814783,
-
-                "author": {
-                  "name": "${{ github.event.pull_request.user.login }}",
-                  "icon_url": "${{ github.event.pull_request.user.avatar_url }}"
-                },
-
-                "thumbnail": {
-                  "url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-                },
-
-                "fields": [
-                  {
-                    "name": "タイトル",
-                    "value": "${{ github.event.pull_request.title }}"
-                  },
-                  {
-                    "name": "本文（短縮表示）",
-                    "value": "${{ steps.truncate.outputs.body_truncated || '（本文なし）' }}"
-                  },
-                  {
-                    "name": "URL",
-                    "value": "${{ github.event.pull_request.html_url }}"
-                  },
-                  {
-                    "name": "ベースブランチ",
-                    "value": "${{ github.event.pull_request.base.ref }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "変更行数",
-                    "value": "追加: ${{ github.event.pull_request.additions }} 行 / 削除: ${{ github.event.pull_request.deletions }} 行",
-                    "inline": true
-                  },
-                  {
-                    "name": "ラベル",
-                    "value": "${{ join(github.event.pull_request.labels.*.name, ', ') || '（なし）' }}"
-                  },
-                  {
-                    "name": "Draft",
-                    "value": "${{ github.event.pull_request.draft }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "マージ可能状態",
-                    "value": "${{ github.event.pull_request.mergeable }}",
-                    "inline": true
-                  }
+          MERGEABLE_DISPLAY="$PR_MERGEABLE"
+          if [ -z "$MERGEABLE_DISPLAY" ] || [ "$MERGEABLE_DISPLAY" = "null" ]; then
+            MERGEABLE_DISPLAY="計算中"
+          fi
+          payload=$(jq -n \
+            --arg title "$PR_TITLE" \
+            --arg body "$PR_BODY_TRUNCATED" \
+            --arg url "$PR_URL" \
+            --arg author "$PR_AUTHOR" \
+            --arg avatar "$PR_AVATAR" \
+            --arg base "$PR_BASE_REF" \
+            --arg changes "追加: ${PR_ADDITIONS} 行 / 削除: ${PR_DELETIONS} 行" \
+            --arg labels "$PR_LABELS" \
+            --arg draft "$PR_DRAFT" \
+            --arg mergeable "$MERGEABLE_DISPLAY" \
+            --arg ts "$PR_CREATED_AT" \
+            '{
+              embeds: [{
+                title: "新しい Pull Request が作成されました",
+                description: "リポジトリに新しい Pull Request が追加されました。内容をご確認ください。",
+                color: 5814783,
+                author: {name: $author, icon_url: $avatar},
+                thumbnail: {url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"},
+                fields: [
+                  {name: "タイトル", value: $title},
+                  {name: "本文（短縮表示）", value: $body},
+                  {name: "URL", value: $url},
+                  {name: "ベースブランチ", value: $base, inline: true},
+                  {name: "変更行数", value: $changes, inline: true},
+                  {name: "ラベル", value: $labels},
+                  {name: "Draft", value: $draft, inline: true},
+                  {name: "マージ可能状態", value: $mergeable, inline: true}
                 ],
-
-                "footer": {
-                  "text": "GitHub Pull Request Notification",
-                  "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                footer: {
+                  text: "GitHub Pull Request Notification",
+                  icon_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
                 },
-
-                "timestamp": "${{ github.event.pull_request.created_at }}"
-              }
-            ],
-
-            "components": [
-              {
-                "type": 1,
-                "components": [
-                  {
-                    "type": 2,
-                    "style": 5,
-                    "label": "PR を開く",
-                    "url": "${{ github.event.pull_request.html_url }}"
-                  }
-                ]
-              }
-            ]
-          }
-          EOF
-          )
-          curl -H "Content-Type: application/json" \
+                timestamp: $ts
+              }],
+              components: [{
+                type: 1,
+                components: [{type: 2, style: 5, label: "PR を開く", url: $url}]
+              }]
+            }')
+          curl --fail -H "Content-Type: application/json" \
                -d "$payload" \
-               ${{ secrets.DISCORD_WEBHOOK_URL }}
+               "$DISCORD_WEBHOOK_URL"
