@@ -30,29 +30,33 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY_TRUNCATED: ${{ steps.truncate.outputs.body_truncated }}
+          PR_BODY_TRUNCATED: ${{ steps.truncate.outputs.body_truncated || '（本文なし）' }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_AVATAR: ${{ github.event.pull_request.user.avatar_url }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_ADDITIONS: ${{ github.event.pull_request.additions }}
           PR_DELETIONS: ${{ github.event.pull_request.deletions }}
-          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ', ') || '（なし）' }}
           PR_DRAFT: ${{ github.event.pull_request.draft }}
-          PR_MERGEABLE: ${{ github.event.pull_request.mergeable || '計算中' }}
+          PR_MERGEABLE: ${{ github.event.pull_request.mergeable }}
           PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
         run: |
+          MERGEABLE_DISPLAY="$PR_MERGEABLE"
+          if [ -z "$MERGEABLE_DISPLAY" ] || [ "$MERGEABLE_DISPLAY" = "null" ]; then
+            MERGEABLE_DISPLAY="計算中"
+          fi
           payload=$(jq -n \
             --arg title "$PR_TITLE" \
-            --arg body "${PR_BODY_TRUNCATED:-（本文なし）}" \
+            --arg body "$PR_BODY_TRUNCATED" \
             --arg url "$PR_URL" \
             --arg author "$PR_AUTHOR" \
             --arg avatar "$PR_AVATAR" \
             --arg base "$PR_BASE_REF" \
             --arg changes "追加: ${PR_ADDITIONS} 行 / 削除: ${PR_DELETIONS} 行" \
-            --arg labels "${PR_LABELS:-（なし）}" \
+            --arg labels "$PR_LABELS" \
             --arg draft "$PR_DRAFT" \
-            --arg mergeable "$PR_MERGEABLE" \
+            --arg mergeable "$MERGEABLE_DISPLAY" \
             --arg ts "$PR_CREATED_AT" \
             '{
               embeds: [{
