@@ -13,6 +13,7 @@ from collections.abc import Callable
 
 from ..config import AUDIO_CODEC, MP3_CODEC, VIDEO_CODEC
 from ..ffmpeg import get_audio_info, get_ffmpeg_executables, get_video_info
+from ..volume import build_audio_filter
 from .i18n import t
 
 
@@ -38,6 +39,8 @@ class CompressionWorker:
         audio_enabled: bool = True,
         max_fps: int | None = None,
         resolution: str | None = None,
+        volume_gain_db: float | None = None,
+        denoise_level: float | None = None,
         on_progress: Callable[[dict], None] | None = None,
         on_complete: Callable[[dict], None] | None = None,
         on_error: Callable[[str], None] | None = None,
@@ -78,7 +81,13 @@ class CompressionWorker:
                 )
 
                 if audio_enabled:
+                    audio_filter = build_audio_filter(
+                        volume_gain_db=volume_gain_db,
+                        denoise_level=denoise_level,
+                    )
                     cmd.extend(["-c:a", AUDIO_CODEC, "-b:a", audio_bitrate])
+                    if audio_filter:
+                        cmd.extend(["-af", audio_filter])
                 else:
                     cmd.append("-an")
 
@@ -98,6 +107,8 @@ class CompressionWorker:
         output_path: str,
         bitrate: str = "192k",
         keep_metadata: bool = True,
+        volume_gain_db: float | None = None,
+        denoise_level: float | None = None,
         on_progress: Callable[[dict], None] | None = None,
         on_complete: Callable[[dict], None] | None = None,
         on_error: Callable[[str], None] | None = None,
@@ -115,6 +126,14 @@ class CompressionWorker:
                 total_duration = audio_info.get("duration", 0) or 0
 
                 cmd = [ffmpeg_path, "-i", str(input_path), "-y"]
+
+                audio_filter = build_audio_filter(
+                    volume_gain_db=volume_gain_db,
+                    denoise_level=denoise_level,
+                )
+                if audio_filter:
+                    cmd.extend(["-af", audio_filter])
+
                 cmd.extend(["-c:a", MP3_CODEC, "-b:a", bitrate])
                 if keep_metadata:
                     cmd.extend(["-map_metadata", "0"])

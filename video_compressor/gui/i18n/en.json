@@ -24,7 +24,9 @@
         "remove": "Remove",
         "clear_all": "Clear All",
         "no_files": "No files selected",
-        "selected_count": "{count} file(s) selected"
+        "selected_count": "{count} file(s) selected",
+        "move_up": "Up",
+        "move_down": "Down"
     },
     "video_settings": {
         "title": "Video Compression Settings",
@@ -73,12 +75,17 @@
         "analyze": "Analyze Volume",
         "analyzing": "Analyzing...",
         "current_level": "Current Level",
-        "recommended_gain": "Recommended Gain"
+        "recommended_gain": "Recommended Gain",
+        "mean_volume": "Mean Volume",
+        "max_volume": "Max Volume",
+        "gain_value": "{value} dB",
+        "no_file": "Select a file first"
     },
     "denoise": {
         "title": "Noise Reduction",
         "enable": "Enable Noise Reduction",
         "level": "Noise Reduction Level",
+        "level_description": "Higher values apply stronger noise reduction but may affect audio quality.",
         "presets": {
             "light": "Light",
             "medium": "Medium",
@@ -157,6 +164,11 @@
     "batch": {
         "processing_file": "Processing {current}/{total}: {filename}",
         "summary": "Batch Complete: {success} succeeded, {failed} failed",
-        "all_success": "All {count} file(s) compressed successfully!"
+        "all_success": "All {count} file(s) compressed successfully!",
+        "overall_progress": "Overall: {current}/{total}",
+        "pause": "Pause",
+        "resume": "Resume",
+        "paused": "Paused",
+        "summary_detail": "Success: {success} | Failed: {failed} | Skipped: {skipped}"
     }
 }

@@ -24,7 +24,9 @@
         "remove": "削除",
         "clear_all": "すべてクリア",
         "no_files": "ファイルが選択されていません",
-        "selected_count": "{count} 個のファイルが選択されました"
+        "selected_count": "{count} 個のファイルが選択されました",
+        "move_up": "上へ",
+        "move_down": "下へ"
     },
     "video_settings": {
         "title": "動画圧縮設定",
@@ -73,12 +75,17 @@
         "analyze": "音量を解析",
         "analyzing": "解析中...",
         "current_level": "現在のレベル",
-        "recommended_gain": "推奨ゲイン"
+        "recommended_gain": "推奨ゲイン",
+        "mean_volume": "平均音量",
+        "max_volume": "最大音量",
+        "gain_value": "{value} dB",
+        "no_file": "ファイルを選択してください"
     },
     "denoise": {
         "title": "ノイズ除去",
         "enable": "ノイズ除去を有効にする",
         "level": "ノイズ除去レベル",
+        "level_description": "値が大きいほど強力なノイズ除去が適用されますが、音質に影響する場合があります。",
         "presets": {
             "light": "弱",
             "medium": "中",
@@ -157,6 +164,11 @@
     "batch": {
         "processing_file": "処理中 {current}/{total}: {filename}",
         "summary": "バッチ完了: {success} 件成功, {failed} 件失敗",
-        "all_success": "{count} 件すべてのファイルの圧縮に成功しました！"
+        "all_success": "{count} 件すべてのファイルの圧縮に成功しました！",
+        "overall_progress": "全体: {current}/{total}",
+        "pause": "一時停止",
+        "resume": "再開",
+        "paused": "一時停止中",
+        "summary_detail": "成功: {success} | 失敗: {failed} | スキップ: {skipped}"
     }
 }

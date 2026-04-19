@@ -11,12 +11,14 @@ from ..theme.fonts import DEFAULT_FONT_FAMILY
 
 
 class ProgressPanel(ctk.CTkFrame):
-    """Panel showing compression progress with start/cancel controls."""
+    """Panel showing compression progress with start/cancel/pause controls."""
 
-    def __init__(self, master, on_start=None, on_cancel=None, **kwargs):
+    def __init__(self, master, on_start=None, on_cancel=None, on_pause=None, **kwargs):
         super().__init__(master, **kwargs)
         self._on_start = on_start
         self._on_cancel = on_cancel
+        self._on_pause = on_pause
+        self._is_paused = False
 
         self.grid_columnconfigure(0, weight=1)
 
@@ -33,6 +35,19 @@ class ProgressPanel(ctk.CTkFrame):
         )
         self._start_btn.grid(row=0, column=0, sticky="w")
 
+        self._pause_btn = ctk.CTkButton(
+            btn_frame,
+            text=t("batch.pause"),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13),
+            height=38,
+            width=100,
+            state="disabled",
+            fg_color=("gray70", "gray30"),
+            hover_color=("gray60", "gray40"),
+            command=self._handle_pause,
+        )
+        self._pause_btn.grid(row=0, column=1, padx=(10, 0))
+
         self._cancel_btn = ctk.CTkButton(
             btn_frame,
             text=t("compress.cancel"),
@@ -44,10 +59,22 @@ class ProgressPanel(ctk.CTkFrame):
             hover_color=("gray60", "gray40"),
             command=self._handle_cancel,
         )
-        self._cancel_btn.grid(row=0, column=1, padx=(10, 0))
+        self._cancel_btn.grid(row=0, column=2, padx=(10, 0))
+
+        self._overall_label = ctk.CTkLabel(
+            self,
+            text="",
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
+            text_color=("gray40", "gray60"),
+        )
+        self._overall_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="w")
+
+        self._overall_progress_bar = ctk.CTkProgressBar(self, height=8)
+        self._overall_progress_bar.grid(row=2, column=0, padx=10, pady=(2, 2), sticky="ew")
+        self._overall_progress_bar.set(0)
 
         self._progress_bar = ctk.CTkProgressBar(self, height=12)
-        self._progress_bar.grid(row=1, column=0, padx=10, pady=(5, 2), sticky="ew")
+        self._progress_bar.grid(row=3, column=0, padx=10, pady=(2, 2), sticky="ew")
         self._progress_bar.set(0)
 
         self._stats_label = ctk.CTkLabel(
@@ -56,14 +83,14 @@ class ProgressPanel(ctk.CTkFrame):
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
             text_color=("gray40", "gray60"),
         )
-        self._stats_label.grid(row=2, column=0, padx=10, sticky="w")
+        self._stats_label.grid(row=4, column=0, padx=10, sticky="w")
 
         self._status_label = ctk.CTkLabel(
             self,
             text="",
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13, weight="bold"),
         )
-        self._status_label.grid(row=3, column=0, padx=10, pady=(5, 0), sticky="w")
+        self._status_label.grid(row=5, column=0, padx=10, pady=(5, 0), sticky="w")
 
         self._error_textbox = ctk.CTkTextbox(
             self,
@@ -72,7 +99,7 @@ class ProgressPanel(ctk.CTkFrame):
             state="disabled",
             wrap="word",
         )
-        self._error_textbox.grid(row=4, column=0, padx=10, pady=(5, 10), sticky="ew")
+        self._error_textbox.grid(row=6, column=0, padx=10, pady=(5, 10), sticky="ew")
 
     def _handle_start(self):
         if self._on_start:
@@ -82,20 +109,44 @@ class ProgressPanel(ctk.CTkFrame):
         if self._on_cancel:
             self._on_cancel()
 
+    def _handle_pause(self):
+        self._is_paused = not self._is_paused
+        if self._is_paused:
+            self._pause_btn.configure(text=t("batch.resume"))
+            self._status_label.configure(
+                text=t("batch.paused"),
+                text_color=("orange", "orange"),
+            )
+        else:
+            self._pause_btn.configure(text=t("batch.pause"))
+        if self._on_pause:
+            self._on_pause(self._is_paused)
+
+    @property
+    def is_paused(self) -> bool:
+        return self._is_paused
+
     def set_compressing(self, is_compressing: bool):
         if is_compressing:
             self._start_btn.configure(state="disabled")
             self._cancel_btn.configure(state="normal")
+            self._pause_btn.configure(state="normal")
+            self._is_paused = False
+            self._pause_btn.configure(text=t("batch.pause"))
             self._status_label.configure(
                 text=t("compress.compressing"),
                 text_color=("blue", "lightblue"),
             )
             self._progress_bar.set(0)
+            self._overall_progress_bar.set(0)
             self._stats_label.configure(text="")
+            self._overall_label.configure(text="")
             self._clear_errors()
         else:
             self._start_btn.configure(state="normal")
             self._cancel_btn.configure(state="disabled")
+            self._pause_btn.configure(state="disabled")
+            self._is_paused = False
 
     def update_progress(self, progress: dict):
         percent = progress.get("percent", 0)
@@ -163,8 +214,10 @@ class ProgressPanel(ctk.CTkFrame):
 
     def reset(self):
         self._progress_bar.set(0)
+        self._overall_progress_bar.set(0)
         self._stats_label.configure(text="")
         self._status_label.configure(text="")
+        self._overall_label.configure(text="")
         self._clear_errors()
         self.set_compressing(False)
 
@@ -184,6 +237,17 @@ class ProgressPanel(ctk.CTkFrame):
     def set_summary_status(self, text: str):
         self._status_label.configure(text=text, text_color=("orange", "orange"))
 
+    def update_overall_progress(self, current: int, total: int):
+        if total > 0:
+            self._overall_progress_bar.set(current / total)
+            self._overall_label.configure(
+                text=t("batch.overall_progress", current=current, total=total)
+            )
+
     def refresh_texts(self):
         self._start_btn.configure(text=t("compress.start"))
         self._cancel_btn.configure(text=t("compress.cancel"))
+        if self._is_paused:
+            self._pause_btn.configure(text=t("batch.resume"))
+        else:
+            self._pause_btn.configure(text=t("batch.pause"))

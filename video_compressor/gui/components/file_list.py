@@ -76,6 +76,26 @@ class FileListFrame(ctk.CTkFrame):
         if self._on_change:
             self._on_change()
 
+    def move_file_up(self, index: int):
+        if index > 0:
+            self._files[index - 1], self._files[index] = (
+                self._files[index],
+                self._files[index - 1],
+            )
+            self._refresh_list()
+            if self._on_change:
+                self._on_change()
+
+    def move_file_down(self, index: int):
+        if index < len(self._files) - 1:
+            self._files[index + 1], self._files[index] = (
+                self._files[index],
+                self._files[index + 1],
+            )
+            self._refresh_list()
+            if self._on_change:
+                self._on_change()
+
     def remove_file(self, index: int):
         if 0 <= index < len(self._files):
             self._files.pop(index)
@@ -119,8 +139,8 @@ class FileListFrame(ctk.CTkFrame):
             ).grid(row=0, column=0, padx=(4, 2))
 
             name_text = file_info["name"]
-            if len(name_text) > 35:
-                name_text = name_text[:32] + "..."
+            if len(name_text) > 30:
+                name_text = name_text[:27] + "..."
             ctk.CTkLabel(
                 row,
                 text=name_text,
@@ -132,10 +152,38 @@ class FileListFrame(ctk.CTkFrame):
             ctk.CTkLabel(
                 row,
                 text=f"{file_info['format']} | {size_str}",
-                width=130,
+                width=110,
                 font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
                 text_color=("gray40", "gray60"),
             ).grid(row=0, column=2, padx=4)
+
+            reorder_frame = ctk.CTkFrame(row, fg_color="transparent", width=52)
+            reorder_frame.grid(row=0, column=3, padx=(2, 2))
+            reorder_frame.grid_propagate(False)
+
+            ctk.CTkButton(
+                reorder_frame,
+                text="\u25b2",
+                width=22,
+                height=14,
+                font=ctk.CTkFont(size=8),
+                fg_color="transparent",
+                text_color=("gray40", "gray60"),
+                hover_color=("gray75", "gray30"),
+                command=lambda idx=i: self.move_file_up(idx),
+            ).grid(row=0, column=0, padx=0, pady=(2, 0))
+
+            ctk.CTkButton(
+                reorder_frame,
+                text="\u25bc",
+                width=22,
+                height=14,
+                font=ctk.CTkFont(size=8),
+                fg_color="transparent",
+                text_color=("gray40", "gray60"),
+                hover_color=("gray75", "gray30"),
+                command=lambda idx=i: self.move_file_down(idx),
+            ).grid(row=1, column=0, padx=0, pady=(0, 2))
 
             ctk.CTkButton(
                 row,
@@ -147,7 +195,7 @@ class FileListFrame(ctk.CTkFrame):
                 text_color=("gray40", "gray60"),
                 hover_color=("gray75", "gray30"),
                 command=lambda idx=i: self.remove_file(idx),
-            ).grid(row=0, column=3, padx=(4, 4))
+            ).grid(row=0, column=4, padx=(4, 4))
 
     @staticmethod
     def _format_size(size_bytes: int) -> str:
