@@ -39,7 +39,8 @@ class App(ctk.CTk):
 
         ctk.set_default_color_theme("blue")
 
-        self._current_view = None
+        self._current_view_name: str | None = None
+        self._current_view: ctk.CTkFrame | None = None
         self._views: dict[str, ctk.CTkFrame] = {}
 
         self._create_layout()
@@ -58,12 +59,12 @@ class App(ctk.CTk):
         header.grid_columnconfigure(1, weight=1)
         header.grid_propagate(False)
 
-        title_label = ctk.CTkLabel(
+        self._title_label = ctk.CTkLabel(
             header,
             text=t("app.title"),
             font=ctk.CTkFont(size=18, weight="bold"),
         )
-        title_label.grid(row=0, column=0, padx=(16, 8), pady=10, sticky="w")
+        self._title_label.grid(row=0, column=0, padx=(16, 8), pady=10, sticky="w")
 
         self._language_btn = ctk.CTkButton(
             header,
@@ -118,13 +119,13 @@ class App(ctk.CTk):
         )
         self._ffmpeg_label.grid(row=0, column=0, padx=10, pady=4, sticky="w")
 
-        version_label = ctk.CTkLabel(
+        self._version_label = ctk.CTkLabel(
             status_frame,
             text=t("app.version", version=__version__),
             font=ctk.CTkFont(size=11),
             text_color="gray",
         )
-        version_label.grid(row=0, column=1, padx=10, pady=4, sticky="e")
+        self._version_label.grid(row=0, column=1, padx=10, pady=4, sticky="e")
         status_frame.grid_columnconfigure(0, weight=1)
 
     def _switch_view(self, view_name: str):
@@ -150,14 +151,14 @@ class App(ctk.CTk):
 
         self._views[view_name].grid(row=1, column=1, sticky="nsew", padx=0, pady=0)
         self._current_view = self._views[view_name]
+        self._current_view_name = view_name
 
     def _toggle_language(self):
         mgr = TranslationManager.get_instance()
         current = mgr.get_language()
         new_lang = "ja" if current == "en" else "en"
         mgr.set_language(new_lang)
-        self._language_btn.configure(text=self._language_label())
-        self._rebuild_ui()
+        self._refresh_ui_texts()
 
     def _toggle_theme(self):
         options = get_theme_options()
@@ -177,29 +178,28 @@ class App(ctk.CTk):
     def _detect_ffmpeg(self) -> str:
         try:
             ffmpeg_path, _ = get_ffmpeg_executables()
-            if ffmpeg_path and (shutil.which(ffmpeg_path) or _is_valid_path(ffmpeg_path)):
+            if ffmpeg_path and shutil.which(ffmpeg_path):
                 return t("status.ffmpeg_detected")
         except Exception:
             pass
         return t("status.ffmpeg_not_found")
 
-    def _rebuild_ui(self):
-        for widget in self.winfo_children():
-            widget.destroy()
-        self._views.clear()
-        self._current_view = None
-        self._nav_buttons.clear()
-        self._create_layout()
-        self._create_header()
-        self._create_sidebar()
-        self._create_status_bar()
-        self._switch_view("video")
+    def _refresh_ui_texts(self):
+        self.title(t("app.title"))
+        self._title_label.configure(text=t("app.title"))
+        self._language_btn.configure(text=self._language_label())
+        self._theme_btn.configure(text=self._theme_label())
+        self._ffmpeg_label.configure(text=self._detect_ffmpeg())
+        self._version_label.configure(text=t("app.version", version=__version__))
 
-
-def _is_valid_path(path: str) -> bool:
-    from pathlib import Path
-
-    return Path(path).is_file()
+        nav_items = [
+            ("video", "nav.video"),
+            ("audio", "nav.audio"),
+            ("settings", "nav.settings"),
+        ]
+        for key, translation_key in nav_items:
+            if key in self._nav_buttons:
+                self._nav_buttons[key].configure(text=t(translation_key))
 
 
 def run_gui():

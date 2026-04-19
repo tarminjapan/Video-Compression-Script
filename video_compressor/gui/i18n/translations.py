@@ -17,27 +17,13 @@ Usage:
 
 import json
 import os
-import sys
 from pathlib import Path
+
+from ..utils import get_config_dir
 
 _DEFAULT_LANGUAGE = "en"
 _SUPPORTED_LANGUAGES = ("en", "ja")
 _SETTINGS_FILENAME = "settings.json"
-
-
-def _get_config_dir():
-    """Return the platform-specific configuration directory.
-
-    Returns:
-        Path: Directory for storing application settings.
-    """
-    if sys.platform == "win32":
-        base = Path(os.environ.get("APPDATA", Path.home()))
-    elif sys.platform == "darwin":
-        base = Path.home() / "Library" / "Application Support"
-    else:
-        base = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-    return base / "AmeCompression"
 
 
 def _get_translations_dir():
@@ -67,7 +53,7 @@ class TranslationManager:
         self._translations = {}
         self._current_lang = _DEFAULT_LANGUAGE
         self._translations_dir = _get_translations_dir()
-        self._config_dir = _get_config_dir()
+        self._config_dir = get_config_dir()
         self._load_all_translations()
         self._load_language_preference()
 

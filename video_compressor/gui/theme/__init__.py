@@ -5,26 +5,15 @@ Provides persistent dark/light/system appearance mode switching via CustomTkinte
 """
 
 import json
-import os
-import sys
 from pathlib import Path
 
 import customtkinter as ctk
 
+from ..utils import get_config_dir
+
 _THEME_OPTIONS = ("dark", "light", "system")
 _DEFAULT_THEME = "dark"
 _SETTINGS_FILENAME = "settings.json"
-
-
-def _get_config_dir():
-    """Return the platform-specific configuration directory."""
-    if sys.platform == "win32":
-        base = Path(os.environ.get("APPDATA", Path.home()))
-    elif sys.platform == "darwin":
-        base = Path.home() / "Library" / "Application Support"
-    else:
-        base = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-    return base / "AmeCompression"
 
 
 def get_theme_options():
@@ -35,7 +24,7 @@ def get_theme_options():
 def load_theme_preference():
     """Load and apply the saved theme preference, or fall back to default."""
     theme = _DEFAULT_THEME
-    config_dir = _get_config_dir()
+    config_dir = get_config_dir()
     settings_path = config_dir / _SETTINGS_FILENAME
     if settings_path.is_file():
         try:
@@ -55,7 +44,7 @@ def save_theme_preference(theme):
     if theme not in _THEME_OPTIONS:
         return
     ctk.set_appearance_mode(theme)
-    config_dir = _get_config_dir()
+    config_dir = get_config_dir()
     settings_path = config_dir / _SETTINGS_FILENAME
     settings = {}
     if settings_path.is_file():
