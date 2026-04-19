@@ -1,0 +1,106 @@
+name: Notify Discord on PR Opened
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare truncated body
+        id: truncate
+        run: |
+          BODY="${{ github.event.pull_request.body }}"
+          if [ ${#BODY} -gt 200 ]; then
+            echo "body_truncated=${BODY:0:200}..." >> $GITHUB_OUTPUT
+          else
+            echo "body_truncated=$BODY" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send rich embed message to Discord
+        run: |
+          payload=$(cat <<EOF
+          {
+            "embeds": [
+              {
+                "title": "新しい Pull Request が作成されました",
+                "description": "リポジトリに新しい Pull Request が追加されました。内容をご確認ください。",
+                "color": 5814783,
+
+                "author": {
+                  "name": "${{ github.event.pull_request.user.login }}",
+                  "icon_url": "${{ github.event.pull_request.user.avatar_url }}"
+                },
+
+                "thumbnail": {
+                  "url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                },
+
+                "fields": [
+                  {
+                    "name": "タイトル",
+                    "value": "${{ github.event.pull_request.title }}"
+                  },
+                  {
+                    "name": "本文（短縮表示）",
+                    "value": "${{ steps.truncate.outputs.body_truncated || '（本文なし）' }}"
+                  },
+                  {
+                    "name": "URL",
+                    "value": "${{ github.event.pull_request.html_url }}"
+                  },
+                  {
+                    "name": "ベースブランチ",
+                    "value": "${{ github.event.pull_request.base.ref }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "変更行数",
+                    "value": "追加: ${{ github.event.pull_request.additions }} 行 / 削除: ${{ github.event.pull_request.deletions }} 行",
+                    "inline": true
+                  },
+                  {
+                    "name": "ラベル",
+                    "value": "${{ join(github.event.pull_request.labels.*.name, ', ') || '（なし）' }}"
+                  },
+                  {
+                    "name": "Draft",
+                    "value": "${{ github.event.pull_request.draft }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "マージ可能状態",
+                    "value": "${{ github.event.pull_request.mergeable }}",
+                    "inline": true
+                  }
+                ],
+
+                "footer": {
+                  "text": "GitHub Pull Request Notification",
+                  "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                },
+
+                "timestamp": "${{ github.event.pull_request.created_at }}"
+              }
+            ],
+
+            "components": [
+              {
+                "type": 1,
+                "components": [
+                  {
+                    "type": 2,
+                    "style": 5,
+                    "label": "PR を開く",
+                    "url": "${{ github.event.pull_request.html_url }}"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+          curl -H "Content-Type: application/json" \
+               -d "$payload" \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}
