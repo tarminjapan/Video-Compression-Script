@@ -118,7 +118,7 @@ stubPath = "typings"
 
 # Include/exclude paths
 include = ["video_compressor"]
-exclude = ["**/__pycache__", "**/node_modules", "**/.*", ".venv"]
+exclude = ["**/__pycache__", "**/node_modules", "**/.*"]
 
 # Gradual typing: suppress errors for untyped code
 reportArgumentType = "error"
