@@ -29,8 +29,5 @@
     "**/.mypy_cache": true,
     "**/.pytest_cache": true,
     "**/node_modules": true
-  },
-  "chat.tools.terminal.autoApprove": {
-    "c:/Users/t_ame/Projects-AI/AmeCompression/.venv/Scripts/python.exe": true
   }
 }
