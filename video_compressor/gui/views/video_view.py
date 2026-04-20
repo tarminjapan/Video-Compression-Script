@@ -31,15 +31,22 @@ _RESOLUTION_VALUES = {
     "custom": None,
 }
 
-_FPS_KEYS = ["unlimited", "60", "30", "120"]
+_FPS_KEYS = ["unlimited", "24", "25", "30", "48", "50", "60", "90", "120", "144", "240"]
 _FPS_VALUES = {
     "unlimited": None,
-    "60": 60,
+    "24": 24,
+    "25": 25,
     "30": 30,
+    "48": 48,
+    "50": 50,
+    "60": 60,
+    "90": 90,
     "120": 120,
+    "144": 144,
+    "240": 240,
 }
 
-_AUDIO_BITRATE_OPTIONS = ["128k", "192k", "256k", "320k"]
+_AUDIO_BITRATE_OPTIONS = ["32k", "64k", "96k", "128k", "192k", "256k", "320k"]
 
 
 class VideoView(ctk.CTkFrame):
@@ -114,7 +121,7 @@ class VideoView(ctk.CTkFrame):
     def _create_settings_section(self):
         self._settings_frame = ctk.CTkScrollableFrame(self)
         self._settings_frame.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
-        self._settings_frame.grid_columnconfigure(0, weight=1)
+        self._settings_frame.grid_columnconfigure((0, 1), weight=1)
 
         row = 0
 
@@ -122,20 +129,30 @@ class VideoView(ctk.CTkFrame):
             self._settings_frame,
             text=t("video_settings.title"),
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=15, weight="bold"),
-        ).grid(row=row, column=0, padx=10, pady=(10, 5), sticky="w")
+        ).grid(row=row, column=0, columnspan=2, padx=10, pady=(10, 5), sticky="w")
         row += 1
 
-        row = self._create_crf_slider(row)
-        row = self._create_preset_slider(row)
-        row = self._create_options_grid(row)
+        self._create_video_column(row)
+        self._create_audio_column(row)
+        row += 1
         row = self._create_volume_section(row)
         row = self._create_denoise_section(row)
         row = self._create_output_preview(row)
         row = self._create_validation(row)
 
-    def _create_crf_slider(self, row: int) -> int:
-        crf_frame = ctk.CTkFrame(self._settings_frame, fg_color="transparent")
-        crf_frame.grid(row=row, column=0, padx=10, pady=2, sticky="ew")
+    def _create_video_column(self, row: int) -> int:
+        video_frame = ctk.CTkFrame(self._settings_frame, fg_color="transparent")
+        video_frame.grid(row=row, column=0, padx=10, pady=5, sticky="nsew")
+        video_frame.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            video_frame,
+            text=t("video_settings.video_section"),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13, weight="bold"),
+        ).grid(row=0, column=0, sticky="w", pady=(0, 5))
+
+        crf_frame = ctk.CTkFrame(video_frame, fg_color="transparent")
+        crf_frame.grid(row=1, column=0, sticky="ew")
         crf_frame.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
@@ -169,11 +186,8 @@ class VideoView(ctk.CTkFrame):
             text_color=("gray50", "gray60"),
         ).grid(row=2, column=0, columnspan=3, sticky="w")
 
-        return row + 1
-
-    def _create_preset_slider(self, row: int) -> int:
-        preset_frame = ctk.CTkFrame(self._settings_frame, fg_color="transparent")
-        preset_frame.grid(row=row, column=0, padx=10, pady=2, sticky="ew")
+        preset_frame = ctk.CTkFrame(video_frame, fg_color="transparent")
+        preset_frame.grid(row=2, column=0, sticky="ew", pady=(10, 0))
         preset_frame.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
@@ -207,56 +221,28 @@ class VideoView(ctk.CTkFrame):
             text_color=("gray50", "gray60"),
         ).grid(row=2, column=0, columnspan=3, sticky="w")
 
-        return row + 1
-
-    def _create_options_grid(self, row: int) -> int:
-        settings_grid = ctk.CTkFrame(self._settings_frame, fg_color="transparent")
-        settings_grid.grid(row=row, column=0, padx=10, pady=5, sticky="ew")
-        settings_grid.grid_columnconfigure((0, 1), weight=1)
+        res_frame = ctk.CTkFrame(video_frame, fg_color="transparent")
+        res_frame.grid(row=3, column=0, sticky="ew", pady=(10, 0))
+        res_frame.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
-            settings_grid,
-            text=t("video_settings.audio_bitrate"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
-        ).grid(row=0, column=0, sticky="w", pady=3)
-
-        self._audio_bitrate_var = ctk.StringVar(value="192k")
-        self._audio_bitrate_menu = ctk.CTkOptionMenu(
-            settings_grid,
-            variable=self._audio_bitrate_var,
-            values=_AUDIO_BITRATE_OPTIONS,
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
-        )
-        self._audio_bitrate_menu.grid(row=0, column=1, sticky="w", pady=3)
-
-        self._disable_audio_var = ctk.BooleanVar(value=False)
-        self._disable_audio_check = ctk.CTkCheckBox(
-            settings_grid,
-            text=t("video_settings.disable_audio"),
-            variable=self._disable_audio_var,
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
-            command=self._on_audio_toggle,
-        )
-        self._disable_audio_check.grid(row=1, column=0, columnspan=2, sticky="w", pady=3)
-
-        ctk.CTkLabel(
-            settings_grid,
+            res_frame,
             text=t("video_settings.max_resolution"),
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
-        ).grid(row=2, column=0, sticky="w", pady=3)
+        ).grid(row=0, column=0, sticky="w")
 
         self._resolution_labels = [t(f"video_settings.resolution.{k}") for k in _RESOLUTION_KEYS]
         self._resolution_var = ctk.StringVar(value=self._resolution_labels[0])
         self._resolution_menu = ctk.CTkOptionMenu(
-            settings_grid,
+            res_frame,
             variable=self._resolution_var,
             values=self._resolution_labels,
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
             command=self._on_resolution_change,
         )
-        self._resolution_menu.grid(row=2, column=1, sticky="w", pady=3)
+        self._resolution_menu.grid(row=0, column=1, sticky="w")
 
-        self._custom_res_frame = ctk.CTkFrame(settings_grid, fg_color="transparent")
+        self._custom_res_frame = ctk.CTkFrame(res_frame, fg_color="transparent")
         self._custom_res_entry = ctk.CTkEntry(
             self._custom_res_frame,
             width=120,
@@ -272,21 +258,68 @@ class VideoView(ctk.CTkFrame):
             text_color=("gray50", "gray60"),
         ).grid(row=0, column=1)
 
+        fps_frame = ctk.CTkFrame(video_frame, fg_color="transparent")
+        fps_frame.grid(row=4, column=0, sticky="ew", pady=(10, 0))
+        fps_frame.grid_columnconfigure(1, weight=1)
+
         ctk.CTkLabel(
-            settings_grid,
+            fps_frame,
             text=t("video_settings.max_fps"),
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
-        ).grid(row=4, column=0, sticky="w", pady=3)
+        ).grid(row=0, column=0, sticky="w")
 
         self._fps_labels = [t(f"video_settings.fps_options.{k}") for k in _FPS_KEYS]
         self._fps_var = ctk.StringVar(value=self._fps_labels[0])
-        self._fps_menu = ctk.CTkOptionMenu(
-            settings_grid,
+        self._fps_combo = ctk.CTkComboBox(
+            fps_frame,
             variable=self._fps_var,
             values=self._fps_labels,
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
+            command=self._on_fps_change,
         )
-        self._fps_menu.grid(row=4, column=1, sticky="w", pady=3)
+        self._fps_combo.grid(row=0, column=1, sticky="w")
+
+        return row + 1
+
+    def _create_audio_column(self, row: int) -> int:
+        audio_frame = ctk.CTkFrame(self._settings_frame, fg_color="transparent")
+        audio_frame.grid(row=row, column=1, padx=10, pady=5, sticky="nsew")
+        audio_frame.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            audio_frame,
+            text=t("video_settings.audio_section"),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13, weight="bold"),
+        ).grid(row=0, column=0, sticky="w", pady=(0, 5))
+
+        bitrate_frame = ctk.CTkFrame(audio_frame, fg_color="transparent")
+        bitrate_frame.grid(row=1, column=0, sticky="ew")
+        bitrate_frame.grid_columnconfigure(1, weight=1)
+
+        ctk.CTkLabel(
+            bitrate_frame,
+            text=t("video_settings.audio_bitrate"),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
+        ).grid(row=0, column=0, sticky="w")
+
+        self._audio_bitrate_var = ctk.StringVar(value="192k")
+        self._audio_bitrate_combo = ctk.CTkComboBox(
+            bitrate_frame,
+            variable=self._audio_bitrate_var,
+            values=_AUDIO_BITRATE_OPTIONS,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
+        )
+        self._audio_bitrate_combo.grid(row=0, column=1, sticky="w")
+
+        self._disable_audio_var = ctk.BooleanVar(value=False)
+        self._disable_audio_check = ctk.CTkCheckBox(
+            audio_frame,
+            text=t("video_settings.disable_audio"),
+            variable=self._disable_audio_var,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
+            command=self._on_audio_toggle,
+        )
+        self._disable_audio_check.grid(row=2, column=0, sticky="w", pady=(10, 3))
 
         return row + 1
 
@@ -358,17 +391,20 @@ class VideoView(ctk.CTkFrame):
 
     def _on_audio_toggle(self):
         if self._disable_audio_var.get():
-            self._audio_bitrate_menu.configure(state="disabled")
+            self._audio_bitrate_combo.configure(state="disabled")
         else:
-            self._audio_bitrate_menu.configure(state="normal")
+            self._audio_bitrate_combo.configure(state="normal")
         self._update_preview()
 
     def _on_resolution_change(self, _selected):
         is_custom = self._get_resolution_key() == "custom"
         if is_custom:
-            self._custom_res_frame.grid(row=3, column=0, columnspan=2, sticky="w", pady=3)
+            self._custom_res_frame.grid(row=1, column=0, columnspan=2, sticky="w", pady=3)
         else:
             self._custom_res_frame.grid_forget()
+        self._update_preview()
+
+    def _on_fps_change(self, _selected):
         self._update_preview()
 
     def _on_files_added(self, paths: list[str]):
@@ -411,6 +447,28 @@ class VideoView(ctk.CTkFrame):
             if i < len(self._fps_labels) and self._fps_var.get() == self._fps_labels[i]:
                 return key
         return "unlimited"
+
+    def _get_audio_bitrate_value(self) -> str:
+        value = self._audio_bitrate_var.get().strip()
+        if not value:
+            return "192k"
+        if value.lower().endswith("k"):
+            return value
+        if value.isdigit():
+            return f"{value}k"
+        return value
+
+    def _get_max_fps_value(self) -> int | None:
+        value = self._fps_var.get().strip()
+        for i, key in enumerate(_FPS_KEYS):
+            if i < len(self._fps_labels) and value == self._fps_labels[i]:
+                return _FPS_VALUES.get(key)
+        try:
+            clean_value = value.upper().replace("FPS", "").strip()
+            return int(float(clean_value))
+        except ValueError:
+            pass
+        return None
 
     def _get_resolution_value(self) -> str | None:
         key = self._get_resolution_key()
@@ -488,9 +546,8 @@ class VideoView(ctk.CTkFrame):
             output_path = str(input_p.parent / f"{input_p.stem}_compressed{input_p.suffix}")
 
         resolution = self._get_resolution_value()
-        fps_key = self._get_fps_key()
-        max_fps = _FPS_VALUES.get(fps_key)
-        audio_bitrate = self._audio_bitrate_var.get()
+        max_fps = self._get_max_fps_value()
+        audio_bitrate = self._get_audio_bitrate_value()
         audio_enabled = not self._disable_audio_var.get()
 
         if self._worker.is_running:
@@ -600,6 +657,6 @@ class VideoView(ctk.CTkFrame):
         self._fps_labels = [t(f"video_settings.fps_options.{k}") for k in _FPS_KEYS]
         current_fps_idx = _FPS_KEYS.index(self._get_fps_key())
         self._fps_var.set(self._fps_labels[current_fps_idx])
-        self._fps_menu.configure(values=self._fps_labels)
+        self._fps_combo.configure(values=self._fps_labels)
 
         self._update_preview()

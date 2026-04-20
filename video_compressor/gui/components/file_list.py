@@ -44,7 +44,7 @@ class FileListFrame(ctk.CTkFrame):
         )
         self._clear_btn.grid(row=0, column=1, sticky="e")
 
-        self._scroll_frame = ctk.CTkScrollableFrame(self, height=120)
+        self._scroll_frame = ctk.CTkScrollableFrame(self, height=60)
         self._scroll_frame.grid(row=1, column=0, padx=10, pady=(5, 10), sticky="ew")
         self._scroll_frame.grid_columnconfigure(0, weight=1)
 
@@ -157,33 +157,33 @@ class FileListFrame(ctk.CTkFrame):
                 text_color=("gray40", "gray60"),
             ).grid(row=0, column=2, padx=4)
 
-            reorder_frame = ctk.CTkFrame(row, fg_color="transparent", width=52)
+            reorder_frame = ctk.CTkFrame(row, fg_color="transparent", width=56)
             reorder_frame.grid(row=0, column=3, padx=(2, 2))
             reorder_frame.grid_propagate(False)
 
             ctk.CTkButton(
                 reorder_frame,
                 text="\u25b2",
-                width=22,
-                height=14,
-                font=ctk.CTkFont(size=8),
+                width=24,
+                height=24,
+                font=ctk.CTkFont(size=10),
                 fg_color="transparent",
                 text_color=("gray40", "gray60"),
                 hover_color=("gray75", "gray30"),
                 command=lambda idx=i: self.move_file_up(idx),
-            ).grid(row=0, column=0, padx=0, pady=(2, 0))
+            ).grid(row=0, column=0, padx=0, pady=0)
 
             ctk.CTkButton(
                 reorder_frame,
                 text="\u25bc",
-                width=22,
-                height=14,
-                font=ctk.CTkFont(size=8),
+                width=24,
+                height=24,
+                font=ctk.CTkFont(size=10),
                 fg_color="transparent",
                 text_color=("gray40", "gray60"),
                 hover_color=("gray75", "gray30"),
                 command=lambda idx=i: self.move_file_down(idx),
-            ).grid(row=1, column=0, padx=0, pady=(0, 2))
+            ).grid(row=0, column=1, padx=0, pady=0)
 
             ctk.CTkButton(
                 row,

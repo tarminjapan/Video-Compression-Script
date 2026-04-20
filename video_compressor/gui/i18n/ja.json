@@ -30,6 +30,8 @@
     },
     "video_settings": {
         "title": "動画圧縮設定",
+        "video_section": "ビデオ",
+        "audio_section": "オーディオ",
         "crf": "CRF（品質）",
         "crf_range": "低い = 高品質 / 大きいファイル",
         "preset": "エンコードプリセット",
@@ -48,10 +50,17 @@
             "custom": "カスタム"
         },
         "fps_options": {
+            "unlimited": "制限なし",
+            "24": "24 FPS",
+            "25": "25 FPS",
             "30": "30 FPS",
+            "48": "48 FPS",
+            "50": "50 FPS",
             "60": "60 FPS",
+            "90": "90 FPS",
             "120": "120 FPS",
-            "unlimited": "制限なし"
+            "144": "144 FPS",
+            "240": "240 FPS"
         }
     },
     "audio_settings": {

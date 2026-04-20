@@ -30,6 +30,8 @@
     },
     "video_settings": {
         "title": "Video Compression Settings",
+        "video_section": "Video",
+        "audio_section": "Audio",
         "crf": "CRF (Quality)",
         "crf_range": "Lower = Higher Quality / Larger File",
         "preset": "Encoding Preset",
@@ -48,10 +50,17 @@
             "custom": "Custom"
         },
         "fps_options": {
+            "unlimited": "Unlimited",
+            "24": "24 FPS",
+            "25": "25 FPS",
             "30": "30 FPS",
+            "48": "48 FPS",
+            "50": "50 FPS",
             "60": "60 FPS",
+            "90": "90 FPS",
             "120": "120 FPS",
-            "unlimited": "Unlimited"
+            "144": "144 FPS",
+            "240": "240 FPS"
         }
     },
     "audio_settings": {

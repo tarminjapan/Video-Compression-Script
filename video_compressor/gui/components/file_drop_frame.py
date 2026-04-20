@@ -61,26 +61,9 @@ class FileDropFrame(ctk.CTkFrame):
         )
         self._drop_text.grid(row=1, column=0)
 
-        self._or_label = ctk.CTkLabel(
-            self._drop_frame,
-            text=t("file.or"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
-            text_color=("gray50", "gray60"),
-        )
-        self._or_label.grid(row=2, column=0)
-
-        self._browse_btn = ctk.CTkButton(
-            self,
-            text=t("file.browse"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13),
-            command=self._browse_files,
-        )
-        self._browse_btn.grid(row=1, column=0, padx=10, pady=(5, 10))
-
         self._drop_frame.bind("<Button-1>", lambda _e: self._browse_files())
         self._drop_icon.bind("<Button-1>", lambda _e: self._browse_files())
         self._drop_text.bind("<Button-1>", lambda _e: self._browse_files())
-        self._or_label.bind("<Button-1>", lambda _e: self._browse_files())
 
         self._setup_dnd()
 
@@ -149,5 +132,3 @@ class FileDropFrame(ctk.CTkFrame):
 
     def refresh_texts(self):
         self._drop_text.configure(text=t("file.drop_here"))
-        self._or_label.configure(text=t("file.or"))
-        self._browse_btn.configure(text=t("file.browse"))
