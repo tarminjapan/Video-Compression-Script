@@ -21,6 +21,7 @@ from ..components.volume_section import VolumeSection
 from ..compression_worker import CompressionWorker
 from ..i18n import t
 from ..theme.fonts import DEFAULT_FONT_FAMILY
+from ..utils import SettingsManager
 
 
 class AudioView(ctk.CTkFrame):
@@ -35,6 +36,15 @@ class AudioView(ctk.CTkFrame):
         self._batch_successes = 0
         self._batch_failures = 0
         self._is_paused = False
+
+        self._settings = SettingsManager.get_instance()
+        _raw_bitrate = self._settings.get("default_audio_bitrate", "192k")
+        if isinstance(_raw_bitrate, str) and _raw_bitrate.endswith("k"):
+            self._default_bitrate: int = int(_raw_bitrate[:-1])
+        else:
+            self._default_bitrate = int(_raw_bitrate) if _raw_bitrate is not None else 192
+        _raw_output = self._settings.get("default_output_folder", "")
+        self._default_output_folder: str = str(_raw_output) if _raw_output is not None else ""
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -79,6 +89,8 @@ class AudioView(ctk.CTkFrame):
             placeholder_text=t("file.output_folder"),
         )
         self._output_folder_entry.grid(row=0, column=1, sticky="ew")
+        if self._default_output_folder:
+            self._output_folder_entry.insert(0, self._default_output_folder)
 
         self._output_browse_btn = ctk.CTkButton(
             output_frame,
@@ -133,7 +145,7 @@ class AudioView(ctk.CTkFrame):
 
         self._bitrate_value_label = ctk.CTkLabel(
             bitrate_frame,
-            text="192 kbps",
+            text=f"{self._default_bitrate} kbps",
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12, weight="bold"),
             width=80,
         )
@@ -146,7 +158,7 @@ class AudioView(ctk.CTkFrame):
             number_of_steps=(MP3_BITRATE_MAX - MP3_BITRATE_MIN) // 8,
             command=self._on_bitrate_change,
         )
-        self._bitrate_slider.set(192)
+        self._bitrate_slider.set(self._default_bitrate)
         self._bitrate_slider.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(2, 0))
 
         range_frame = ctk.CTkFrame(bitrate_frame, fg_color="transparent")
@@ -295,7 +307,13 @@ class AudioView(ctk.CTkFrame):
                     parts.append(f"{info['sample_rate']} Hz")
                 if info.get("channels"):
                     ch = info["channels"]
-                    ch_str = "Mono" if ch == 1 else "Stereo" if ch == 2 else f"{ch}ch"
+                    ch_str = (
+                        t("common.mono")
+                        if ch == 1
+                        else t("common.stereo")
+                        if ch == 2
+                        else t("common.channels", count=ch)
+                    )
                     parts.append(ch_str)
                 if info.get("duration"):
                     dur = info["duration"]

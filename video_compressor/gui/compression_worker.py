@@ -5,16 +5,19 @@ Provides CompressionWorker that runs FFmpeg in a background thread
 and reports progress via callbacks, keeping the GUI responsive.
 """
 
+import platform
 import re
 import subprocess
 import threading
 import time
 from collections.abc import Callable
+from pathlib import Path
 
 from ..config import AUDIO_CODEC, MP3_CODEC, VIDEO_CODEC
 from ..ffmpeg import get_audio_info, get_ffmpeg_executables, get_video_info
 from ..volume import build_audio_filter
 from .i18n import t
+from .utils import SettingsManager
 
 
 class CompressionWorker:
@@ -28,6 +31,19 @@ class CompressionWorker:
     @property
     def is_running(self) -> bool:
         return self._thread is not None and self._thread.is_alive()
+
+    @staticmethod
+    def _resolve_ffmpeg_paths():
+        settings = SettingsManager.get_instance()
+        mode = settings.get("ffmpeg_path_mode", "auto")
+        custom_path = settings.get("ffmpeg_path", "")
+        if mode == "manual" and custom_path:
+            ffmpeg_p = Path(custom_path)
+            if ffmpeg_p.exists():
+                ffprobe_name = "ffprobe.exe" if platform.system() == "Windows" else "ffprobe"
+                ffprobe_p = ffmpeg_p.parent / ffprobe_name
+                return str(ffmpeg_p), str(ffprobe_p) if ffprobe_p.exists() else "ffprobe"
+        return get_ffmpeg_executables()
 
     def start_video_compression(
         self,
@@ -52,7 +68,7 @@ class CompressionWorker:
 
         def target():
             try:
-                ffmpeg_path, ffprobe_path = get_ffmpeg_executables()
+                ffmpeg_path, ffprobe_path = self._resolve_ffmpeg_paths()
 
                 video_info = get_video_info(input_path, ffprobe_path)
                 total_duration = video_info.get("duration", 0) if video_info else 0
@@ -120,7 +136,7 @@ class CompressionWorker:
 
         def target():
             try:
-                ffmpeg_path, ffprobe_path = get_ffmpeg_executables()
+                ffmpeg_path, ffprobe_path = self._resolve_ffmpeg_paths()
 
                 audio_info = get_audio_info(input_path, ffprobe_path)
                 total_duration = audio_info.get("duration", 0) or 0

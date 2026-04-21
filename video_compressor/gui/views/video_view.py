@@ -19,6 +19,7 @@ from ..components.volume_section import VolumeSection
 from ..compression_worker import CompressionWorker
 from ..i18n import t
 from ..theme.fonts import DEFAULT_FONT_FAMILY
+from ..utils import SettingsManager
 
 _RESOLUTION_KEYS = ["original", "4k", "2k", "1080p", "720p", "480p", "custom"]
 _RESOLUTION_VALUES = {
@@ -65,6 +66,16 @@ class VideoView(ctk.CTkFrame):
         self._batch_failures = 0
         self._is_paused = False
 
+        self._settings = SettingsManager.get_instance()
+        _raw_crf = self._settings.get("default_crf", 25)
+        self._default_crf: int = int(_raw_crf) if _raw_crf is not None else 25
+        _raw_preset = self._settings.get("default_preset", 6)
+        self._default_preset: int = int(_raw_preset) if _raw_preset is not None else 6
+        _raw_bitrate = self._settings.get("default_audio_bitrate", "192k")
+        self._default_audio_bitrate: str = str(_raw_bitrate) if _raw_bitrate is not None else "192k"
+        _raw_output = self._settings.get("default_output_folder", "")
+        self._default_output_folder: str = str(_raw_output) if _raw_output is not None else ""
+
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
@@ -108,6 +119,8 @@ class VideoView(ctk.CTkFrame):
             placeholder_text=t("file.output_folder"),
         )
         self._output_folder_entry.grid(row=0, column=1, sticky="ew")
+        if self._default_output_folder:
+            self._output_folder_entry.insert(0, self._default_output_folder)
 
         self._output_browse_btn = ctk.CTkButton(
             output_frame,
@@ -163,7 +176,7 @@ class VideoView(ctk.CTkFrame):
 
         self._crf_value_label = ctk.CTkLabel(
             crf_frame,
-            text="25",
+            text=str(self._default_crf),
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12, weight="bold"),
             width=30,
         )
@@ -176,7 +189,7 @@ class VideoView(ctk.CTkFrame):
             number_of_steps=63,
             command=self._on_crf_change,
         )
-        self._crf_slider.set(25)
+        self._crf_slider.set(self._default_crf)
         self._crf_slider.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(2, 0))
 
         ctk.CTkLabel(
@@ -198,7 +211,7 @@ class VideoView(ctk.CTkFrame):
 
         self._preset_value_label = ctk.CTkLabel(
             preset_frame,
-            text="6",
+            text=str(self._default_preset),
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12, weight="bold"),
             width=30,
         )
@@ -211,7 +224,7 @@ class VideoView(ctk.CTkFrame):
             number_of_steps=13,
             command=self._on_preset_change,
         )
-        self._preset_slider.set(6)
+        self._preset_slider.set(self._default_preset)
         self._preset_slider.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(2, 0))
 
         ctk.CTkLabel(
@@ -302,7 +315,7 @@ class VideoView(ctk.CTkFrame):
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
         ).grid(row=0, column=0, sticky="w")
 
-        self._audio_bitrate_var = ctk.StringVar(value="192k")
+        self._audio_bitrate_var = ctk.StringVar(value=self._default_audio_bitrate)
         self._audio_bitrate_combo = ctk.CTkComboBox(
             bitrate_frame,
             variable=self._audio_bitrate_var,
@@ -490,12 +503,12 @@ class VideoView(ctk.CTkFrame):
         if res_key == "custom":
             raw = self._custom_res_entry.get().strip()
             if not raw:
-                return "Custom resolution is required (e.g. 1920x1080)"
+                return t("errors.custom_resolution_required")
             if "x" not in raw.lower():
-                return "Invalid resolution format. Use WxH (e.g. 1920x1080)"
+                return t("errors.invalid_resolution_format")
             parts = raw.lower().split("x")
             if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit():
-                return "Invalid resolution format. Use WxH (e.g. 1920x1080)"
+                return t("errors.invalid_resolution_format")
 
         return None
 
