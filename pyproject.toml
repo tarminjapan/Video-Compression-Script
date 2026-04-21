@@ -39,6 +39,9 @@ dev = [
     "ruff>=0.11",
     "pre-commit>=4.0",
     "pyright>=1.1",
+    "pytest>=8.0",
+    "pytest-cov>=6.0",
+    "pyinstaller>=6.0",
 ]
 
 [project.scripts]
@@ -50,7 +53,7 @@ ame-compression = "video_compressor.cli:main"
 [tool.ruff]
 target-version = "py310"
 line-length = 100
-src = ["video_compressor"]
+src = ["video_compressor", "tests"]
 
 # Exclude patterns
 exclude = [
@@ -129,7 +132,17 @@ reportUnknownArgumentType = "none"
 reportUntypedFunctionDecorator = "none"
 
 # =============================================================================
-# Scripts
+# Pytest
 # =============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+# =============================================================================
+# Scripts
+# ==============================================================================
 [tool.setuptools.packages.find]
 include = ["video_compressor"]
