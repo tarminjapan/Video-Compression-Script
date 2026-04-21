@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 
+from PyInstaller.utils.hooks import collect_submodules
+
 block_cipher = None
 
 PROJECT_ROOT = Path(SPECPATH)
@@ -17,17 +19,8 @@ a = Analysis(
     ],
     hiddenimports=[
         "video_compressor",
-        "video_compressor.gui",
-        "video_compressor.gui.app",
-        "video_compressor.gui.i18n",
-        "video_compressor.gui.i18n.translations",
-        "video_compressor.gui.theme",
-        "video_compressor.gui.utils",
-        "video_compressor.gui.views",
-        "video_compressor.gui.components",
-        "video_compressor.gui.compression_worker",
         "customtkinter",
-    ],
+    ] + collect_submodules("video_compressor.gui"),
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

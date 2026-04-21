@@ -8,6 +8,7 @@ Usage:
 """
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -39,14 +40,16 @@ def build(onefile: bool = False, with_ffmpeg: bool = False):
         cmd.append("--onedir")
 
     if with_ffmpeg and BIN_DIR.exists():
-        ffmpeg_exe = BIN_DIR / "ffmpeg.exe"
-        ffprobe_exe = BIN_DIR / "ffprobe.exe"
+        ffmpeg_name = "ffmpeg.exe" if sys.platform == "win32" else "ffmpeg"
+        ffprobe_name = "ffprobe.exe" if sys.platform == "win32" else "ffprobe"
+        ffmpeg_exe = BIN_DIR / ffmpeg_name
+        ffprobe_exe = BIN_DIR / ffprobe_name
         if ffmpeg_exe.exists() and ffprobe_exe.exists():
-            cmd.extend(["--add-binary", f"{ffmpeg_exe};bin"])
-            cmd.extend(["--add-binary", f"{ffprobe_exe};bin"])
+            cmd.extend(["--add-binary", f"{ffmpeg_exe}{os.pathsep}bin"])
+            cmd.extend(["--add-binary", f"{ffprobe_exe}{os.pathsep}bin"])
             print(f"Bundling FFmpeg from {BIN_DIR}")
         else:
-            print("Warning: bin/ directory exists but ffmpeg.exe/ffprobe.exe not found.")
+            print(f"Warning: bin/ directory exists but {ffmpeg_name}/{ffprobe_name} not found.")
 
     cmd.append(str(SPEC_FILE))
 

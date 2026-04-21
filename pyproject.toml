@@ -145,4 +145,4 @@ addopts = "-v --tb=short"
 # Scripts
 # ==============================================================================
 [tool.setuptools.packages.find]
-include = ["video_compressor", "tests"]
+include = ["video_compressor"]

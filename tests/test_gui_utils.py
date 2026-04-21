@@ -1,3 +1,7 @@
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
+
 from video_compressor.gui.utils import SettingsManager
 
 
@@ -35,9 +39,6 @@ class TestSettingsManager:
 
     def test_reset_instance(self, settings_manager):
         SettingsManager.reset_instance()
-        import tempfile
-        from pathlib import Path
-        from unittest.mock import patch
 
         with (
             tempfile.TemporaryDirectory() as td,
