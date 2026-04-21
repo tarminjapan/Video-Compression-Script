@@ -1,6 +1,6 @@
-# Video/Audio Compression Script
+# Video/Audio Compression Tool
 
-A Python script for video and audio compression using FFmpeg with SVT-AV1 codec (video) and MP3 codec (audio).
+A Python tool for video and audio compression using FFmpeg with SVT-AV1 codec (video) and MP3 codec (audio). Supports both CLI and GUI modes.
 
 ## Features
 
@@ -26,6 +26,30 @@ A Python script for video and audio compression using FFmpeg with SVT-AV1 codec 
 - **Progress Display**: Real-time progress bar with ETA, FPS, and speed indicators
 - **Volume Adjustment**: Automatic or manual volume gain for better audio clarity
 - **Noise Reduction**: Audio denoise filter to reduce background noise
+- **GUI Mode**: Intuitive graphical interface with drag-and-drop, dark/light themes, and multilingual support (English/Japanese)
+
+## Quick Start
+
+### GUI Mode
+
+```bash
+python -m video_compressor --gui
+```
+
+The GUI provides:
+- **Drag & Drop**: Drop video/audio files directly into the window
+- **Sidebar Navigation**: Switch between Video, Audio, and Settings views
+- **Real-time Progress**: Track compression with progress bars, FPS, and ETA
+- **Dark/Light Theme**: Toggle appearance via Settings
+- **English/Japanese**: Switch language at any time
+
+### CLI Mode
+
+```bash
+python -m video_compressor input_video.mp4
+```
+
+See [CLI Usage](#usage) below for all available options.
 
 ## Prerequisites
 
@@ -484,6 +508,80 @@ python -m video_compressor recording.wav --audio-bitrate 192k
 - The progress bar requires video duration information
 - Some video formats may not provide duration metadata
 - The compression will still complete successfully
+
+## GUI Usage
+
+Launch the GUI with:
+
+```bash
+python -m video_compressor --gui
+```
+
+### Video Compression
+
+1. Select **Video Compression** from the sidebar
+2. Drag and drop video files or click **Browse** to select files
+3. Adjust compression settings:
+   - **CRF**: Quality level (0-63, default 25)
+   - **Preset**: Encoding speed (0-13, default 6)
+   - **Resolution**: Max resolution (4K, 2K, 1080p, etc.)
+   - **FPS**: Max frame rate
+   - **Audio Bitrate**: Audio quality
+4. Optionally enable volume adjustment or noise reduction
+5. Set output folder and click **Start Compression**
+
+### Audio Compression
+
+1. Select **Audio Compression** from the sidebar
+2. Drag and drop audio files or click **Browse**
+3. Set the MP3 bitrate (32k-320k)
+4. Optionally enable volume adjustment or noise reduction
+5. Click **Start Compression**
+
+### Settings
+
+- **Language**: Switch between English and Japanese
+- **Theme**: Choose Dark, Light, or System theme
+- **FFmpeg Path**: Auto-detect or manually specify FFmpeg location
+- **Default Compression**: Set default CRF, preset, and audio bitrate
+
+## Building from Source
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/tarminjapan/AmeCompression.git
+cd AmeCompression
+
+# Install uv (Python package manager)
+# See: https://docs.astral.sh/uv/getting-started/installation/
+
+# Install dependencies
+uv sync --extra dev
+
+# Run linting
+uv run ruff check video_compressor
+
+# Run type checking
+uv run pyright video_compressor
+
+# Run tests
+uv run pytest tests -v
+```
+
+### Building the Executable
+
+```bash
+# Directory mode (recommended for distribution with FFmpeg)
+python scripts/build.py
+
+# Single file mode
+python scripts/build.py --onefile
+
+# Bundle FFmpeg (requires ffmpeg.exe and ffprobe.exe in bin/)
+python scripts/build.py --with-ffmpeg
+```
 
 ## License
 
