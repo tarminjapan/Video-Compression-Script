@@ -8,13 +8,12 @@ settings with save/reset functionality.
 import platform
 import shutil
 from collections.abc import Callable
-from pathlib import Path
 from tkinter import filedialog
 
 import customtkinter as ctk
 
 from ..i18n import TranslationManager, t
-from ..theme import get_theme_options, save_theme_preference
+from ..theme import colors, get_theme_options, save_theme_preference
 from ..theme.fonts import DEFAULT_FONT_FAMILY
 from ..utils import SettingsManager
 
@@ -69,7 +68,7 @@ class SettingsView(ctk.CTkFrame):
         )
         label.grid(row=row, column=0, padx=16, pady=(16, 6), sticky="w")
 
-        sep = ctk.CTkFrame(parent, height=1, fg_color=("gray80", "gray20"))
+        sep = ctk.CTkFrame(parent, height=1, fg_color=colors.DIVIDER_COLOR)
         sep.grid(row=row + 1, column=0, padx=16, sticky="ew")
         return row + 2
 
@@ -430,7 +429,7 @@ class SettingsView(ctk.CTkFrame):
         if not path:
             self._ffmpeg_status_label.configure(text="")
             return
-        if Path(path).exists() and shutil.which(path):
+        if shutil.which(path):
             self._ffmpeg_status_label.configure(
                 text=t("settings.ffmpeg_status_found", path=path),
                 text_color=("green", "#90EE90"),

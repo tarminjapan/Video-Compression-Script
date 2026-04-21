@@ -5,6 +5,7 @@ Provides CompressionWorker that runs FFmpeg in a background thread
 and reports progress via callbacks, keeping the GUI responsive.
 """
 
+import platform
 import re
 import subprocess
 import threading
@@ -39,8 +40,6 @@ class CompressionWorker:
         if mode == "manual" and custom_path:
             ffmpeg_p = Path(custom_path)
             if ffmpeg_p.exists():
-                import platform
-
                 ffprobe_name = "ffprobe.exe" if platform.system() == "Windows" else "ffprobe"
                 ffprobe_p = ffmpeg_p.parent / ffprobe_name
                 return str(ffmpeg_p), str(ffprobe_p) if ffprobe_p.exists() else "ffprobe"

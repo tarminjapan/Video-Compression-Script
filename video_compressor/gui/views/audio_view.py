@@ -38,8 +38,11 @@ class AudioView(ctk.CTkFrame):
         self._is_paused = False
 
         self._settings = SettingsManager.get_instance()
-        _raw_bitrate = self._settings.get("default_audio_bitrate", 192)
-        self._default_bitrate: int = int(_raw_bitrate) if _raw_bitrate is not None else 192
+        _raw_bitrate = self._settings.get("default_audio_bitrate", "192k")
+        if isinstance(_raw_bitrate, str) and _raw_bitrate.endswith("k"):
+            self._default_bitrate: int = int(_raw_bitrate[:-1])
+        else:
+            self._default_bitrate = int(_raw_bitrate) if _raw_bitrate is not None else 192
         _raw_output = self._settings.get("default_output_folder", "")
         self._default_output_folder: str = str(_raw_output) if _raw_output is not None else ""
 
