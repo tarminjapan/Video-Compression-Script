@@ -137,7 +137,27 @@
         "save": "設定を保存",
         "reset": "初期設定に戻す",
         "saved": "設定を保存しました。",
-        "reset_confirm": "すべての設定を初期値に戻しますか？"
+        "reset_confirm": "すべての設定を初期値に戻しますか？",
+        "section_appearance": "外観",
+        "section_ffmpeg": "FFmpeg",
+        "section_output": "出力",
+        "section_compression": "デフォルト圧縮",
+        "ffmpeg_mode": "検出モード",
+        "ffmpeg_auto": "自動検出",
+        "ffmpeg_manual": "手動指定",
+        "ffmpeg_browse": "参照",
+        "ffmpeg_status_found": "FFmpeg見つかりました: {path}",
+        "ffmpeg_status_not_found": "指定されたパスにFFmpegが見つかりません。",
+        "output_browse": "参照",
+        "folder_select": "フォルダーを選択",
+        "default_crf": "デフォルトCRF",
+        "default_preset": "デフォルトプリセット",
+        "default_audio_bitrate": "デフォルト音声ビットレート",
+        "reset_done": "設定を初期値に戻しました。",
+        "language_names": {
+            "en": "English",
+            "ja": "日本語"
+        }
     },
     "status": {
         "ffmpeg_detected": "FFmpeg: 検出済み",
@@ -158,7 +178,12 @@
         "loading": "読み込み中...",
         "none": "なし",
         "default": "デフォルト",
-        "custom": "カスタム"
+        "custom": "カスタム",
+        "all_files": "すべてのファイル",
+        "media_files": "メディアファイル",
+        "mono": "モノラル",
+        "stereo": "ステレオ",
+        "channels": "{count}ch"
     },
     "errors": {
         "ffmpeg_not_found": "FFmpegが見つかりません。FFmpegをインストールするか、設定でパスを指定してください。",
@@ -168,7 +193,10 @@
         "compression_failed": "圧縮に失敗しました: {error}",
         "no_input": "入力ファイルが指定されていません。",
         "permission_denied": "アクセス権限がありません: {path}",
-        "ffmpeg_exit": "FFmpegがコード {code} で終了しました"
+        "ffmpeg_exit": "FFmpegがコード {code} で終了しました",
+        "custom_resolution_required": "カスタム解像度を入力してください（例: 1920x1080）",
+        "invalid_resolution_format": "無効な解像度形式です。WxHの形式で入力してください（例: 1920x1080）",
+        "analysis_failed": "解析に失敗しました"
     },
     "batch": {
         "processing_file": "処理中 {current}/{total}: {filename}",

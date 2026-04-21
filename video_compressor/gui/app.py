@@ -151,12 +151,19 @@ class App(ctk.CTk):
             view_classes = {
                 "video": VideoView,
                 "audio": AudioView,
-                "settings": SettingsView,
             }
-            cls = view_classes.get(view_name)
-            if cls is None:
-                return
-            self._views[view_name] = cls(self, corner_radius=0)
+            if view_name == "settings":
+                self._views[view_name] = SettingsView(
+                    self,
+                    corner_radius=0,
+                    on_language_change=self._refresh_ui_texts,
+                    on_theme_change=self._on_settings_theme_change,
+                )
+            else:
+                cls = view_classes.get(view_name)
+                if cls is None:
+                    return
+                self._views[view_name] = cls(self, corner_radius=0)
 
         self._views[view_name].grid(row=1, column=1, sticky="nsew", padx=0, pady=0)
         self._current_view = self._views[view_name]
@@ -175,6 +182,10 @@ class App(ctk.CTk):
         next_idx = (current_idx + 1) % len(options)
         self._current_theme = options[next_idx]
         save_theme_preference(self._current_theme)
+        self._theme_btn.configure(text=self._theme_label())
+
+    def _on_settings_theme_change(self, theme: str):
+        self._current_theme = theme
         self._theme_btn.configure(text=self._theme_label())
 
     def _language_label(self) -> str:

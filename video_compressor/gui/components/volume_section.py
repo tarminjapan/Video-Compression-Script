@@ -235,7 +235,7 @@ class VolumeSection(ctk.CTkFrame):
                 self._analysis_result = result
                 self.after(0, lambda: self._update_analysis_display(result))
             except Exception:
-                self.after(0, lambda: self._on_analysis_error("Analysis failed"))
+                self.after(0, lambda: self._on_analysis_error(t("errors.analysis_failed")))
 
         threading.Thread(target=run_analysis, daemon=True).start()
 

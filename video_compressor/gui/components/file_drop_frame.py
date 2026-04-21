@@ -111,7 +111,7 @@ class FileDropFrame(ctk.CTkFrame):
                     t("nav.video"),
                     " ".join(f"*{e}" for e in sorted(VIDEO_EXTENSIONS)),
                 ),
-                ("All files", "*.*"),
+                (t("common.all_files"), "*.*"),
             ]
         elif self._file_type == "audio":
             return [
@@ -119,15 +119,15 @@ class FileDropFrame(ctk.CTkFrame):
                     t("nav.audio"),
                     " ".join(f"*{e}" for e in sorted(AUDIO_EXTENSIONS)),
                 ),
-                ("All files", "*.*"),
+                (t("common.all_files"), "*.*"),
             ]
         all_exts = VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
         return [
             (
-                "Media files",
+                t("common.media_files"),
                 " ".join(f"*{e}" for e in sorted(all_exts)),
             ),
-            ("All files", "*.*"),
+            (t("common.all_files"), "*.*"),
         ]
 
     def refresh_texts(self):
