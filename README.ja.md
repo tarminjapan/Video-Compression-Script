@@ -28,7 +28,7 @@ FFmpeg (SVT-AV1) を使用した高性能な動画・音声圧縮ツール。
 
 ```bash
 # 依存関係のインストール
-pip install -r requirements.txt
+pip install .
 
 # GUI の起動
 python -m video_compressor --gui
@@ -46,7 +46,11 @@ python -m video_compressor --gui
 基本コマンド:
 
 ```bash
+# 単一ファイルの圧縮
 python -m video_compressor input.mp4
+
+# 複数ファイルの一括圧縮
+python -m video_compressor file1.mp4 file2.mp4
 ```
 
 | オプション | 説明 | デフォルト |

@@ -28,7 +28,7 @@ You must have FFmpeg installed on your system.
 
 ```bash
 # Install dependencies
-pip install -r requirements.txt
+pip install .
 
 # Launch GUI
 python -m video_compressor --gui
@@ -46,7 +46,11 @@ python -m video_compressor --gui
 Basic command:
 
 ```bash
+# Single file compression
 python -m video_compressor input.mp4
+
+# Batch compression (multiple files)
+python -m video_compressor file1.mp4 file2.mp4
 ```
 
 | Option | Description | Default |
