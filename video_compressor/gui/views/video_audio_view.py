@@ -69,6 +69,7 @@ class VideoAudioView(ctk.CTkFrame):
         self._batch_successes = 0
         self._batch_failures = 0
         self._is_paused = False
+        self._info_request_id = 0
 
         self._settings = SettingsManager.get_instance()
         _raw_crf = self._settings.get("default_crf", 25)
@@ -528,8 +529,7 @@ class VideoAudioView(ctk.CTkFrame):
         self._update_preview()
 
     def _on_mp3_bitrate_change(self, value):
-        kbps = int(value)
-        kbps = max(MP3_BITRATE_MIN, min(MP3_BITRATE_MAX, round(kbps / 8) * 8))
+        kbps = self._get_rounded_mp3_bitrate(value)
         self._mp3_bitrate_value_label.configure(text=f"{kbps} kbps")
         self._update_preview()
 
@@ -555,6 +555,10 @@ class VideoAudioView(ctk.CTkFrame):
         if ext in AUDIO_EXTENSIONS:
             return "audio"
         return "video"
+
+    def _get_rounded_mp3_bitrate(self, value: float) -> int:
+        kbps = int(value)
+        return max(MP3_BITRATE_MIN, min(MP3_BITRATE_MAX, round(kbps / 8) * 8))
 
     def _get_output_path(self, input_path: str) -> str:
         input_p = Path(input_path)
@@ -584,8 +588,12 @@ class VideoAudioView(ctk.CTkFrame):
             return
 
         first_file = files[0]
+        self._info_request_id += 1
+        request_id = self._info_request_id
 
         def fetch_info():
+            if request_id != self._info_request_id:
+                return
             try:
                 from ...ffmpeg import get_audio_info, get_ffmpeg_executables, get_video_info
 
@@ -628,9 +636,11 @@ class VideoAudioView(ctk.CTkFrame):
                         parts.append(f"{m:02d}:{s:04.1f}")
 
                 text = " | ".join(parts) if parts else "\u2014"
-                self.after(0, lambda: self._info_label.configure(text=text))
+                if request_id == self._info_request_id:
+                    self.after(0, lambda: self._info_label.configure(text=text))
             except Exception:
-                self.after(0, lambda: self._info_label.configure(text="\u2014"))
+                if request_id == self._info_request_id:
+                    self.after(0, lambda: self._info_label.configure(text="\u2014"))
 
         threading.Thread(target=fetch_info, daemon=True).start()
 
@@ -781,8 +791,7 @@ class VideoAudioView(ctk.CTkFrame):
         if self._worker.is_running:
             return
 
-        kbps = int(self._mp3_bitrate_slider.get())
-        kbps = max(MP3_BITRATE_MIN, min(MP3_BITRATE_MAX, round(kbps / 8) * 8))
+        kbps = self._get_rounded_mp3_bitrate(self._mp3_bitrate_slider.get())
         bitrate = f"{kbps}k"
         keep_metadata = self._keep_metadata_var.get()
 
