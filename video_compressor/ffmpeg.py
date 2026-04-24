@@ -279,3 +279,211 @@ def get_audio_info(audio_path, ffprobe_path="ffprobe"):
         "sample_rate": sample_rate,
         "channels": channels,
     }
+
+
+def get_video_info_safe(video_path, ffprobe_path="ffprobe"):
+    """
+    Get video information using ffprobe (service layer safe version).
+
+    Unlike get_video_info, this function does not call sys.exit on failure,
+    making it safe for API/GUI use.
+
+    Args:
+        video_path (str): Path to video file
+        ffprobe_path (str): Path to ffprobe executable
+
+    Returns:
+        dict: Video width, height, duration, fps, or None on error
+    """
+    cmd = [
+        ffprobe_path,
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=width,height,r_frame_rate,duration",
+        "-of",
+        "csv=s=x:p=0",
+        str(video_path),
+    ]
+
+    width = None
+    height = None
+    fps = None
+    duration = None
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        )
+        output = result.stdout.strip()
+        if output:
+            parts = output.split("x")
+            if len(parts) >= 2:
+                width = int(parts[0])
+                remaining = parts[1].split(",")
+                height = int(remaining[0])
+
+                if len(remaining) > 1:
+                    fps_str = remaining[1]
+                    if "/" in fps_str:
+                        num, den = fps_str.split("/")
+                        if float(den) != 0:
+                            fps = float(num) / float(den)
+                    else:
+                        with contextlib.suppress(ValueError):
+                            fps = float(fps_str)
+
+                if len(remaining) > 2:
+                    with contextlib.suppress(ValueError):
+                        duration = float(remaining[2])
+    except subprocess.CalledProcessError:
+        return None
+    except FileNotFoundError:
+        return None
+
+    if duration is None:
+        format_cmd = [
+            ffprobe_path,
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "csv=p=0",
+            str(video_path),
+        ]
+        try:
+            format_result = subprocess.run(
+                format_cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=True,
+            )
+            format_output = format_result.stdout.strip()
+            if format_output:
+                with contextlib.suppress(ValueError):
+                    duration = float(format_output)
+        except subprocess.CalledProcessError:
+            pass
+
+    if width is not None and height is not None:
+        return {
+            "width": width,
+            "height": height,
+            "fps": fps,
+            "duration": duration,
+        }
+
+    return None
+
+
+def get_audio_info_safe(audio_path, ffprobe_path="ffprobe"):
+    """
+    Get audio information using ffprobe (service layer safe version).
+
+    Unlike get_audio_info, this function does not call sys.exit on failure,
+    making it safe for API/GUI use.
+
+    Args:
+        audio_path (str): Path to audio file
+        ffprobe_path (str): Path to ffprobe executable
+
+    Returns:
+        dict: Audio duration, bitrate, sample_rate, channels
+    """
+    cmd = [
+        ffprobe_path,
+        "-v",
+        "error",
+        "-select_streams",
+        "a:0",
+        "-show_entries",
+        "stream=bit_rate,sample_rate,channels,duration",
+        "-show_entries",
+        "format=duration",
+        "-of",
+        "csv=p=0",
+        str(audio_path),
+    ]
+
+    duration = None
+    bitrate = None
+    sample_rate = None
+    channels = None
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        )
+        output = result.stdout.strip()
+        if output:
+            lines = output.split("\n")
+            for line in lines:
+                parts = line.split(",")
+                if len(parts) >= 4:
+                    try:
+                        if parts[0]:
+                            bitrate = int(parts[0])
+                        if parts[1]:
+                            sample_rate = int(parts[1])
+                        if parts[2]:
+                            channels = int(parts[2])
+                        if parts[3]:
+                            duration = float(parts[3])
+                    except ValueError:
+                        pass
+                elif len(parts) == 1 and parts[0]:
+                    with contextlib.suppress(ValueError):
+                        duration = float(parts[0])
+    except subprocess.CalledProcessError:
+        pass
+    except FileNotFoundError:
+        pass
+
+    if duration is None:
+        format_cmd = [
+            ffprobe_path,
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "csv=p=0",
+            str(audio_path),
+        ]
+        try:
+            format_result = subprocess.run(
+                format_cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=True,
+            )
+            format_output = format_result.stdout.strip()
+            if format_output:
+                with contextlib.suppress(ValueError):
+                    duration = float(format_output)
+        except subprocess.CalledProcessError:
+            pass
+
+    return {
+        "duration": duration,
+        "bitrate": bitrate,
+        "sample_rate": sample_rate,
+        "channels": channels,
+    }

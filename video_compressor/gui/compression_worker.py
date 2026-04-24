@@ -6,7 +6,6 @@ and reports progress via callbacks, keeping the GUI responsive.
 """
 
 import platform
-import re
 import subprocess
 import threading
 import time
@@ -15,6 +14,7 @@ from pathlib import Path
 
 from ..config import AUDIO_CODEC, MP3_CODEC, VIDEO_CODEC
 from ..ffmpeg import get_audio_info, get_ffmpeg_executables, get_video_info
+from ..progress_handler import CancellationSource, ProgressParser
 from ..volume import build_audio_filter
 from .i18n import t
 from .utils import SettingsManager
@@ -25,12 +25,17 @@ class CompressionWorker:
 
     def __init__(self):
         self._process: subprocess.Popen | None = None
-        self._cancelled = False
+        self._cancellation_source = CancellationSource()
         self._thread: threading.Thread | None = None
 
     @property
     def is_running(self) -> bool:
         return self._thread is not None and self._thread.is_alive()
+
+    @property
+    def cancellation_source(self) -> CancellationSource:
+        """Get the cancellation source for external cancellation requests."""
+        return self._cancellation_source
 
     @staticmethod
     def _resolve_ffmpeg_paths():
@@ -64,7 +69,7 @@ class CompressionWorker:
         if self.is_running:
             return
 
-        self._cancelled = False
+        self._cancellation_source.reset()
 
         def target():
             try:
@@ -132,7 +137,7 @@ class CompressionWorker:
         if self.is_running:
             return
 
-        self._cancelled = False
+        self._cancellation_source.reset()
 
         def target():
             try:
@@ -164,7 +169,8 @@ class CompressionWorker:
         self._thread.start()
 
     def cancel(self):
-        self._cancelled = True
+        """Request cancellation of the current compression operation."""
+        self._cancellation_source.cancel()
         if self._process and self._process.poll() is None:
             self._process.terminate()
 
@@ -180,19 +186,30 @@ class CompressionWorker:
                 errors="replace",
             )
 
+            parser = ProgressParser(total_duration)
+            parser.set_start_time(start_time)
+
             if self._process.stdout:
                 for line in self._process.stdout:
-                    if self._cancelled:
+                    if self._cancellation_source.is_cancelled:
                         break
 
-                    progress = self._parse_progress(line, total_duration, start_time)
-                    if progress and on_progress:
-                        on_progress(progress)
+                    event = parser.parse_line(line)
+                    if event and on_progress:
+                        on_progress({
+                            "percent": event.percent,
+                            "current_time": event.current_time,
+                            "total_duration": event.total_duration,
+                            "fps": event.fps,
+                            "speed": event.speed,
+                            "frame": event.frame,
+                            "eta": event.eta,
+                        })
 
             if self._process:
                 self._process.wait()
 
-            if self._cancelled:
+            if self._cancellation_source.is_cancelled:
                 if on_complete:
                     on_complete({"status": "cancelled"})
             elif self._process and self._process.returncode == 0:
@@ -210,45 +227,3 @@ class CompressionWorker:
                 on_error(str(e))
         finally:
             self._process = None
-
-    @staticmethod
-    def _parse_progress(line: str, total_duration: float, start_time: float) -> dict | None:
-        time_match = re.search(r"time=(\d+):(\d+):(\d+\.?\d*)", line)
-        if not time_match or total_duration <= 0:
-            return None
-
-        hours = int(time_match.group(1))
-        minutes = int(time_match.group(2))
-        seconds = float(time_match.group(3))
-        current_time = hours * 3600 + minutes * 60 + seconds
-        percent = min(100.0, (current_time / total_duration) * 100)
-
-        fps = 0.0
-        fps_match = re.search(r"fps=\s*([\d.]+)", line)
-        if fps_match:
-            fps = float(fps_match.group(1))
-
-        speed = 0.0
-        speed_match = re.search(r"speed=\s*([\d.]+)x", line)
-        if speed_match:
-            speed = float(speed_match.group(1))
-
-        frame = 0
-        frame_match = re.search(r"frame=\s*(\d+)", line)
-        if frame_match:
-            frame = int(frame_match.group(1))
-
-        eta = 0.0
-        elapsed_wall = time.time() - start_time
-        if 0 < percent < 100 and elapsed_wall > 0:
-            eta = elapsed_wall * (100 - percent) / percent
-
-        return {
-            "percent": percent,
-            "current_time": current_time,
-            "total_duration": total_duration,
-            "fps": fps,
-            "speed": speed,
-            "frame": frame,
-            "eta": eta,
-        }
