@@ -77,7 +77,9 @@ class VideoAudioView(ctk.CTkFrame):
         self._default_preset: int = int(_raw_preset) if _raw_preset is not None else 6
         _raw_bitrate = self._settings.get("default_audio_bitrate", "192k")
         self._default_audio_bitrate: str = str(_raw_bitrate) if _raw_bitrate is not None else "192k"
-        _raw_mp3_bitrate = self._settings.get("default_audio_bitrate", "192k")
+        _raw_mp3_bitrate = self._settings.get("default_mp3_bitrate") or self._settings.get(
+            "default_audio_bitrate", "192k"
+        )
         if isinstance(_raw_mp3_bitrate, str) and _raw_mp3_bitrate.endswith("k"):
             self._default_mp3_bitrate: int = int(_raw_mp3_bitrate[:-1])
         else:
@@ -179,7 +181,7 @@ class VideoAudioView(ctk.CTkFrame):
             variable=self._keep_metadata_var,
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
         )
-        self._keep_metadata_check.grid(row=row, column=0, padx=10, pady=5, sticky="w")
+        self._keep_metadata_check.grid(row=row, column=0, columnspan=2, padx=10, pady=5, sticky="w")
         row += 1
 
         row = self._create_volume_section(row)
@@ -373,7 +375,7 @@ class VideoAudioView(ctk.CTkFrame):
 
     def _create_mp3_bitrate_slider(self, row: int) -> int:
         bitrate_frame = ctk.CTkFrame(self._settings_frame, fg_color="transparent")
-        bitrate_frame.grid(row=row, column=0, padx=10, pady=2, sticky="ew")
+        bitrate_frame.grid(row=row, column=0, columnspan=2, padx=10, pady=2, sticky="ew")
         bitrate_frame.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
@@ -420,7 +422,7 @@ class VideoAudioView(ctk.CTkFrame):
 
     def _create_output_preview(self, row: int) -> int:
         preview_frame = ctk.CTkFrame(self._settings_frame, fg_color="transparent")
-        preview_frame.grid(row=row, column=0, padx=10, pady=5, sticky="ew")
+        preview_frame.grid(row=row, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
         preview_frame.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
@@ -444,12 +446,12 @@ class VideoAudioView(ctk.CTkFrame):
             self._settings_frame,
             get_current_file=self._get_first_file,
         )
-        self._volume_section.grid(row=row, column=0, sticky="ew")
+        self._volume_section.grid(row=row, column=0, columnspan=2, sticky="ew")
         return row + 1
 
     def _create_denoise_section(self, row: int) -> int:
         self._denoise_section = DenoiseSection(self._settings_frame)
-        self._denoise_section.grid(row=row, column=0, sticky="ew")
+        self._denoise_section.grid(row=row, column=0, columnspan=2, sticky="ew")
         return row + 1
 
     def _get_first_file(self) -> str | None:
@@ -458,7 +460,7 @@ class VideoAudioView(ctk.CTkFrame):
 
     def _create_input_info(self, row: int) -> int:
         self._info_frame = ctk.CTkFrame(self._settings_frame, fg_color="transparent")
-        self._info_frame.grid(row=row, column=0, padx=10, pady=5, sticky="ew")
+        self._info_frame.grid(row=row, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
         self._info_frame.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
@@ -486,7 +488,7 @@ class VideoAudioView(ctk.CTkFrame):
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
             text_color="red",
         )
-        self._error_label.grid(row=row, column=0, padx=10, sticky="w")
+        self._error_label.grid(row=row, column=0, columnspan=2, padx=10, sticky="w")
 
         return row + 1
 
