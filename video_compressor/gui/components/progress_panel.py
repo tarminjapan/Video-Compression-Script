@@ -23,14 +23,14 @@ class ProgressPanel(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
 
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="ew")
+        btn_frame.grid(row=0, column=0, padx=10, pady=(6, 3), sticky="ew")
         btn_frame.grid_columnconfigure(0, weight=1)
 
         self._start_btn = ctk.CTkButton(
             btn_frame,
             text=t("compress.start"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=14, weight="bold"),
-            height=38,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13, weight="bold"),
+            height=30,
             command=self._handle_start,
         )
         self._start_btn.grid(row=0, column=0, sticky="w")
@@ -38,49 +38,49 @@ class ProgressPanel(ctk.CTkFrame):
         self._pause_btn = ctk.CTkButton(
             btn_frame,
             text=t("batch.pause"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13),
-            height=38,
-            width=100,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
+            height=30,
+            width=80,
             state="disabled",
             fg_color=("gray70", "gray30"),
             hover_color=("gray60", "gray40"),
             command=self._handle_pause,
         )
-        self._pause_btn.grid(row=0, column=1, padx=(10, 0))
+        self._pause_btn.grid(row=0, column=1, padx=(8, 0))
 
         self._cancel_btn = ctk.CTkButton(
             btn_frame,
             text=t("compress.cancel"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13),
-            height=38,
-            width=100,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
+            height=30,
+            width=80,
             state="disabled",
             fg_color=("gray70", "gray30"),
             hover_color=("gray60", "gray40"),
             command=self._handle_cancel,
         )
-        self._cancel_btn.grid(row=0, column=2, padx=(10, 0))
+        self._cancel_btn.grid(row=0, column=2, padx=(8, 0))
 
         self._overall_label = ctk.CTkLabel(
             self,
             text="",
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
             text_color=("gray40", "gray60"),
         )
-        self._overall_label.grid(row=1, column=0, padx=10, pady=(5, 0), sticky="w")
+        self._overall_label.grid(row=1, column=0, padx=10, pady=(3, 0), sticky="w")
 
-        self._overall_progress_bar = ctk.CTkProgressBar(self, height=8)
-        self._overall_progress_bar.grid(row=2, column=0, padx=10, pady=(2, 2), sticky="ew")
+        self._overall_progress_bar = ctk.CTkProgressBar(self, height=6)
+        self._overall_progress_bar.grid(row=2, column=0, padx=10, pady=(2, 1), sticky="ew")
         self._overall_progress_bar.set(0)
 
-        self._progress_bar = ctk.CTkProgressBar(self, height=12)
-        self._progress_bar.grid(row=3, column=0, padx=10, pady=(2, 2), sticky="ew")
+        self._progress_bar = ctk.CTkProgressBar(self, height=10)
+        self._progress_bar.grid(row=3, column=0, padx=10, pady=(1, 2), sticky="ew")
         self._progress_bar.set(0)
 
         self._stats_label = ctk.CTkLabel(
             self,
             text="",
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
             text_color=("gray40", "gray60"),
         )
         self._stats_label.grid(row=4, column=0, padx=10, sticky="w")
@@ -88,18 +88,18 @@ class ProgressPanel(ctk.CTkFrame):
         self._status_label = ctk.CTkLabel(
             self,
             text="",
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13, weight="bold"),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12, weight="bold"),
         )
-        self._status_label.grid(row=5, column=0, padx=10, pady=(5, 0), sticky="w")
+        self._status_label.grid(row=5, column=0, padx=10, pady=(3, 0), sticky="w")
 
         self._error_textbox = ctk.CTkTextbox(
             self,
-            height=60,
+            height=50,
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
             state="disabled",
             wrap="word",
         )
-        self._error_textbox.grid(row=6, column=0, padx=10, pady=(5, 10), sticky="ew")
+        self._error_textbox.grid(row=6, column=0, padx=10, pady=(3, 8), sticky="ew")
 
     def _handle_start(self):
         if self._on_start:

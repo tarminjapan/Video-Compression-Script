@@ -7,6 +7,7 @@
     "nav": {
         "video": "動画圧縮",
         "audio": "音声圧縮",
+        "video_audio": "動画 / 音声",
         "settings": "設定",
         "about": "バージョン情報"
     },
@@ -14,6 +15,7 @@
         "select": "ファイルを選択",
         "select_multiple": "ファイルを複数選択",
         "drop_here": "ファイルをドラッグ＆ドロップ",
+        "browse_hint": "またはクリックしてファイルを参照",
         "or": "または",
         "browse": "参照",
         "output_folder": "出力フォルダー",

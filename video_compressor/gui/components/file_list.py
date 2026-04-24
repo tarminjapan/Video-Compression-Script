@@ -127,8 +127,9 @@ class FileListFrame(ctk.CTkFrame):
 
         for i, file_info in enumerate(self._files):
             row = ctk.CTkFrame(self._scroll_frame, fg_color="transparent", height=32)
-            row.grid(row=i, column=0, sticky="ew", pady=2)
+            row.grid(row=i, column=0, sticky="new", pady=2)
             row.grid_columnconfigure(1, weight=1)
+            row.grid_propagate(False)
 
             icon = "\U0001f3ac" if file_info["type"] == "video" else "\U0001f3b5"
             ctk.CTkLabel(

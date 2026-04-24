@@ -36,7 +36,7 @@ class FileDropFrame(ctk.CTkFrame):
 
         self._drop_frame = ctk.CTkFrame(
             self,
-            height=120,
+            height=80,
             border_width=2,
             border_color=("gray60", "gray40"),
             fg_color=("gray90", "gray15"),
@@ -49,21 +49,30 @@ class FileDropFrame(ctk.CTkFrame):
         self._drop_icon = ctk.CTkLabel(
             self._drop_frame,
             text="\U0001f4c1",
-            font=ctk.CTkFont(size=32),
+            font=ctk.CTkFont(size=24),
         )
-        self._drop_icon.grid(row=0, column=0, pady=(15, 0))
+        self._drop_icon.grid(row=0, column=0, pady=(8, 0))
 
         self._drop_text = ctk.CTkLabel(
             self._drop_frame,
             text=t("file.drop_here"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=14),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13),
             text_color=("gray50", "gray60"),
         )
         self._drop_text.grid(row=1, column=0)
 
+        self._browse_hint = ctk.CTkLabel(
+            self._drop_frame,
+            text=t("file.browse_hint"),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
+            text_color=("gray50", "gray60"),
+        )
+        self._browse_hint.grid(row=2, column=0, pady=(0, 6))
+
         self._drop_frame.bind("<Button-1>", lambda _e: self._browse_files())
         self._drop_icon.bind("<Button-1>", lambda _e: self._browse_files())
         self._drop_text.bind("<Button-1>", lambda _e: self._browse_files())
+        self._browse_hint.bind("<Button-1>", lambda _e: self._browse_files())
 
         self._setup_dnd()
 
@@ -132,3 +141,4 @@ class FileDropFrame(ctk.CTkFrame):
 
     def refresh_texts(self):
         self._drop_text.configure(text=t("file.drop_here"))
+        self._browse_hint.configure(text=t("file.browse_hint"))

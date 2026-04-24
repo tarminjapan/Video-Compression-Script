@@ -11,12 +11,11 @@ import customtkinter as ctk
 
 from .. import __version__
 from ..ffmpeg import get_ffmpeg_executables
-from .i18n import TranslationManager, t
-from .theme import get_theme_options, load_theme_preference, save_theme_preference
+from .i18n import t
+from .theme import load_theme_preference
 from .theme.fonts import DEFAULT_FONT_FAMILY
-from .views.audio_view import AudioView
 from .views.settings_view import SettingsView
-from .views.video_view import VideoView
+from .views.video_audio_view import VideoAudioView
 
 _SIDEBAR_WIDTH = 200
 
@@ -51,7 +50,7 @@ class App(ctk.CTk):
         self._create_header()
         self._create_sidebar()
         self._create_status_bar()
-        self._switch_view("video")
+        self._switch_view("video_audio")
 
     def _create_layout(self):
         self.grid_rowconfigure(1, weight=1)
@@ -70,34 +69,15 @@ class App(ctk.CTk):
         )
         self._title_label.grid(row=0, column=0, padx=(16, 8), pady=10, sticky="w")
 
-        self._language_btn = ctk.CTkButton(
-            header,
-            text=self._language_label(),
-            width=80,
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13),
-            command=self._toggle_language,
-        )
-        self._language_btn.grid(row=0, column=2, padx=(4, 8), pady=10)
-
-        self._theme_btn = ctk.CTkButton(
-            header,
-            text=self._theme_label(),
-            width=80,
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13),
-            command=self._toggle_theme,
-        )
-        self._theme_btn.grid(row=0, column=3, padx=(4, 16), pady=10)
-
     def _create_sidebar(self):
         sidebar = ctk.CTkFrame(self, corner_radius=0, width=_SIDEBAR_WIDTH)
         sidebar.grid(row=1, column=0, sticky="ns")
-        sidebar.grid_rowconfigure(3, weight=1)
+        sidebar.grid_rowconfigure(2, weight=1)
         sidebar.grid_propagate(False)
 
         self._nav_buttons: dict[str, ctk.CTkButton] = {}
         nav_items = [
-            ("video", "nav.video"),
-            ("audio", "nav.audio"),
+            ("video_audio", "nav.video_audio"),
             ("settings", "nav.settings"),
         ]
         for idx, (key, translation_key) in enumerate(nav_items):
@@ -148,52 +128,20 @@ class App(ctk.CTk):
             self._current_view.grid_forget()
 
         if view_name not in self._views:
-            view_classes = {
-                "video": VideoView,
-                "audio": AudioView,
-            }
-            if view_name == "settings":
+            if view_name == "video_audio":
+                self._views[view_name] = VideoAudioView(self, corner_radius=0)
+            elif view_name == "settings":
                 self._views[view_name] = SettingsView(
                     self,
                     corner_radius=0,
                     on_language_change=self._refresh_ui_texts,
-                    on_theme_change=self._on_settings_theme_change,
                 )
             else:
-                cls = view_classes.get(view_name)
-                if cls is None:
-                    return
-                self._views[view_name] = cls(self, corner_radius=0)
+                return
 
         self._views[view_name].grid(row=1, column=1, sticky="nsew", padx=0, pady=0)
         self._current_view = self._views[view_name]
         self._current_view_name = view_name
-
-    def _toggle_language(self):
-        mgr = TranslationManager.get_instance()
-        current = mgr.get_language()
-        new_lang = "ja" if current == "en" else "en"
-        mgr.set_language(new_lang)
-        self._refresh_ui_texts()
-
-    def _toggle_theme(self):
-        options = get_theme_options()
-        current_idx = options.index(self._current_theme) if self._current_theme in options else 0
-        next_idx = (current_idx + 1) % len(options)
-        self._current_theme = options[next_idx]
-        save_theme_preference(self._current_theme)
-        self._theme_btn.configure(text=self._theme_label())
-
-    def _on_settings_theme_change(self, theme: str):
-        self._current_theme = theme
-        self._theme_btn.configure(text=self._theme_label())
-
-    def _language_label(self) -> str:
-        lang = TranslationManager.get_instance().get_language()
-        return "日本語" if lang == "ja" else "EN"
-
-    def _theme_label(self) -> str:
-        return t(f"settings.themes.{self._current_theme}")
 
     def _detect_ffmpeg(self) -> str:
         if self._ffmpeg_detected is None:
@@ -209,14 +157,11 @@ class App(ctk.CTk):
     def _refresh_ui_texts(self):
         self.title(t("app.title"))
         self._title_label.configure(text=t("app.title"))
-        self._language_btn.configure(text=self._language_label())
-        self._theme_btn.configure(text=self._theme_label())
         self._ffmpeg_label.configure(text=self._detect_ffmpeg())
         self._version_label.configure(text=t("app.version", version=__version__))
 
         nav_items = [
-            ("video", "nav.video"),
-            ("audio", "nav.audio"),
+            ("video_audio", "nav.video_audio"),
             ("settings", "nav.settings"),
         ]
         for key, translation_key in nav_items:

@@ -2,8 +2,7 @@
 Views package for AmeCompression GUI.
 """
 
-from .audio_view import AudioView
 from .settings_view import SettingsView
-from .video_view import VideoView
+from .video_audio_view import VideoAudioView
 
-__all__ = ["AudioView", "SettingsView", "VideoView"]
+__all__ = ["SettingsView", "VideoAudioView"]

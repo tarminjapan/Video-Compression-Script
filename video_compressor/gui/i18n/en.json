@@ -7,6 +7,7 @@
     "nav": {
         "video": "Video Compression",
         "audio": "Audio Compression",
+        "video_audio": "Video / Audio",
         "settings": "Settings",
         "about": "About"
     },
@@ -14,6 +15,7 @@
         "select": "Select File",
         "select_multiple": "Select Files",
         "drop_here": "Drag & drop files here",
+        "browse_hint": "or click to browse files",
         "or": "or",
         "browse": "Browse",
         "output_folder": "Output Folder",
