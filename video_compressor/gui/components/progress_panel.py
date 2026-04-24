@@ -22,6 +22,7 @@ class ProgressPanel(ctk.CTkFrame):
 
         self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
         # Left Column: Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -67,6 +68,7 @@ class ProgressPanel(ctk.CTkFrame):
         progress_frame = ctk.CTkFrame(self, fg_color="transparent")
         progress_frame.grid(row=0, column=1, padx=(0, 5), pady=5, sticky="nsew")
         progress_frame.grid_columnconfigure(0, weight=1)
+        progress_frame.grid_rowconfigure(5, weight=1)
 
         self._overall_label = ctk.CTkLabel(
             progress_frame,
@@ -104,12 +106,12 @@ class ProgressPanel(ctk.CTkFrame):
 
         self._error_textbox = ctk.CTkTextbox(
             progress_frame,
-            height=30,
+            height=80,
             font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=10),
             state="disabled",
             wrap="word",
         )
-        self._error_textbox.grid(row=5, column=0, pady=(0, 0), sticky="ew")
+        self._error_textbox.grid(row=5, column=0, pady=(0, 0), sticky="nsew")
 
     def _handle_start(self):
         if self._on_start:
