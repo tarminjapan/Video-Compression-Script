@@ -127,8 +127,7 @@ class FileListFrame(ctk.CTkFrame):
 
         for i, file_info in enumerate(self._files):
             row = ctk.CTkFrame(self._scroll_frame, fg_color="transparent", height=32)
-            row.grid(row=i, column=0, sticky="new", pady=2)
-            row.grid_columnconfigure(1, weight=1)
+            row.grid(row=i, column=0, sticky="ew", pady=2)
             row.grid_propagate(False)
 
             icon = "\U0001f3ac" if file_info["type"] == "video" else "\U0001f3b5"
@@ -137,7 +136,7 @@ class FileListFrame(ctk.CTkFrame):
                 text=icon,
                 width=24,
                 font=ctk.CTkFont(size=14),
-            ).grid(row=0, column=0, padx=(4, 2))
+            ).pack(side="left", padx=(4, 2))
 
             name_text = file_info["name"]
             if len(name_text) > 30:
@@ -147,20 +146,21 @@ class FileListFrame(ctk.CTkFrame):
                 text=name_text,
                 anchor="w",
                 font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
-            ).grid(row=0, column=1, sticky="w", padx=4)
+                text_color=("gray10", "gray90"),
+            ).pack(side="left", fill="x", expand=True, padx=4)
 
             size_str = self._format_size(file_info["size"])
             ctk.CTkLabel(
                 row,
                 text=f"{file_info['format']} | {size_str}",
-                width=110,
+                width=92,
                 font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
                 text_color=("gray40", "gray60"),
-            ).grid(row=0, column=2, padx=4)
+            ).pack(side="left", padx=4)
 
             reorder_frame = ctk.CTkFrame(row, fg_color="transparent", width=56)
-            reorder_frame.grid(row=0, column=3, padx=(2, 2))
-            reorder_frame.grid_propagate(False)
+            reorder_frame.pack(side="right", padx=(2, 2))
+            reorder_frame.pack_propagate(False)
 
             ctk.CTkButton(
                 reorder_frame,
@@ -196,7 +196,7 @@ class FileListFrame(ctk.CTkFrame):
                 text_color=("gray40", "gray60"),
                 hover_color=("gray75", "gray30"),
                 command=lambda idx=i: self.remove_file(idx),
-            ).grid(row=0, column=4, padx=(4, 4))
+            ).pack(side="right", padx=(4, 4))
 
     @staticmethod
     def _format_size(size_bytes: int) -> str:

@@ -20,86 +20,98 @@ class ProgressPanel(ctk.CTkFrame):
         self._on_pause = on_pause
         self._is_paused = False
 
-        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
+        # Left Column: Buttons
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.grid(row=0, column=0, padx=10, pady=(6, 3), sticky="ew")
-        btn_frame.grid_columnconfigure(0, weight=1)
+        btn_frame.grid(row=0, column=0, padx=(5, 10), pady=5, sticky="n")
 
         self._start_btn = ctk.CTkButton(
             btn_frame,
             text=t("compress.start"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=13, weight="bold"),
-            height=30,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12, weight="bold"),
+            height=28,
+            width=120,
             command=self._handle_start,
         )
-        self._start_btn.grid(row=0, column=0, sticky="w")
+        self._start_btn.pack(pady=(0, 5))
 
         self._pause_btn = ctk.CTkButton(
             btn_frame,
             text=t("batch.pause"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
-            height=30,
-            width=80,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
+            height=26,
+            width=120,
             state="disabled",
             fg_color=("gray70", "gray30"),
             hover_color=("gray60", "gray40"),
             command=self._handle_pause,
         )
-        self._pause_btn.grid(row=0, column=1, padx=(8, 0))
+        self._pause_btn.pack(pady=(0, 5))
 
         self._cancel_btn = ctk.CTkButton(
             btn_frame,
             text=t("compress.cancel"),
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12),
-            height=30,
-            width=80,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
+            height=26,
+            width=120,
             state="disabled",
             fg_color=("gray70", "gray30"),
             hover_color=("gray60", "gray40"),
             command=self._handle_cancel,
         )
-        self._cancel_btn.grid(row=0, column=2, padx=(8, 0))
+        self._cancel_btn.pack(pady=(0, 0))
+
+        # Right Column: Progress and Logs
+        progress_frame = ctk.CTkFrame(self, fg_color="transparent")
+        progress_frame.grid(row=0, column=1, padx=(0, 5), pady=5, sticky="nsew")
+        progress_frame.grid_columnconfigure(0, weight=1)
+        progress_frame.grid_rowconfigure(5, weight=1)
 
         self._overall_label = ctk.CTkLabel(
-            self,
+            progress_frame,
             text="",
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=10),
             text_color=("gray40", "gray60"),
+            height=12,
         )
-        self._overall_label.grid(row=1, column=0, padx=10, pady=(3, 0), sticky="w")
+        self._overall_label.grid(row=0, column=0, pady=(0, 1), sticky="w")
 
-        self._overall_progress_bar = ctk.CTkProgressBar(self, height=6)
-        self._overall_progress_bar.grid(row=2, column=0, padx=10, pady=(2, 1), sticky="ew")
+        self._overall_progress_bar = ctk.CTkProgressBar(progress_frame, height=4)
+        self._overall_progress_bar.grid(row=1, column=0, pady=(0, 4), sticky="ew")
         self._overall_progress_bar.set(0)
 
-        self._progress_bar = ctk.CTkProgressBar(self, height=10)
-        self._progress_bar.grid(row=3, column=0, padx=10, pady=(1, 2), sticky="ew")
+        self._progress_bar = ctk.CTkProgressBar(progress_frame, height=6)
+        self._progress_bar.grid(row=2, column=0, pady=(0, 2), sticky="ew")
         self._progress_bar.set(0)
 
         self._stats_label = ctk.CTkLabel(
-            self,
+            progress_frame,
             text="",
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=10),
             text_color=("gray40", "gray60"),
+            height=12,
         )
-        self._stats_label.grid(row=4, column=0, padx=10, sticky="w")
+        self._stats_label.grid(row=3, column=0, pady=(0, 0), sticky="w")
 
         self._status_label = ctk.CTkLabel(
-            self,
+            progress_frame,
             text="",
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=12, weight="bold"),
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11, weight="bold"),
+            height=14,
         )
-        self._status_label.grid(row=5, column=0, padx=10, pady=(3, 0), sticky="w")
+        self._status_label.grid(row=4, column=0, pady=(1, 2), sticky="w")
 
         self._error_textbox = ctk.CTkTextbox(
-            self,
-            height=50,
-            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=11),
+            progress_frame,
+            height=80,
+            font=ctk.CTkFont(family=DEFAULT_FONT_FAMILY, size=10),
             state="disabled",
             wrap="word",
         )
-        self._error_textbox.grid(row=6, column=0, padx=10, pady=(3, 8), sticky="ew")
+        self._error_textbox.grid(row=5, column=0, pady=(0, 0), sticky="nsew")
 
     def _handle_start(self):
         if self._on_start:
