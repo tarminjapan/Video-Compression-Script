@@ -15,6 +15,7 @@ from tkinter import filedialog
 import customtkinter as ctk
 
 from ...config import AUDIO_EXTENSIONS, MP3_BITRATE_MAX, MP3_BITRATE_MIN, VIDEO_EXTENSIONS
+from ...ffmpeg import get_audio_info, get_video_info
 from ..components.denoise_section import DenoiseSection
 from ..components.file_drop_frame import FileDropFrame
 from ..components.file_list import FileListFrame
@@ -595,9 +596,7 @@ class VideoAudioView(ctk.CTkFrame):
             if request_id != self._info_request_id:
                 return
             try:
-                from ...ffmpeg import get_audio_info, get_ffmpeg_executables, get_video_info
-
-                _, ffprobe_path = get_ffmpeg_executables()
+                _, ffprobe_path = CompressionWorker._resolve_ffmpeg_paths()
                 file_type = self._get_file_type(first_file)
                 parts: list[str] = []
                 ext = Path(first_file).suffix.upper().lstrip(".")
@@ -636,10 +635,10 @@ class VideoAudioView(ctk.CTkFrame):
                         parts.append(f"{m:02d}:{s:04.1f}")
 
                 text = " | ".join(parts) if parts else "\u2014"
-                if request_id == self._info_request_id:
+                if request_id == self._info_request_id and self.winfo_exists():
                     self.after(0, lambda: self._info_label.configure(text=text))
             except Exception:
-                if request_id == self._info_request_id:
+                if request_id == self._info_request_id and self.winfo_exists():
                     self.after(0, lambda: self._info_label.configure(text="\u2014"))
 
         threading.Thread(target=fetch_info, daemon=True).start()
@@ -681,14 +680,22 @@ class VideoAudioView(ctk.CTkFrame):
             pass
         return None
 
+    @staticmethod
+    def _parse_custom_resolution(raw: str) -> tuple[str, str] | None:
+        if "x" not in raw.lower():
+            return None
+        parts = raw.lower().split("x")
+        if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
+            return parts[0], parts[1]
+        return None
+
     def _get_resolution_value(self) -> str | None:
         key = self._get_resolution_key()
         if key == "custom":
             raw = self._custom_res_entry.get().strip()
-            if "x" in raw.lower():
-                parts = raw.lower().split("x")
-                if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
-                    return f"{parts[0]}:{parts[1]}"
+            parsed = self._parse_custom_resolution(raw)
+            if parsed:
+                return f"{parsed[0]}:{parsed[1]}"
             return None
         return _RESOLUTION_VALUES.get(key)
 
@@ -706,10 +713,7 @@ class VideoAudioView(ctk.CTkFrame):
                 raw = self._custom_res_entry.get().strip()
                 if not raw:
                     return t("errors.custom_resolution_required")
-                if "x" not in raw.lower():
-                    return t("errors.invalid_resolution_format")
-                parts = raw.lower().split("x")
-                if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit():
+                if not self._parse_custom_resolution(raw):
                     return t("errors.invalid_resolution_format")
 
         return None
