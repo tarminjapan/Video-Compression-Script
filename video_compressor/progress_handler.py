@@ -21,6 +21,14 @@ class ProgressCallback(Protocol):
         ...
 
 
+class OutputCallback(Protocol):
+    """Protocol for raw output callback functions."""
+
+    def __call__(self, line: str) -> None:
+        """Called with raw output lines."""
+        ...
+
+
 class CancellationSource:
     """Manages cancellation requests for compression operations.
 

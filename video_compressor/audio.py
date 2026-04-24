@@ -27,6 +27,7 @@ from .models import (
 from .progress_handler import (
     CLIProgressReporter,
     CancellationSource,
+    OutputCallback,
     ProgressCallback,
     ProgressParser,
 )
@@ -184,42 +185,6 @@ def compress_audio(
             volume_rows,
         )
 
-    # Validate and cap bitrate
-    bitrate_kbps = parse_bitrate(bitrate)
-    if bitrate_kbps < MP3_BITRATE_MIN:
-        print(
-            f"  {_YELLOW}Warning: Bitrate adjusted to minimum {MP3_BITRATE_MIN}k (requested: {bitrate}){_RESET}"
-        )
-        bitrate = f"{MP3_BITRATE_MIN}k"
-    elif bitrate_kbps > MP3_BITRATE_MAX:
-        print(
-            f"  {_YELLOW}Warning: Bitrate capped to {MP3_BITRATE_MAX}k (requested: {bitrate}){_RESET}"
-        )
-        bitrate = f"{MP3_BITRATE_MAX}k"
-
-    # Build ffmpeg command
-    cmd = [ffmpeg_path, "-i", str(input_path), "-y"]  # -y to overwrite output
-
-    # Build audio filter
-    audio_filter = build_audio_filter(volume_gain_db, denoise)
-    if audio_filter:
-        cmd.extend(["-af", audio_filter])
-
-    # MP3 codec settings
-    cmd.extend(
-        [
-            "-c:a",
-            MP3_CODEC,
-            "-b:a",
-            bitrate,
-            "-map_metadata",
-            "0",  # Preserve metadata
-        ]
-    )
-
-    # Output file
-    cmd.append(str(output_path))
-
     # Print settings section
     print_header(
         "Compression Settings",
@@ -233,75 +198,67 @@ def compress_audio(
     print(f"\n  {_BOLD}Starting MP3 compression...{_RESET}")
     print(f"  {_CYAN}{'─' * 48}{_RESET}")
 
-    # Execute ffmpeg command
-    process = None
+    # Execute via service layer
     reporter = CLIProgressReporter(total_duration)
-    reporter.parser.set_start_time(time.time())
+
+    def on_output(line):
+        line_stripped = line.strip()
+        if line_stripped and ("error" in line_stripped.lower() or "warning" in line_stripped.lower()):
+            print(f"\n  {line_stripped}")
 
     try:
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            stdin=subprocess.DEVNULL,
-            encoding="utf-8",
-            errors="replace",
+        result = compress_audio_service(
+            input_path=input_path,
+            output_path=output_path,
+            bitrate=bitrate,
+            volume_gain_db=volume_gain_db,
+            denoise_level=denoise,
+            ffmpeg_path=ffmpeg_path,
+            ffprobe_path=ffprobe_path,
+            on_progress=reporter.report,
+            on_output=on_output,
         )
 
-        # Display progress in real-time
-        if process.stdout:
-            for line in process.stdout:
-                event = reporter.parser.parse_line(line)
-                if event:
-                    reporter.report(event)
-                else:
-                    # Only show non-progress lines that are errors or important info
-                    line_stripped = line.strip()
-                    if line_stripped and (
-                        "error" in line_stripped.lower() or "warning" in line_stripped.lower()
-                    ):
-                        print(f"\n  {line_stripped}")
-
-        process.wait()
-
-        if process.returncode == 0:
+        if result.is_success:
             # Show 100% progress bar
             if total_duration > 0:
                 reporter.report_complete()
             print()  # New line after progress bar
             print(f"  {_CYAN}{'─' * 48}{_RESET}")
 
-            # Get output file size
-            output_size = output_path.stat().st_size / (1024 * 1024)  # MB
-            input_size = input_path.stat().st_size / (1024 * 1024)  # MB
-            compression_ratio = (1 - output_size / input_size) * 100
-
             # Build results section
+            output_size_mb = result.output_size / (1024 * 1024)
+            input_size_mb = result.input_size / (1024 * 1024)
+
             result_rows = [
-                ("Input:      ", f"{input_size:.2f} MB"),
-                ("Output:     ", f"{output_size:.2f} MB"),
-                ("Reduction:  ", (f"{compression_ratio:.1f}%", _GREEN)),
-                ("MP3 bitrate:", bitrate),
+                ("Input:      ", f"{input_size_mb:.2f} MB"),
+                ("Output:     ", f"{output_size_mb:.2f} MB"),
+                ("Reduction:  ", (f"{result.compression_ratio:.1f}%", _GREEN)),
+                ("MP3 bitrate:", result.bitrate),
             ]
 
-            print_header(
-                "✓ Compression Completed",
-                result_rows,
-                color=_GREEN,
-            )
-            print(f"\n  {_GREEN}Output: {output_path}{_RESET}")
+            # Display average statistics
+            stats = result.metadata
+            if stats and stats.get("avg_speed"):
+                result_rows.append(
+                    (
+                        "Avg speed:  ",
+                        f"{stats['avg_speed']:.2f}x",
+                    )
+                )
 
+            print_header("Compression Results", result_rows, color=_GREEN)
+            print()
+
+        elif result.is_cancelled:
+            print("\n\n  Compression interrupted by user.")
+            sys.exit(1)
         else:
-            print(f"\n\n  ✗ Compression failed (return code: {process.returncode})")
+            print(f"\n  {_RED}Error: {result.error_message}{_RESET}")
             sys.exit(1)
 
-    except FileNotFoundError:
-        print("\n  Error: FFmpeg not found. Please ensure FFmpeg is installed and added to PATH.")
-        sys.exit(1)
     except KeyboardInterrupt:
         print("\n\n  Compression interrupted by user.")
-        if process is not None:
-            process.terminate()
         sys.exit(1)
 
 
@@ -315,6 +272,7 @@ def compress_audio_service(
     ffmpeg_path: str = "ffmpeg",
     ffprobe_path: str = "ffprobe",
     on_progress: ProgressCallback | None = None,
+    on_output: OutputCallback | None = None,
     cancellation_source: CancellationSource | None = None,
 ) -> AudioCompressionResult:
     """
@@ -333,6 +291,7 @@ def compress_audio_service(
         ffmpeg_path: Path to ffmpeg executable
         ffprobe_path: Path to ffprobe executable
         on_progress: Callback for progress updates
+        on_output: Callback for raw output lines
         cancellation_source: Source for cancellation requests
 
     Returns:
@@ -433,6 +392,8 @@ def compress_audio_service(
 
                     if on_progress:
                         on_progress(event)
+                elif on_output:
+                    on_output(line)
 
         process.wait()
 

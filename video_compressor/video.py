@@ -28,6 +28,7 @@ from .models import (
 from .progress_handler import (
     CLIProgressReporter,
     CancellationSource,
+    OutputCallback,
     ProgressCallback,
     ProgressParser,
 )
@@ -437,11 +438,7 @@ def compress_video(
         original_width, original_height, custom_max_width, custom_max_height
     )
 
-    # Build ffmpeg command
-    cmd = [ffmpeg_path, "-i", str(input_path), "-y"]  # -y to overwrite output
-
-    # Build video filter chain
-    video_filters = []
+    # Build settings rows for display
     settings_rows = []
 
     # Resolution info
@@ -453,18 +450,15 @@ def compress_video(
                 f"{scaled_width}x{scaled_height} (from {original_width}x{original_height})",
             )
         )
-        video_filters.append(f"scale={scaled_width}:{scaled_height}")
     else:
         settings_rows.append(("Resolution: ", f"{original_width}x{original_height} (no change)"))
 
-    # Add FPS filter if needed
+    # Add FPS info
     fps_label = ""
     if max_fps is not None and original_fps and original_fps > max_fps:
         fps_label = f"{max_fps} fps (from {original_fps:.2f})"
-        video_filters.append(f"fps={max_fps}")
     elif max_fps is not None and not original_fps:
         fps_label = f"{max_fps} fps (limit applied, original unknown)"
-        video_filters.append(f"fps={max_fps}")
     elif max_fps is not None:
         fps_label = f"{max_fps} fps (original: {original_fps:.2f}, no change)"
     elif original_fps:
@@ -473,56 +467,13 @@ def compress_video(
         fps_label = "Unknown"
     settings_rows.append(("FPS:        ", fps_label))
 
-    # Apply video filters if any
-    if video_filters:
-        cmd.extend(["-vf", ",".join(video_filters)])
-
-    # Video codec settings
-    cmd.extend(
-        [
-            "-c:v",
-            VIDEO_CODEC,
-            "-crf",
-            str(crf),
-            "-b:v",
-            "0",  # Disable bitrate-based encoding (CRF mode)
-            "-preset",
-            str(preset),
-        ]
-    )
-
     settings_rows.append(("Video:      ", f"{VIDEO_CODEC.upper()} | CRF {crf} | Preset {preset}"))
 
-    # Audio codec settings
+    # Audio info
     if audio_enabled:
-        # Validate and cap audio bitrate
-        bitrate_kbps = parse_bitrate(audio_bitrate)
-        if bitrate_kbps > MAX_AUDIO_BITRATE:
-            print(
-                f"  {_YELLOW}Warning: Audio bitrate capped to {MAX_AUDIO_BITRATE}k (requested: {audio_bitrate}){_RESET}"
-            )
-            audio_bitrate = f"{MAX_AUDIO_BITRATE}k"
-
-        # Build audio filter for volume and denoise
-        audio_filter = build_audio_filter(volume_gain_db, denoise)
-        if audio_filter:
-            cmd.extend(["-af", audio_filter])
-
-        cmd.extend(
-            [
-                "-c:a",
-                AUDIO_CODEC,
-                "-b:a",
-                audio_bitrate,
-            ]
-        )
         settings_rows.append(("Audio:      ", f"{AUDIO_CODEC.upper()} @ {audio_bitrate}"))
     else:
-        cmd.extend(["-an"])  # No audio
         settings_rows.append(("Audio:      ", "Disabled"))
-
-    # Output file
-    cmd.append(str(output_path))
 
     # Print settings section
     print_header(
@@ -534,87 +485,71 @@ def compress_video(
     print(f"\n  {_BOLD}Starting compression...{_RESET}")
     print(f"  {_CYAN}{'─' * 48}{_RESET}")
 
-    # Execute ffmpeg command
-    process = None
+    # Execute via service layer
     reporter = CLIProgressReporter(total_duration)
-    reporter.parser.set_start_time(time.time())
+
+    def on_output(line):
+        line_stripped = line.strip()
+        if line_stripped and ("error" in line_stripped.lower() or "warning" in line_stripped.lower()):
+            print(f"\n  {line_stripped}")
 
     try:
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            stdin=subprocess.DEVNULL,  # Close stdin to prevent blocking
-            encoding="utf-8",
-            errors="replace",
+        result = compress_video_service(
+            input_path=input_path,
+            output_path=output_path,
+            crf=crf,
+            preset=preset,
+            audio_bitrate=audio_bitrate,
+            audio_enabled=audio_enabled,
+            max_fps=max_fps,
+            resolution=resolution,
+            volume_gain_db=volume_gain_db,
+            denoise_level=denoise,
+            ffmpeg_path=ffmpeg_path,
+            ffprobe_path=ffprobe_path,
+            on_progress=reporter.report,
+            on_output=on_output,
         )
 
-        # Display progress in real-time
-        if process.stdout:
-            for line in process.stdout:
-                event = reporter.parser.parse_line(line)
-                if event:
-                    reporter.report(event)
-                else:
-                    # Only show non-progress lines that are errors or important info
-                    line_stripped = line.strip()
-                    if line_stripped and (
-                        "error" in line_stripped.lower() or "warning" in line_stripped.lower()
-                    ):
-                        print(f"\n  {line_stripped}")
-
-        process.wait()
-
-        if process.returncode == 0:
+        if result.is_success:
             # Show 100% progress bar
             if total_duration > 0:
                 reporter.report_complete()
             print()  # New line after progress bar
             print(f"  {_CYAN}{'─' * 48}{_RESET}")
 
-            # Get output file size
-            output_size = output_path.stat().st_size / (1024 * 1024)  # MB
-            input_size = input_path.stat().st_size / (1024 * 1024)  # MB
-            compression_ratio = (1 - output_size / input_size) * 100
-
             # Build results section
+            output_size_mb = result.output_size / (1024 * 1024)
+            input_size_mb = result.input_size / (1024 * 1024)
+
             result_rows = [
-                ("Input:      ", f"{input_size:.2f} MB"),
-                ("Output:     ", f"{output_size:.2f} MB"),
-                ("Reduction:  ", (f"{compression_ratio:.1f}%", _GREEN)),
+                ("Input:      ", f"{input_size_mb:.2f} MB"),
+                ("Output:     ", f"{output_size_mb:.2f} MB"),
+                ("Reduction:  ", (f"{result.compression_ratio:.1f}%", _GREEN)),
             ]
 
             # Display average statistics
-            stats = reporter.stats
-            if stats["fps_list"]:
-                avg_fps = sum(stats["fps_list"]) / len(stats["fps_list"])
-                avg_speed = sum(stats["speed_list"]) / len(stats["speed_list"])
-                total_frames = stats["frame_list"][-1] if stats["frame_list"] else 0
+            stats = result.metadata
+            if stats and stats.get("avg_fps"):
                 result_rows.append(
                     (
                         "Avg speed:  ",
-                        f"{avg_fps:.1f} fps · {avg_speed:.2f}x · {total_frames} frames",
+                        f"{stats['avg_fps']:.1f} fps · {stats['avg_speed']:.2f}x · {stats['total_frames']} frames",
                     )
                 )
 
-            print_header(
-                "✓ Compression Completed",
-                result_rows,
-                color=_GREEN,
-            )
-            print(f"\n  {_GREEN}Output: {output_path}{_RESET}")
+            print_header("Compression Results", result_rows, color=_GREEN)
+            print()
 
+        elif result.is_cancelled:
+            print("\n\n  Compression interrupted by user.")
+            sys.exit(1)
         else:
-            print(f"\n\n  ✗ Compression failed (return code: {process.returncode})")
+            print(f"\n  {_RED}Error: {result.error_message}{_RESET}")
             sys.exit(1)
 
-    except FileNotFoundError:
-        print("\n  Error: FFmpeg not found. Please ensure FFmpeg is installed and added to PATH.")
-        sys.exit(1)
     except KeyboardInterrupt:
         print("\n\n  Compression interrupted by user.")
-        if process is not None:
-            process.terminate()
         sys.exit(1)
 
 
@@ -632,6 +567,7 @@ def compress_video_service(
     ffmpeg_path: str = "ffmpeg",
     ffprobe_path: str = "ffprobe",
     on_progress: ProgressCallback | None = None,
+    on_output: OutputCallback | None = None,
     cancellation_source: CancellationSource | None = None,
 ) -> VideoCompressionResult:
     """
@@ -654,6 +590,7 @@ def compress_video_service(
         ffmpeg_path: Path to ffmpeg executable
         ffprobe_path: Path to ffprobe executable
         on_progress: Callback for progress updates
+        on_output: Callback for raw output lines
         cancellation_source: Source for cancellation requests
 
     Returns:
@@ -804,6 +741,8 @@ def compress_video_service(
 
                     if on_progress:
                         on_progress(event)
+                elif on_output:
+                    on_output(line)
 
         process.wait()
 
