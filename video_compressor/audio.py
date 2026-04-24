@@ -24,8 +24,12 @@ from .models import (
     CompressionStatus,
     VolumeAnalysisResult,
 )
-from .progress import show_final_progress, update_progress
-from .progress_handler import CancellationSource, ProgressCallback, ProgressParser
+from .progress_handler import (
+    CLIProgressReporter,
+    CancellationSource,
+    ProgressCallback,
+    ProgressParser,
+)
 from .utils import (
     _BOLD,
     _CYAN,
@@ -231,7 +235,8 @@ def compress_audio(
 
     # Execute ffmpeg command
     process = None
-    stats = {"fps_list": [], "speed_list": [], "frame_list": []}
+    reporter = CLIProgressReporter(total_duration)
+    reporter.parser.set_start_time(time.time())
 
     try:
         process = subprocess.Popen(
@@ -246,8 +251,10 @@ def compress_audio(
         # Display progress in real-time
         if process.stdout:
             for line in process.stdout:
-                # Try to parse and display progress
-                if not update_progress(line, total_duration, stats):
+                event = reporter.parser.parse_line(line)
+                if event:
+                    reporter.report(event)
+                else:
                     # Only show non-progress lines that are errors or important info
                     line_stripped = line.strip()
                     if line_stripped and (
@@ -260,7 +267,7 @@ def compress_audio(
         if process.returncode == 0:
             # Show 100% progress bar
             if total_duration > 0:
-                show_final_progress(total_duration)
+                reporter.report_complete()
             print()  # New line after progress bar
             print(f"  {_CYAN}{'─' * 48}{_RESET}")
 
