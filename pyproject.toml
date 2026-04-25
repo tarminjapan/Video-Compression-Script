@@ -28,6 +28,8 @@ classifiers = [
 dependencies = [
     "customtkinter>=5.2.2",
     "requests>=2.33.1",
+    "flask>=3.0.0",
+    "flask-cors>=4.0.0",
     "windnd>=1.0.7; sys_platform == 'win32'",
 ]
 
