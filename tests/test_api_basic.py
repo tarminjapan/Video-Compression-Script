@@ -34,6 +34,7 @@ def test_api_media_info_endpoint(client):
 
 def test_start_task_adds_timestamp(client):
     with (
+        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
         patch("video_compressor.api.blueprints.jobs.compress_video_service"),
         patch("threading.Thread"),
     ):
@@ -61,6 +62,7 @@ def test_task_completion_adds_finished_at(client):
     mock_result.error_message = None
 
     with (
+        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
         patch(
             "video_compressor.api.blueprints.jobs.compress_video_service", return_value=mock_result
         ),
@@ -84,6 +86,7 @@ def test_task_completion_adds_finished_at(client):
 
 def test_cancel_task(client):
     with (
+        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
         patch("video_compressor.api.blueprints.jobs.compress_video_service"),
         patch("threading.Thread"),
     ):
