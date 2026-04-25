@@ -1,0 +1,152 @@
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Save, RefreshCw, Moon, Sun, Monitor } from 'lucide-react';
+import axios from 'axios';
+import type { AppSettings } from '../types';
+
+const API_BASE = 'http://localhost:5000/api';
+
+const SettingsView: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const [settings, setSettings] = useState<AppSettings>({
+    language: 'en',
+    appearance_mode: 'system',
+    ffmpeg_path: '',
+    default_output_dir: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get<AppSettings>(`${API_BASE}/settings`);
+      setSettings(response.data);
+    } catch (error) {
+      console.error('Failed to fetch settings', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveSettings = async () => {
+    setSaving(true);
+    try {
+      await axios.post<void>(`${API_BASE}/settings`, settings);
+      setMessage(t('settings.saved'));
+      
+      // Apply language change immediately
+      i18n.changeLanguage(settings.language);
+      
+      // Apply theme
+      document.documentElement.setAttribute('data-theme', settings.appearance_mode);
+      
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      console.error('Failed to save settings', error);
+      setMessage(t('common.error'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    setSettings({ ...settings, language: lang });
+  };
+
+  const handleThemeChange = (mode: 'light' | 'dark' | 'system') => {
+    setSettings({ ...settings, appearance_mode: mode });
+  };
+
+  if (loading) return <div>{t('common.loading')}</div>;
+
+  return (
+    <div className="view-container">
+      <header className="view-header">
+        <h1>{t('nav.settings')}</h1>
+        <p>{t('settings.title')}</p>
+      </header>
+
+      <section className="card">
+        <div className="section-title">{t('settings.section_appearance')}</div>
+        <div className="settings-grid">
+          <div className="setting-item">
+            <label>{t('settings.language')}</label>
+            <select 
+              value={settings.language} 
+              onChange={(e) => handleLanguageChange(e.target.value)}
+            >
+              <option value="en">{t('settings.language_names.en')}</option>
+              <option value="ja">{t('settings.language_names.ja')}</option>
+            </select>
+          </div>
+          <div className="setting-item">
+            <label>{t('settings.theme')}</label>
+            <div className="theme-toggle">
+              <button 
+                className={`theme-button ${settings.appearance_mode === 'light' ? 'active' : ''}`}
+                onClick={() => handleThemeChange('light')}
+              >
+                <Sun size={18} /> {t('settings.themes.light')}
+              </button>
+              <button 
+                className={`theme-button ${settings.appearance_mode === 'dark' ? 'active' : ''}`}
+                onClick={() => handleThemeChange('dark')}
+              >
+                <Moon size={18} /> {t('settings.themes.dark')}
+              </button>
+              <button 
+                className={`theme-button ${settings.appearance_mode === 'system' ? 'active' : ''}`}
+                onClick={() => handleThemeChange('system')}
+              >
+                <Monitor size={18} /> {t('settings.themes.system')}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="section-title">{t('settings.section_ffmpeg')}</div>
+        <div className="settings-grid">
+          <div className="setting-item" style={{ gridColumn: '1 / -1' }}>
+            <label>{t('settings.ffmpeg_path')}</label>
+            <div className="input-with-button">
+              <input 
+                type="text" 
+                value={settings.ffmpeg_path} 
+                onChange={(e) => setSettings({...settings, ffmpeg_path: e.target.value})}
+                placeholder={t('settings.auto_detect')}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="section-title">{t('settings.section_output')}</div>
+        <div className="settings-grid">
+          <div className="setting-item" style={{ gridColumn: '1 / -1' }}>
+            <label>{t('settings.output_default')}</label>
+            <input 
+              type="text" 
+              value={settings.default_output_dir} 
+              onChange={(e) => setSettings({...settings, default_output_dir: e.target.value})}
+            />
+          </div>
+        </div>
+
+        <div className="settings-actions">
+          <button className="primary-button" onClick={saveSettings} disabled={saving}>
+            {saving ? <RefreshCw className="spin" size={18} /> : <Save size={18} />}
+            {t('settings.save')}
+          </button>
+          {message && <span className="status-message">{message}</span>}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default SettingsView;
