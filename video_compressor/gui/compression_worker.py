@@ -15,6 +15,7 @@ from pathlib import Path
 from ..audio import compress_audio_service
 from ..config import AUDIO_CODEC, MP3_CODEC, VIDEO_CODEC
 from ..ffmpeg import get_ffmpeg_executables
+from ..models import ProgressEvent
 from ..progress_handler import CancellationSource
 from ..video import compress_video_service
 from .i18n import t
@@ -49,6 +50,19 @@ class CompressionWorker:
                 ffprobe_p = ffmpeg_p.parent / ffprobe_name
                 return str(ffmpeg_p), str(ffprobe_p) if ffprobe_p.exists() else "ffprobe"
         return get_ffmpeg_executables()
+
+    @staticmethod
+    def _event_to_dict(e: ProgressEvent) -> dict:
+        """Convert a ProgressEvent to a dictionary for GUI use."""
+        return {
+            "percent": e.percent,
+            "current_time": e.current_time,
+            "total_duration": e.total_duration,
+            "fps": e.fps,
+            "speed": e.speed,
+            "frame": e.frame,
+            "eta": e.eta,
+        }
 
     def start_video_compression(
         self,
@@ -88,15 +102,7 @@ class CompressionWorker:
                     denoise_level=denoise_level,
                     ffmpeg_path=ffmpeg_path,
                     ffprobe_path=ffprobe_path,
-                    on_progress=lambda e: on_progress({
-                        "percent": e.percent,
-                        "current_time": e.current_time,
-                        "total_duration": e.total_duration,
-                        "fps": e.fps,
-                        "speed": e.speed,
-                        "frame": e.frame,
-                        "eta": e.eta,
-                    }) if on_progress else None,
+                    on_progress=lambda e: on_progress(self._event_to_dict(e)) if on_progress else None,
                     cancellation_source=self._cancellation_source,
                 )
 
@@ -146,15 +152,7 @@ class CompressionWorker:
                     keep_metadata=keep_metadata,
                     ffmpeg_path=ffmpeg_path,
                     ffprobe_path=ffprobe_path,
-                    on_progress=lambda e: on_progress({
-                        "percent": e.percent,
-                        "current_time": e.current_time,
-                        "total_duration": e.total_duration,
-                        "fps": e.fps,
-                        "speed": e.speed,
-                        "frame": e.frame,
-                        "eta": e.eta,
-                    }) if on_progress else None,
+                    on_progress=lambda e: on_progress(self._event_to_dict(e)) if on_progress else None,
                     cancellation_source=self._cancellation_source,
                 )
 
