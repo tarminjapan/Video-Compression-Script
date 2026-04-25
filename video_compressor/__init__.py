@@ -1,6 +1,4 @@
-"""
-Video/Audio compression script package initialization.
-"""
+"""Video/Audio compression script package initialization."""
 
 __version__ = "1.0.6"
 

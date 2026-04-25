@@ -1,10 +1,9 @@
-"""
-AmeCompression build script for creating standalone executables with PyInstaller.
+"""AmeCompression build script for creating standalone executables with PyInstaller.
 
 Usage:
-    python scripts/build.py              # Build directory mode (default)
-    python scripts/build.py --onefile    # Build single-file mode
-    python scripts/build.py --with-ffmpeg # Bundle FFmpeg from bin/ directory
+    uv run scripts/build.py              # Build directory mode (default)
+    uv run scripts/build.py --onefile    # Build single-file mode
+    uv run scripts/build.py --with-ffmpeg # Bundle FFmpeg from bin/ directory
 """
 
 import argparse
@@ -32,12 +31,28 @@ def clean():
 def build(onefile: bool = False, with_ffmpeg: bool = False):
     clean()
 
+    main_script = PROJECT_ROOT / "run.py"
     cmd = [sys.executable, "-m", "PyInstaller", "--clean", "--noconfirm"]
 
     if onefile:
         cmd.append("--onefile")
     else:
         cmd.append("--onedir")
+
+    cmd.extend(["--name", "ame-compression-backend"])
+
+    # Add hidden imports needed for dynamic imports in the backend
+    for hidden in ["video_compressor", "flask", "flask_cors"]:
+        cmd.extend(["--hidden-import", hidden])
+
+    # Exclude unnecessary modules to reduce size
+    for exclude in ["customtkinter", "tkinter", "windnd"]:
+        cmd.extend(["--exclude-module", exclude])
+
+    # Add icon if it exists
+    icon_path = PROJECT_ROOT / "assets" / "icon.ico"
+    if icon_path.exists():
+        cmd.extend(["--icon", str(icon_path)])
 
     if with_ffmpeg and BIN_DIR.exists():
         ffmpeg_name = "ffmpeg.exe" if sys.platform == "win32" else "ffmpeg"
@@ -51,10 +66,10 @@ def build(onefile: bool = False, with_ffmpeg: bool = False):
         else:
             print(f"Warning: bin/ directory exists but {ffmpeg_name}/{ffprobe_name} not found.")
 
-    cmd.append(str(SPEC_FILE))
+    cmd.append(str(main_script))
 
     print(f"Running: {' '.join(cmd)}")
-    result = subprocess.run(cmd, cwd=str(PROJECT_ROOT))
+    result = subprocess.run(cmd, cwd=str(PROJECT_ROOT), check=False)
 
     if result.returncode == 0:
         print("\nBuild completed successfully!")

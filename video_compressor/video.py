@@ -1,5 +1,4 @@
-"""
-Video compression functionality.
+"""Video compression functionality.
 
 This module provides both CLI-oriented functions and service-layer functions
 for video compression. The service layer functions return structured results
@@ -26,8 +25,8 @@ from .models import (
     VolumeAnalysisResult,
 )
 from .progress_handler import (
-    CLIProgressReporter,
     CancellationSource,
+    CLIProgressReporter,
     OutputCallback,
     ProgressCallback,
     ProgressParser,
@@ -105,8 +104,7 @@ def analyze_media(
     ffmpeg_path="ffmpeg",
     ffprobe_path="ffprobe",
 ):
-    """
-    Analyze media file and display detailed information.
+    """Analyze media file and display detailed information.
 
     Args:
         input_path (str): Input media file path
@@ -291,8 +289,7 @@ def compress_video(
     ffmpeg_path="ffmpeg",
     ffprobe_path="ffprobe",
 ):
-    """
-    Compress video using FFmpeg with AV1 codec.
+    """Compress video using FFmpeg with AV1 codec.
 
     Args:
         input_path (str): Input video file path
@@ -490,7 +487,9 @@ def compress_video(
 
     def on_output(line):
         line_stripped = line.strip()
-        if line_stripped and ("error" in line_stripped.lower() or "warning" in line_stripped.lower()):
+        if line_stripped and (
+            "error" in line_stripped.lower() or "warning" in line_stripped.lower()
+        ):
             print(f"\n  {line_stripped}")
 
     try:
@@ -570,8 +569,7 @@ def compress_video_service(
     on_output: OutputCallback | None = None,
     cancellation_source: CancellationSource | None = None,
 ) -> VideoCompressionResult:
-    """
-    Compress video using FFmpeg with AV1 codec (service layer).
+    """Compress video using FFmpeg with AV1 codec (service layer).
 
     This function is designed for API/GUI use and returns structured results
     without side effects (no print/exit). Progress is reported via callback.
@@ -766,8 +764,12 @@ def compress_video_service(
                 crf=crf,
                 preset=preset,
                 metadata={
-                    "avg_fps": sum(stats["fps_list"]) / len(stats["fps_list"]) if stats["fps_list"] else 0,
-                    "avg_speed": sum(stats["speed_list"]) / len(stats["speed_list"]) if stats["speed_list"] else 0,
+                    "avg_fps": sum(stats["fps_list"]) / len(stats["fps_list"])
+                    if stats["fps_list"]
+                    else 0,
+                    "avg_speed": sum(stats["speed_list"]) / len(stats["speed_list"])
+                    if stats["speed_list"]
+                    else 0,
                     "total_frames": stats["frame_list"][-1] if stats["frame_list"] else 0,
                 },
             )
@@ -811,8 +813,7 @@ def analyze_volume_service(
     input_path: str | Path,
     ffmpeg_path: str = "ffmpeg",
 ) -> VolumeAnalysisResult:
-    """
-    Analyze volume level of media file (service layer).
+    """Analyze volume level of media file (service layer).
 
     Args:
         input_path: Input media file path

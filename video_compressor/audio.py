@@ -1,5 +1,4 @@
-"""
-Audio compression functionality.
+"""Audio compression functionality.
 
 This module provides both CLI-oriented functions and service-layer functions
 for audio compression. The service layer functions return structured results
@@ -25,8 +24,8 @@ from .models import (
     VolumeAnalysisResult,
 )
 from .progress_handler import (
-    CLIProgressReporter,
     CancellationSource,
+    CLIProgressReporter,
     OutputCallback,
     ProgressCallback,
     ProgressParser,
@@ -60,8 +59,7 @@ def compress_audio(
     ffmpeg_path="ffmpeg",
     ffprobe_path="ffprobe",
 ):
-    """
-    Compress audio file to MP3 using FFmpeg.
+    """Compress audio file to MP3 using FFmpeg.
 
     Args:
         input_path (str): Input audio file path
@@ -203,7 +201,9 @@ def compress_audio(
 
     def on_output(line):
         line_stripped = line.strip()
-        if line_stripped and ("error" in line_stripped.lower() or "warning" in line_stripped.lower()):
+        if line_stripped and (
+            "error" in line_stripped.lower() or "warning" in line_stripped.lower()
+        ):
             print(f"\n  {line_stripped}")
 
     try:
@@ -275,8 +275,7 @@ def compress_audio_service(
     on_output: OutputCallback | None = None,
     cancellation_source: CancellationSource | None = None,
 ) -> AudioCompressionResult:
-    """
-    Compress audio file to MP3 using FFmpeg (service layer).
+    """Compress audio file to MP3 using FFmpeg (service layer).
 
     This function is designed for API/GUI use and returns structured results
     without side effects (no print/exit). Progress is reported via callback.
@@ -415,8 +414,12 @@ def compress_audio_service(
                 bitrate=bitrate,
                 metadata={
                     "original_bitrate": original_bitrate,
-                    "avg_fps": sum(stats["fps_list"]) / len(stats["fps_list"]) if stats["fps_list"] else 0,
-                    "avg_speed": sum(stats["speed_list"]) / len(stats["speed_list"]) if stats["speed_list"] else 0,
+                    "avg_fps": sum(stats["fps_list"]) / len(stats["fps_list"])
+                    if stats["fps_list"]
+                    else 0,
+                    "avg_speed": sum(stats["speed_list"]) / len(stats["speed_list"])
+                    if stats["speed_list"]
+                    else 0,
                 },
             )
         else:
@@ -456,8 +459,7 @@ def analyze_audio_volume_service(
     input_path: str | Path,
     ffmpeg_path: str = "ffmpeg",
 ) -> VolumeAnalysisResult:
-    """
-    Analyze volume level of audio file (service layer).
+    """Analyze volume level of audio file (service layer).
 
     Args:
         input_path: Input audio file path

@@ -1,5 +1,4 @@
-"""
-Progress event abstraction and cancellation control.
+"""Progress event abstraction and cancellation control.
 
 Provides common interfaces for progress reporting and cancellation
 that can be used by CLI, GUI, and API layers.

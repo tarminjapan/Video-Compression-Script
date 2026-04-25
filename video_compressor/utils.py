@@ -1,6 +1,4 @@
-"""
-Utility functions for video compression.
-"""
+"""Utility functions for video compression."""
 
 import re
 from pathlib import Path
@@ -53,8 +51,7 @@ def print_banner():
 
 
 def print_header(title, rows, color=_CYAN):
-    """
-    Print a styled section with a colored header line and indented rows.
+    """Print a styled section with a colored header line and indented rows.
 
     Args:
         title (str): Section title
@@ -74,8 +71,7 @@ def print_header(title, rows, color=_CYAN):
 
 
 def format_time(seconds):
-    """
-    Format seconds to MM:SS.s format.
+    """Format seconds to MM:SS.s format.
 
     Args:
         seconds (float): Time in seconds
@@ -89,8 +85,7 @@ def format_time(seconds):
 
 
 def get_file_type(file_path):
-    """
-    Determine file type based on extension.
+    """Determine file type based on extension.
 
     Args:
         file_path (str or Path): Path to file
@@ -107,8 +102,7 @@ def get_file_type(file_path):
 
 
 def parse_bitrate(bitrate_str):
-    """
-    Parse bitrate string to kbps integer.
+    """Parse bitrate string to kbps integer.
 
     Args:
         bitrate_str (str): Bitrate string (e.g., "192k", "320k")
@@ -126,8 +120,7 @@ def parse_bitrate(bitrate_str):
 
 
 def calculate_scaled_resolution(width, height, max_width=None, max_height=None):
-    """
-    Calculate scaled resolution while maintaining aspect ratio.
+    """Calculate scaled resolution while maintaining aspect ratio.
 
     Args:
         width (int): Original width
@@ -165,8 +158,7 @@ def calculate_scaled_resolution(width, height, max_width=None, max_height=None):
 
 
 def parse_input_paths(raw_inputs):
-    """
-    Parse raw input string(s) into a list of individual file paths.
+    """Parse raw input string(s) into a list of individual file paths.
 
     Supports the following delimiters:
     - Newline (\\n)

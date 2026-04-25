@@ -6,18 +6,15 @@
 # =============================================================================
 
 repos:
-  # Ruff - フォーマッター & リンター
+  # Ruff - フォーマッター & リンター (Python)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.8
+    rev: v0.9.9
     hooks:
-      # フォーマット (black/isort 代替)
       - id: ruff-format
-        args: [--check]
-      # リント (flake8 代替)
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
 
-  # Pyright - 静的型チェック (Pylance エンジン)
+  # Pyright - 静的型チェック (Python)
   - repo: local
     hooks:
       - id: pyright
@@ -25,9 +22,27 @@ repos:
         entry: pyright
         language: python
         additional_dependencies:
-          - pyright==1.1.403
-          - customtkinter==5.2.2
+          - pyright==1.1.396
+          - flask>=3.0.0
+          - flask-cors>=4.0.0
+          - requests>=2.33.1
         types: [python]
+        pass_filenames: false
+
+  # Frontend Checks (ESLint & Prettier)
+  - repo: local
+    hooks:
+      - id: frontend-eslint
+        name: frontend-eslint
+        entry: bash -c "cd frontend && npx eslint --fix"
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+      - id: frontend-prettier
+        name: frontend-prettier
+        entry: bash -c "cd frontend && npx prettier --write"
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|jsx|css|scss|html|json)$
         pass_filenames: false
 
   # 基本的なチェック (行末空白、YAML等)
@@ -43,3 +58,11 @@ repos:
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: detect-private-key
+
+  # スペルチェック
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        args: [--write-changes]
+        exclude: ^(frontend/package-lock\.json|uv\.lock)

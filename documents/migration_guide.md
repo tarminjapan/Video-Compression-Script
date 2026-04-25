@@ -25,7 +25,7 @@ We recommend using `uv` for managing Python dependencies.
 uv sync --extra dev
 
 # Run the API server manually (optional, Electron starts it automatically)
-python -m video_compressor --api --port 5000 --config dev
+uv run python -m video_compressor --api --port 5000 --config dev
 ```
 
 ### 2. Node.js Environment (Frontend)
@@ -33,8 +33,8 @@ python -m video_compressor --api --port 5000 --config dev
 Ensure you have Node.js (v18+) installed.
 
 ```bash
-# Go to the web directory
-cd web
+# Go to the frontend directory
+cd frontend
 
 # Install dependencies
 npm install
@@ -54,16 +54,15 @@ The backend automatically detects local executables in the `bin/` folder before 
 
 ## ⚠️ Compatibility & Constraints
 
-- **Legacy CLI**: The CLI version (`python -m video_compressor <input>`) remains fully compatible and functional.
-- **Legacy GUI**: The CustomTkinter GUI can still be launched via `python -m video_compressor --gui`, but it is now considered **deprecated** and will receive only critical updates.
+- **CLI Mode**: The CLI version (`uv run python -m video_compressor <input>`) remains fully compatible and functional.
 - **Port Conflict**: The Flask backend defaults to port `5000`. Ensure this port is not in use by other services (e.g., macOS AirPlay Receiver).
 - **CORS**: The API is configured to only allow requests from the Electron app (`app://.`) and the Vite development server (`http://localhost:5173`).
 
 ## 🚀 Release Procedure
 
-1.  **Version Update**: Increment the version in `pyproject.toml` and `web/package.json`.
-2.  **Build Frontend**: Run `npm run build` in the `web` directory.
-3.  **Build Executable**: Use `python scripts/build.py` to create the standalone executable.
+1.  **Version Update**: Increment the version in `pyproject.toml` and `frontend/package.json`.
+2.  **Build Frontend**: Run `npm run build` in the `frontend` directory.
+3.  **Build Executable**: Use `uv run scripts/build.py` to create the standalone executable.
 4.  **Verification**:
     - Run all Python tests: `uv run pytest tests`
     - Verify FFmpeg detection status in the settings view.

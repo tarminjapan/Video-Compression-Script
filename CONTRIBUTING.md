@@ -29,26 +29,23 @@ uv run pre-commit install
 
 ```
 AmeCompression/
-├── video_compressor/       # Main package
+├── frontend/               # Electron + React interface
+│   ├── src/                # React source code
+│   ├── electron/           # Electron main/preload scripts
+│   └── package.json        # Frontend dependencies
+├── video_compressor/       # Backend package (engine & API)
+│   ├── api/                # Flask REST API
 │   ├── cli.py              # CLI interface
 │   ├── config.py           # Configuration constants
 │   ├── ffmpeg.py           # FFmpeg detection and media info
 │   ├── video.py            # Video compression
 │   ├── audio.py            # Audio compression
 │   ├── volume.py           # Volume analysis and adjustment
-│   ├── utils.py            # CLI utility functions
-│   ├── progress.py         # CLI progress bar
-│   └── gui/                # GUI module
-│       ├── app.py          # Main window
-│       ├── components/     # Reusable UI components
-│       ├── views/          # View pages (video, audio, settings)
-│       ├── i18n/           # Internationalization (en/ja)
-│       ├── theme/          # Theme management and colors
-│       └── utils.py        # Settings manager
-├── tests/                  # Test files
+│   └── utils.py            # Common utility functions
+├── tests/                  # Test files (pytest)
 ├── scripts/                # Build and utility scripts
 ├── AmeCompression.spec     # PyInstaller spec file
-└── pyproject.toml          # Project configuration
+└── pyproject.toml          # Backend project configuration
 ```
 
 ## Development Workflow
@@ -71,14 +68,17 @@ git checkout -b feature/your-feature-name
 Before committing, run all quality checks:
 
 ```bash
-# Linting
+# Backend: Linting
 uv run ruff check video_compressor tests
 
-# Type checking
+# Backend: Type checking
 uv run pyright video_compressor
 
-# Tests
+# Backend: Tests
 uv run pytest tests -v
+
+# Frontend: Linting
+cd frontend && npm run lint
 ```
 
 ### 4. Commit and Push
