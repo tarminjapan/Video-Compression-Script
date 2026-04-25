@@ -5,9 +5,9 @@ Featuring a modern, intuitive GUI with drag-and-drop support, batch processing, 
 
 ## 🚀 Features
 
+- **Modern Web Interface**: Now powered by Electron + React for a sleek, responsive experience.
 - **Video Compression**: Powered by SVT-AV1 for high efficiency and quality.
 - **Audio Compression**: Convert various formats to high-quality MP3 (libmp3lame).
-- **Modern GUI**: Built with CustomTkinter, featuring Dark/Light modes and Drag & Drop.
 - **Smart Tools**: Automatic volume adjustment (normalization) and noise reduction.
 - **Batch Processing**: Compress multiple files simultaneously with clear progress tracking.
 - **Multilingual**: Supports both English and Japanese.
@@ -22,17 +22,26 @@ You must have FFmpeg installed on your system.
 - **macOS**: `brew install ffmpeg`
 - **Linux**: `sudo apt install ffmpeg`
 
-*Note: You can also place `ffmpeg` and `ffprobe` executables in a `bin/` folder inside the project directory.*
+*Note: You can also place `ffmpeg` and `ffprobe` executables in a `bin/` folder inside the project root.*
 
-### 2. Run from Source
+### 2. Run from Source (Desktop App)
 
 ```bash
-# Install dependencies
-pip install .
+# Backend setup
+uv sync --extra dev
 
-# Launch GUI
-python -m video_compressor --gui
+# Frontend setup
+cd web
+npm install
+npm run electron:dev
 ```
+
+*For the legacy CustomTkinter GUI, use `python -m video_compressor --gui`.*
+
+## 📄 Documentation
+
+- [Migration & Release Guide](documents/migration_guide.md) - Details on the new architecture and setup.
+- [Development Plan](documents/development_plan.md) - Original GUI roadmap.
 
 ## 🖥️ GUI Usage
 
