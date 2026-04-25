@@ -77,3 +77,13 @@ class SettingsManager:
         settings = self._load()
         settings[key] = value
         self._save(settings)
+
+    def update_all(self, data: dict):
+        """Update multiple settings at once in a single I/O operation.
+
+        Args:
+            data (dict): Dictionary of key-value pairs to update.
+        """
+        settings = self._load()
+        settings.update(data)
+        self._save(settings)

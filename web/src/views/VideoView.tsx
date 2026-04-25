@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Upload, Settings, Play, Loader2, Info } from 'lucide-react';
 import axios from 'axios';
+import type { MediaInfo } from '../types';
 
 const API_BASE = 'http://localhost:5000/api';
 
 const VideoView: React.FC = () => {
   const { t } = useTranslation();
   const [inputPath, setInputPath] = useState('');
-  const [mediaInfo, setMediaInfo] = useState<any>(null);
+  const [mediaInfo, setMediaInfo] = useState<MediaInfo | null>(null);
   const [crf, setCrf] = useState(25);
   const [preset, setPreset] = useState(6);
   const [audioBitrate, setAudioBitrate] = useState('192k');

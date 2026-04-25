@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import type { Job } from '../types';
 
 const API_BASE = 'http://localhost:5000/api';
 
 export const useJobs = () => {
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [jobs, setJobs] = useState<Job[]>([]);
 
   const fetchJobs = async () => {
     try {

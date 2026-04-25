@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings, Save, RefreshCw, Moon, Sun, Monitor } from 'lucide-react';
+import { Save, RefreshCw, Moon, Sun, Monitor } from 'lucide-react';
 import axios from 'axios';
 
 const API_BASE = 'http://localhost:5000/api';

@@ -1,14 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, CheckCircle, XCircle, Clock, Loader2 } from 'lucide-react';
-
-interface Job {
-  id: string;
-  status: string;
-  progress: any;
-  result: any;
-  type: string;
-}
+import { X, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import type { Job } from '../types';
 
 interface ProgressPanelProps {
   jobs: Job[];

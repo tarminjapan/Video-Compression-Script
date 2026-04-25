@@ -23,8 +23,7 @@ def update_settings():
     if not data:
         return jsonify({"error": "No data provided"}), 400
     
-    for key, value in data.items():
-        settings_manager.set(key, value)
+    settings_manager.update_all(data)
     
     return jsonify({"status": "success"})
 
