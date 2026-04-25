@@ -16,6 +16,7 @@ def main():
     parser.add_argument("--gui", action="store_true", help="Start in GUI mode")
     parser.add_argument("--api", action="store_true", help="Start in API mode")
     parser.add_argument("--port", type=int, default=5000, help="Port for API mode (default: 5000)")
+    parser.add_argument("--config", type=str, default="dev", choices=["dev", "prod", "test"], help="API configuration mode")
     
     # Use parse_known_args to avoid failing on CLI-specific arguments
     args, unknown = parser.parse_known_args()
@@ -35,8 +36,8 @@ def main():
         try:
             from .api import create_app
             
-            app = create_app()
-            print(f"Starting API server on port {args.port}...")
+            app = create_app(config_name=args.config)
+            print(f"Starting API server on port {args.port} (config: {args.config})...")
             app.run(host="127.0.0.1", port=args.port, debug=False)
         except ImportError as e:
             print(f"Error: Flask and Flask-CORS are required for API mode. {e}")

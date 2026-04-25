@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Upload, Settings, Play, Loader2, Info } from 'lucide-react';
-import axios from 'axios';
+import { api, initializeApi } from '../services/api';
 import type { MediaInfo } from '../types';
-
-const API_BASE = 'http://localhost:5000/api';
 
 const AudioView: React.FC = () => {
   const { t } = useTranslation();
@@ -22,7 +20,8 @@ const AudioView: React.FC = () => {
   const fetchMediaInfo = async (path: string) => {
     if (!path) return;
     try {
-      const response = await axios.get<MediaInfo>(`${API_BASE}/media-info?path=${encodeURIComponent(path)}`);
+      await initializeApi();
+      const response = await api.get<MediaInfo>(`/media-info?path=${encodeURIComponent(path)}`);
       setMediaInfo(response.data);
     } catch (error) {
       console.error('Failed to fetch media info', error);
@@ -39,7 +38,7 @@ const AudioView: React.FC = () => {
     else if (volumeMode === 'db') volumeGain = `${volumeValue}dB`;
 
     try {
-      const response = await axios.post<{ task_id: string }>(`${API_BASE}/jobs/audio`, {
+      const response = await api.post<{ task_id: string }>('/jobs/audio', {
         input_path: inputPath,
         bitrate,
         keep_metadata: keepMetadata,

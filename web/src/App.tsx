@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import Layout from './components/Layout';
 import VideoView from './views/VideoView';
@@ -7,20 +6,22 @@ import AudioView from './views/AudioView';
 import SettingsView from './views/SettingsView';
 import ProgressPanel from './components/ProgressPanel';
 import { useJobs } from './hooks/useJobs';
+import { api, initializeApi } from './services/api';
 import './App.css';
-
-const API_BASE = 'http://localhost:5000/api';
 
 function App() {
   const { i18n } = useTranslation();
   const [activeView, setActiveView] = useState('video');
+  const [isReady, setIsReady] = useState(false);
   const { jobs, cancelJob } = useJobs();
 
   useEffect(() => {
     // Initial settings fetch to apply theme and language
     const initApp = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/settings`);
+        await initializeApi();
+        
+        const response = await api.get('/settings');
         const { language, appearance_mode } = response.data;
         
         if (language) {
@@ -32,11 +33,17 @@ function App() {
         }
       } catch (error) {
         console.error('Failed to initialize app settings', error);
+      } finally {
+        setIsReady(true);
       }
     };
     
     initApp();
   }, [i18n]);
+
+  if (!isReady) {
+    return <div className="loading-screen">Loading...</div>;
+  }
 
   const renderView = () => {
     switch (activeView) {

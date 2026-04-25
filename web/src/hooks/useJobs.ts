@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { api, initializeApi } from '../services/api';
 import type { Job } from '../types';
-
-const API_BASE = 'http://localhost:5000/api';
 
 export const useJobs = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
 
   const fetchJobs = async () => {
     try {
-      const response = await axios.get<Job[]>(`${API_BASE}/jobs`);
+      await initializeApi();
+      const response = await api.get<Job[]>('/jobs');
       setJobs(response.data);
     } catch (error) {
       console.error('Failed to fetch jobs', error);
@@ -24,7 +23,7 @@ export const useJobs = () => {
 
   const cancelJob = async (taskId: string) => {
     try {
-      await axios.delete<void>(`${API_BASE}/jobs/${taskId}`);
+      await api.delete<void>(`/jobs/${taskId}`);
       fetchJobs();
     } catch (error) {
       console.error('Failed to cancel job', error);

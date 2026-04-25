@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save, RefreshCw, Moon, Sun, Monitor } from 'lucide-react';
-import axios from 'axios';
+import { api, initializeApi } from '../services/api';
 import type { AppSettings } from '../types';
-
-const API_BASE = 'http://localhost:5000/api';
 
 const SettingsView: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -25,7 +23,8 @@ const SettingsView: React.FC = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const response = await axios.get<AppSettings>(`${API_BASE}/settings`);
+      await initializeApi();
+      const response = await api.get<AppSettings>('/settings');
       setSettings(response.data);
     } catch (error) {
       console.error('Failed to fetch settings', error);
@@ -37,7 +36,7 @@ const SettingsView: React.FC = () => {
   const saveSettings = async () => {
     setSaving(true);
     try {
-      await axios.post<void>(`${API_BASE}/settings`, settings);
+      await api.post<void>('/settings', settings);
       setMessage(t('settings.saved'));
       
       // Apply language change immediately
