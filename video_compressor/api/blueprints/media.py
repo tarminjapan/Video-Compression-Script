@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from flask import Blueprint, jsonify, request
 
@@ -22,14 +23,16 @@ def get_info():
     # Try video info first
     info = get_video_info_safe(path_obj)
     if info:
-        info["type"] = "video"
-        return jsonify(info)
+        info_dict: dict[str, Any] = info
+        info_dict["type"] = "video"
+        return jsonify(info_dict)
 
     # Try audio info
     info = get_audio_info_safe(path_obj)
     if info:
-        info["type"] = "audio"
-        return jsonify(info)
+        info_dict: dict[str, Any] = info
+        info_dict["type"] = "audio"
+        return jsonify(info_dict)
 
     return jsonify({"error": "Unsupported file format"}), 400
 

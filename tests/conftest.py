@@ -7,7 +7,7 @@ from video_compressor.settings import SettingsManager
 
 
 @pytest.fixture
-def settings_manager(tmp_dir):
+def settings_manager(tmp_dir: Path):
     SettingsManager.reset_instance()
     with patch("video_compressor.settings.get_config_dir", return_value=tmp_dir):
         mgr = SettingsManager.get_instance()
@@ -22,7 +22,7 @@ def tmp_dir():
 
 
 @pytest.fixture
-def sample_video_files(tmp_dir):
+def sample_video_files(tmp_dir: Path):
     files = []
     for name in ["video.mp4", "movie.mkv", "clip.avi", "film.mov"]:
         p = tmp_dir / name
@@ -32,7 +32,7 @@ def sample_video_files(tmp_dir):
 
 
 @pytest.fixture
-def sample_audio_files(tmp_dir):
+def sample_audio_files(tmp_dir: Path):
     files = []
     for name in ["song.mp3", "track.wav", "audio.flac", "music.aac"]:
         p = tmp_dir / name

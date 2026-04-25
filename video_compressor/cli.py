@@ -32,7 +32,7 @@ from .utils import (
 from .video import analyze_media, compress_video
 
 
-def resolve_output_path(input_path, output_arg, num_files):
+def resolve_output_path(input_path: Path, output_arg: str | None, num_files: int):
     """Resolve the output path for a single input file based on --output argument.
 
     Smart --output logic:
@@ -81,11 +81,11 @@ def resolve_output_path(input_path, output_arg, num_files):
 
 
 def process_single_file(
-    input_path,
-    args,
-    ffmpeg_path,
-    ffprobe_path,
-    output_override=None,
+    input_path: str | Path,
+    args: argparse.Namespace,
+    ffmpeg_path: str,
+    ffprobe_path: str,
+    output_override: str | None = None,
 ):
     """Process a single file (compress or analyze).
 

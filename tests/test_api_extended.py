@@ -1,12 +1,14 @@
 from unittest.mock import patch
 
 import pytest
+from flask.testing import FlaskClient
 from video_compressor.api.app import create_app
 from video_compressor.api.job_runner import job_runner
+from video_compressor.settings import SettingsManager
 
 
 @pytest.fixture
-def client(settings_manager):  # noqa: ARG001
+def client(settings_manager: SettingsManager):  # noqa: ARG001
     app = create_app({"TESTING": True})
     with app.test_client() as client:
         # Clear tasks for clean test
@@ -15,26 +17,26 @@ def client(settings_manager):  # noqa: ARG001
         yield client
 
 
-def test_get_settings(client):
+def test_get_settings(client: FlaskClient):
     response = client.get("/api/settings")
     assert response.status_code == 200
-    assert "language" in response.json
-    assert "appearance_mode" in response.json
+    assert "language" in response.get_json()
+    assert "appearance_mode" in response.get_json()
 
 
-def test_update_settings(client):
+def test_update_settings(client: FlaskClient):
     new_settings = {"language": "ja", "appearance_mode": "dark"}
     response = client.post("/api/settings", json=new_settings)
     assert response.status_code == 200
-    assert response.json["status"] == "success"
+    assert response.get_json()["status"] == "success"
 
     # Verify changes
     response = client.get("/api/settings")
-    assert response.json["language"] == "ja"
-    assert response.json["appearance_mode"] == "dark"
+    assert response.get_json()["language"] == "ja"
+    assert response.get_json()["appearance_mode"] == "dark"
 
 
-def test_audio_compression_endpoint(client):
+def test_audio_compression_endpoint(client: FlaskClient):
     with (
         patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
         patch("video_compressor.api.blueprints.jobs.compress_audio_service"),
@@ -44,10 +46,10 @@ def test_audio_compression_endpoint(client):
             "/api/jobs/audio", json={"input_path": "test.mp3", "bitrate": "128k"}
         )
         assert response.status_code == 202
-        assert "task_id" in response.json
+        assert "task_id" in response.get_json()
 
 
-def test_list_jobs(client):
+def test_list_jobs(client: FlaskClient):
     with (
         patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
         patch("video_compressor.api.blueprints.jobs.compress_video_service"),
@@ -58,30 +60,30 @@ def test_list_jobs(client):
 
         response = client.get("/api/jobs")
         assert response.status_code == 200
-        assert len(response.json) == 2
+        assert len(response.get_json()) == 2
 
 
-def test_get_job_status(client):
+def test_get_job_status(client: FlaskClient):
     with (
         patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
         patch("video_compressor.api.blueprints.jobs.compress_video_service"),
         patch("threading.Thread"),
     ):
         resp = client.post("/api/jobs/video", json={"input_path": "test.mp4"})
-        task_id = resp.json["task_id"]
+        task_id = resp.get_json()["task_id"]
 
         response = client.get(f"/api/jobs/{task_id}")
         assert response.status_code == 200
-        assert response.json["id"] == task_id
-        assert response.json["status"] == "pending"
+        assert response.get_json()["id"] == task_id
+        assert response.get_json()["status"] == "pending"
 
 
-def test_get_job_status_not_found(client):
+def test_get_job_status_not_found(client: FlaskClient):
     response = client.get("/api/jobs/non-existent-id")
     assert response.status_code == 404
 
 
-def test_media_info_audio(client):
+def test_media_info_audio(client: FlaskClient):
     with (
         patch("video_compressor.api.blueprints.media.Path.exists", return_value=True),
         patch("video_compressor.api.blueprints.media.get_video_info_safe", return_value=None),
@@ -92,17 +94,17 @@ def test_media_info_audio(client):
     ):
         response = client.get("/api/media-info?path=test.mp3")
         assert response.status_code == 200
-        assert response.json["type"] == "audio"
-        assert response.json["bitrate"] == "128k"
+        assert response.get_json()["type"] == "audio"
+        assert response.get_json()["bitrate"] == "128k"
 
 
-def test_media_info_not_found(client):
+def test_media_info_not_found(client: FlaskClient):
     with patch("video_compressor.api.blueprints.media.Path.exists", return_value=False):
         response = client.get("/api/media-info?path=non-existent.mp4")
         assert response.status_code == 404
 
 
-def test_analyze_volume_endpoint(client):
+def test_analyze_volume_endpoint(client: FlaskClient):
     with (
         patch("video_compressor.api.blueprints.media.Path.exists", return_value=True),
         patch(
@@ -112,10 +114,10 @@ def test_analyze_volume_endpoint(client):
     ):
         response = client.post("/api/volume/analyze", json={"path": "test.mp4"})
         assert response.status_code == 200
-        assert response.json["mean_volume"] == -15.0
+        assert response.get_json()["mean_volume"] == -15.0
 
 
-def test_analyze_volume_error(client):
+def test_analyze_volume_error(client: FlaskClient):
     with (
         patch("video_compressor.api.blueprints.media.Path.exists", return_value=True),
         patch(
@@ -125,4 +127,4 @@ def test_analyze_volume_error(client):
     ):
         response = client.post("/api/volume/analyze", json={"path": "test.mp4"})
         assert response.status_code == 500
-        assert "error" in response.json
+        assert "error" in response.get_json()

@@ -27,14 +27,8 @@ repos:
     hooks:
       - id: pyright
         name: pyright (static type checker)
-        entry: pyright --warnings
-        language: python
-        additional_dependencies:
-          - pyright==1.1.409
-          - flask>=3.0.0
-          - flask-cors>=4.0.0
-          - requests>=2.33.1
-          - pytest>=8.0.0
+        entry: uv run pyright --warnings
+        language: system
         types: [python]
         pass_filenames: false
       - id: pytest

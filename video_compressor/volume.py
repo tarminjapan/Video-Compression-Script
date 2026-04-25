@@ -4,6 +4,7 @@ import math
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 from .config import (
     DENOISE_MAX,
@@ -13,7 +14,9 @@ from .config import (
 )
 
 
-def analyze_volume_level(input_path, ffmpeg_path="ffmpeg"):
+def analyze_volume_level(
+    input_path: str | Path, ffmpeg_path: str = "ffmpeg"
+) -> dict[str, float | None]:
     """Analyze audio volume level using FFmpeg's volumedetect filter.
 
     Args:
@@ -79,7 +82,7 @@ def analyze_volume_level(input_path, ffmpeg_path="ffmpeg"):
     }
 
 
-def calculate_recommended_gain(mean_volume, max_volume):
+def calculate_recommended_gain(mean_volume: float, max_volume: float) -> float:
     """Calculate recommended volume gain based on current audio levels.
 
     Args:
@@ -105,7 +108,7 @@ def calculate_recommended_gain(mean_volume, max_volume):
     return recommended_gain
 
 
-def parse_volume_gain(gain_str):
+def parse_volume_gain(gain_str: str | None) -> tuple[float | None, bool]:
     """Parse volume gain string and return gain in dB.
 
     Args:
@@ -146,7 +149,9 @@ def parse_volume_gain(gain_str):
         sys.exit(1)
 
 
-def build_audio_filter(volume_gain_db=None, denoise_level=None):
+def build_audio_filter(
+    volume_gain_db: float | None = None, denoise_level: float | None = None
+) -> str | None:
     """Build audio filter string for FFmpeg.
 
     Args:
@@ -175,7 +180,7 @@ def build_audio_filter(volume_gain_db=None, denoise_level=None):
     return None
 
 
-def validate_denoise_level(denoise):
+def validate_denoise_level(denoise: float | None) -> float | None:
     """Validate and cap denoise level to valid range.
 
     Args:
