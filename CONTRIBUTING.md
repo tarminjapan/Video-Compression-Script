@@ -27,7 +27,7 @@ uv run pre-commit install
 
 ### Project Structure
 
-```
+```text
 AmeCompression/
 ├── frontend/               # Electron + React interface
 │   ├── src/                # React source code
@@ -71,14 +71,20 @@ Before committing, run all quality checks:
 # Backend: Linting
 uv run ruff check video_compressor tests
 
+# Backend: Formatting check
+uv run ruff format --check video_compressor tests
+
 # Backend: Type checking
-uv run pyright video_compressor
+uv run pyright --warnings
 
 # Backend: Tests
 uv run pytest tests -v
 
 # Frontend: Linting
-cd frontend && npm run lint
+cd frontend && npm run lint:strict
+
+# Frontend: Formatting check
+cd frontend && npm run format:check
 ```
 
 ### 4. Commit and Push
@@ -107,8 +113,11 @@ git push -u origin feature/your-feature-name
 
 ### Code Quality
 
-- All code must pass `ruff check` with no errors
-- All code must pass `pyright` type checking with no errors
+- All code must pass `ruff check` with no warnings/errors
+- All code must pass `ruff format --check`
+- All code must pass `pyright --warnings` (warnings are treated as failures)
+- Frontend code must pass `eslint --max-warnings=0`
+- Frontend code must pass `prettier --check`
 - Do **not** use `# type: ignore` or `# noqa` to suppress errors unless absolutely necessary
 - All tests must pass
 

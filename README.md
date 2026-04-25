@@ -97,6 +97,13 @@ uv run pytest --cov
 # Run linter / formatter check
 uv run ruff check
 uv run ruff format --check
+
+# Run strict type check (warnings fail)
+uv run pyright --warnings
+
+# Frontend strict checks
+npm --prefix frontend run lint:strict
+npm --prefix frontend run format:check
 ```
 
 ## 📄 License

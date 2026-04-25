@@ -25,8 +25,27 @@ jobs:
       - name: Run linting
         run: uv run ruff check video_compressor tests
 
+      - name: Run formatting check
+        run: uv run ruff format --check video_compressor tests
+
       - name: Run type checking
-        run: uv run pyright video_compressor
+        run: uv run pyright --warnings
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Run frontend lint (warnings fail)
+        run: npm --prefix frontend run lint:strict
+
+      - name: Run frontend format check
+        run: npm --prefix frontend run format:check
 
       - name: Run tests
         run: uv run pytest tests -v --tb=short

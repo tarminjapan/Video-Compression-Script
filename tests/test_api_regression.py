@@ -1,12 +1,14 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from flask.testing import FlaskClient
 from video_compressor.api.app import create_app
 from video_compressor.api.job_runner import job_runner
+from video_compressor.settings import SettingsManager
 
 
 @pytest.fixture
-def client(settings_manager):  # noqa: ARG001
+def client(settings_manager: SettingsManager):  # noqa: ARG001
     app = create_app({"TESTING": True})
     with app.test_client() as client:
         with job_runner.tasks_lock:
@@ -14,7 +16,7 @@ def client(settings_manager):  # noqa: ARG001
         yield client
 
 
-def test_full_video_compression_flow(client):
+def test_full_video_compression_flow(client: FlaskClient):
     """Test the full flow of video compression from the API perspective.
     1. Start a video compression job.
     2. Check the job status (should be pending or running).
@@ -41,11 +43,11 @@ def test_full_video_compression_flow(client):
             "/api/jobs/video", json={"input_path": "input.mp4", "crf": 28, "preset": 8}
         )
         assert response.status_code == 202
-        task_id = response.json["task_id"]
+        task_id = response.get_json()["task_id"]
 
         # 2. Check initial status
         response = client.get(f"/api/jobs/{task_id}")
-        assert response.json["status"] == "pending"
+        assert response.get_json()["status"] == "pending"
 
         # 3. Simulate job execution
         # Ensure thread was started
@@ -58,12 +60,12 @@ def test_full_video_compression_flow(client):
         # 4. Check final status
         response = client.get(f"/api/jobs/{task_id}")
         assert response.status_code == 200
-        assert response.json["status"] == "success"
-        assert response.json["result"]["output_path"] == "output.mp4"
-        assert response.json["result"]["compression_ratio"] == 0.45
+        assert response.get_json()["status"] == "success"
+        assert response.get_json()["result"]["output_path"] == "output.mp4"
+        assert response.get_json()["result"]["compression_ratio"] == 0.45
 
 
-def test_job_cancellation_flow(client):
+def test_job_cancellation_flow(client: FlaskClient):
     """Test the flow of cancelling a job."""
     with (
         patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
@@ -72,19 +74,19 @@ def test_job_cancellation_flow(client):
     ):
         # Start job
         response = client.post("/api/jobs/video", json={"input_path": "input.mp4"})
-        task_id = response.json["task_id"]
+        task_id = response.get_json()["task_id"]
 
         # Cancel job
         response = client.delete(f"/api/jobs/{task_id}")
         assert response.status_code == 200
-        assert response.json["status"] == "cancelling"
+        assert response.get_json()["status"] == "cancelling"
 
         # Verify status in job runner
         response = client.get(f"/api/jobs/{task_id}")
-        assert response.json["status"] == "cancelling"
+        assert response.get_json()["status"] == "cancelling"
 
 
-def test_settings_persistence_integration(client):
+def test_settings_persistence_integration(client: FlaskClient):
     """Test that settings updated via API are reflected in subsequent calls."""
     # Update settings
     update_data = {
@@ -96,6 +98,6 @@ def test_settings_persistence_integration(client):
 
     # Get settings and verify
     response = client.get("/api/settings")
-    assert response.json["language"] == "ja"
-    assert response.json["ffmpeg_path"] == "/usr/local/bin/ffmpeg"
-    assert response.json["default_output_dir"] == "/tmp/output"  # noqa: S108
+    assert response.get_json()["language"] == "ja"
+    assert response.get_json()["ffmpeg_path"] == "/usr/local/bin/ffmpeg"
+    assert response.get_json()["default_output_dir"] == "/tmp/output"  # noqa: S108

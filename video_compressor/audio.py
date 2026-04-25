@@ -51,14 +51,14 @@ from .volume import (
 
 
 def compress_audio(  # noqa: PLR0912, PLR0913, PLR0915
-    input_path,
-    output_path=None,
-    bitrate=None,
-    volume_gain=None,
-    denoise=None,
-    analyze_only=False,
-    ffmpeg_path="ffmpeg",
-    ffprobe_path="ffprobe",
+    input_path: str | Path,
+    output_path: str | Path | None = None,
+    bitrate: str | None = None,
+    volume_gain: str | None = None,
+    denoise: float | None = None,
+    analyze_only: bool = False,
+    ffmpeg_path: str = "ffmpeg",
+    ffprobe_path: str = "ffprobe",
 ):
     """Compress audio file to MP3 using FFmpeg.
 
@@ -94,10 +94,16 @@ def compress_audio(  # noqa: PLR0912, PLR0913, PLR0915
     # Get audio information
     audio_info = get_audio_info(input_path, ffprobe_path)
 
+    if not audio_info or audio_info.get("duration") is None:
+        print("Error: Could not retrieve audio information.")
+        sys.exit(1)
+
     total_duration = audio_info["duration"] or 0
     original_bitrate = audio_info["bitrate"]
-    sample_rate = audio_info["sample_rate"]
-    channels = audio_info["channels"]
+    sr_val = audio_info.get("sample_rate")
+    ch_val = audio_info.get("channels")
+    sample_rate = int(sr_val) if sr_val is not None else None
+    channels = int(ch_val) if ch_val is not None else None
 
     # Build analysis section
     analysis_rows = [
@@ -200,7 +206,7 @@ def compress_audio(  # noqa: PLR0912, PLR0913, PLR0915
     # Execute via service layer
     reporter = CLIProgressReporter(total_duration)
 
-    def on_output(line):
+    def on_output(line: str) -> None:
         line_stripped = line.strip()
         if line_stripped and (
             "error" in line_stripped.lower() or "warning" in line_stripped.lower()
@@ -263,7 +269,7 @@ def compress_audio(  # noqa: PLR0912, PLR0913, PLR0915
         sys.exit(1)
 
 
-def compress_audio_service(  # noqa: PLR0912, PLR0913, PLR0915
+def compress_audio_service(  # noqa: PLR0911, PLR0912, PLR0913, PLR0915
     input_path: str | Path,
     output_path: str | Path | None = None,
     bitrate: str | None = None,
@@ -318,10 +324,19 @@ def compress_audio_service(  # noqa: PLR0912, PLR0913, PLR0915
 
     audio_info = get_audio_info_safe(input_path, ffprobe_path)
 
+    if not audio_info:
+        return AudioCompressionResult(
+            status=CompressionStatus.FAILED,
+            input_path=str(input_path),
+            error_message="Could not retrieve audio information",
+        )
+
     total_duration = audio_info["duration"] or 0
     original_bitrate = audio_info["bitrate"]
-    sample_rate = audio_info["sample_rate"]
-    channels = audio_info["channels"]
+    sr_val = audio_info.get("sample_rate")
+    ch_val = audio_info.get("channels")
+    sample_rate = int(sr_val) if sr_val is not None else None
+    channels = int(ch_val) if ch_val is not None else None
 
     bitrate_kbps = parse_bitrate(bitrate)
     if bitrate_kbps < MP3_BITRATE_MIN:

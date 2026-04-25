@@ -11,13 +11,13 @@ repos:
     hooks:
       - id: ruff
         name: ruff
-        entry: uv run ruff check --fix --exit-non-zero-on-fix
+        entry: uv run ruff check
         language: system
         types: [python]
         require_serial: true
       - id: ruff-format
         name: ruff-format
-        entry: uv run ruff format
+        entry: uv run ruff format --check
         language: system
         types: [python]
         require_serial: true
@@ -27,14 +27,8 @@ repos:
     hooks:
       - id: pyright
         name: pyright (static type checker)
-        entry: pyright
-        language: python
-        additional_dependencies:
-          - pyright==1.1.409
-          - flask>=3.0.0
-          - flask-cors>=4.0.0
-          - requests>=2.33.1
-          - pytest>=8.0.0
+        entry: uv run pyright --warnings
+        language: system
         types: [python]
         pass_filenames: false
       - id: pytest
@@ -49,12 +43,12 @@ repos:
     hooks:
       - id: frontend-eslint
         name: frontend-eslint
-        entry: npx --prefix frontend eslint --fix
+        entry: npx --prefix frontend eslint --max-warnings=0
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx)$
       - id: frontend-prettier
         name: frontend-prettier
-        entry: npx --prefix frontend prettier --write
+        entry: npx --prefix frontend prettier --check
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx|css|scss|html|json)$
 
@@ -85,5 +79,4 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
-        args: [--write-changes]
         exclude: ^(frontend/package-lock\.json|uv\.lock)

@@ -53,7 +53,7 @@ from .volume import (
 )
 
 
-def format_bitrate(bitrate):
+def format_bitrate(bitrate: int | float | str | None) -> str:
     """Format bitrate to human readable string."""
     if bitrate is None:
         return "Unknown"
@@ -69,7 +69,7 @@ def format_bitrate(bitrate):
         return "Unknown"
 
 
-def format_duration(seconds):
+def format_duration(seconds: float | str | None) -> str:
     """Format duration seconds to HH:MM:SS.ms format."""
     if seconds is None:
         return "Unknown"
@@ -86,7 +86,7 @@ def format_duration(seconds):
         return "Unknown"
 
 
-def format_file_size(size_bytes):
+def format_file_size(size_bytes: float | str | None) -> str:
     """Format file size to human readable string."""
     if size_bytes is None:
         return "Unknown"
@@ -102,9 +102,9 @@ def format_file_size(size_bytes):
 
 
 def analyze_media(  # noqa: PLR0912, PLR0915
-    input_path,
-    _ffmpeg_path="ffmpeg",
-    ffprobe_path="ffprobe",
+    input_path: str | Path,
+    _ffmpeg_path: str = "ffmpeg",
+    ffprobe_path: str = "ffprobe",
 ):
     """Analyze media file and display detailed information.
 
@@ -277,19 +277,19 @@ def analyze_media(  # noqa: PLR0912, PLR0915
 
 
 def compress_video(  # noqa: PLR0912, PLR0913, PLR0915
-    input_path,
-    output_path=None,
-    crf=None,
-    preset=None,
-    audio_bitrate=None,
-    audio_enabled=True,
-    max_fps=None,
-    resolution=None,
-    volume_gain=None,
-    denoise=None,
-    analyze_only=False,
-    ffmpeg_path="ffmpeg",
-    ffprobe_path="ffprobe",
+    input_path: str | Path,
+    output_path: str | Path | None = None,
+    crf: int | None = None,
+    preset: int | None = None,
+    audio_bitrate: str | None = None,
+    audio_enabled: bool = True,
+    max_fps: int | None = None,
+    resolution: str | None = None,
+    volume_gain: str | None = None,
+    denoise: float | None = None,
+    analyze_only: bool = False,
+    ffmpeg_path: str = "ffmpeg",
+    ffprobe_path: str = "ffprobe",
 ):
     """Compress video using FFmpeg with AV1 codec.
 
@@ -335,8 +335,10 @@ def compress_video(  # noqa: PLR0912, PLR0913, PLR0915
         print("Error: Could not retrieve video information.")
         sys.exit(1)
 
-    original_width = video_info["width"]
-    original_height = video_info["height"]
+    w_val = video_info.get("width")
+    h_val = video_info.get("height")
+    original_width = int(w_val) if w_val is not None else None
+    original_height = int(h_val) if h_val is not None else None
     original_fps = video_info["fps"]
     total_duration = video_info["duration"] or 0
 
@@ -431,9 +433,12 @@ def compress_video(  # noqa: PLR0912, PLR0913, PLR0915
             )
 
     # Calculate scaled resolution if needed
-    scaled_res = calculate_scaled_resolution(
-        original_width, original_height, custom_max_width, custom_max_height
-    )
+    if original_width is not None and original_height is not None:
+        scaled_res = calculate_scaled_resolution(
+            original_width, original_height, custom_max_width, custom_max_height
+        )
+    else:
+        scaled_res = None
 
     # Build settings rows for display
     settings_rows = []
@@ -485,7 +490,7 @@ def compress_video(  # noqa: PLR0912, PLR0913, PLR0915
     # Execute via service layer
     reporter = CLIProgressReporter(total_duration)
 
-    def on_output(line):
+    def on_output(line: str) -> None:
         line_stripped = line.strip()
         if line_stripped and (
             "error" in line_stripped.lower() or "warning" in line_stripped.lower()
@@ -624,8 +629,10 @@ def compress_video_service(  # noqa: PLR0911, PLR0912, PLR0913, PLR0915
             error_message="Could not retrieve video information",
         )
 
-    original_width = video_info["width"]
-    original_height = video_info["height"]
+    w_val = video_info.get("width")
+    h_val = video_info.get("height")
+    original_width = int(w_val) if w_val is not None else None
+    original_height = int(h_val) if h_val is not None else None
     original_fps = video_info["fps"]
     total_duration = video_info["duration"] or 0
     output_fps = max_fps if max_fps is not None else original_fps
@@ -641,9 +648,12 @@ def compress_video_service(  # noqa: PLR0911, PLR0912, PLR0913, PLR0915
         except ValueError:
             pass
 
-    scaled_res = calculate_scaled_resolution(
-        original_width, original_height, custom_max_width, custom_max_height
-    )
+    if original_width is not None and original_height is not None:
+        scaled_res = calculate_scaled_resolution(
+            original_width, original_height, custom_max_width, custom_max_height
+        )
+    else:
+        scaled_res = None
 
     cmd = [ffmpeg_path, "-i", str(input_path), "-y"]
 

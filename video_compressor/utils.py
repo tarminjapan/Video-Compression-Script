@@ -1,7 +1,9 @@
 """Utility functions for video compression."""
 
 import re
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from . import __version__
 from .config import AUDIO_EXTENSIONS, MAX_HEIGHT, MAX_WIDTH, VIDEO_EXTENSIONS
@@ -51,7 +53,7 @@ def print_banner():
     print()
 
 
-def print_header(title, rows, color=CYAN):
+def print_header(title: str, rows: Sequence[tuple[str, Any]], color: str = CYAN):
     """Print a styled section with a colored header line and indented rows.
 
     Args:
@@ -71,7 +73,7 @@ def print_header(title, rows, color=CYAN):
             print(f"  {DIM}{label}{RESET}{value_data}")
 
 
-def format_time(seconds):
+def format_time(seconds: float) -> str:
     """Format seconds to MM:SS.s format.
 
     Args:
@@ -85,7 +87,7 @@ def format_time(seconds):
     return f"{minutes:02d}:{secs:04.1f}"
 
 
-def get_file_type(file_path):
+def get_file_type(file_path: str | Path) -> str:
     """Determine file type based on extension.
 
     Args:
@@ -102,7 +104,7 @@ def get_file_type(file_path):
     return "unknown"
 
 
-def parse_bitrate(bitrate_str):
+def parse_bitrate(bitrate_str: str) -> int:
     """Parse bitrate string to kbps integer.
 
     Args:
@@ -120,7 +122,9 @@ def parse_bitrate(bitrate_str):
         return int(bitrate_str)
 
 
-def calculate_scaled_resolution(width, height, max_width=None, max_height=None):
+def calculate_scaled_resolution(
+    width: int, height: int, max_width: int | None = None, max_height: int | None = None
+) -> tuple[int, int] | None:
     """Calculate scaled resolution while maintaining aspect ratio.
 
     Args:
@@ -156,7 +160,7 @@ def calculate_scaled_resolution(width, height, max_width=None, max_height=None):
     return (scaled_width, scaled_height)
 
 
-def parse_input_paths(raw_inputs):
+def parse_input_paths(raw_inputs: str | list[str] | None) -> list[str]:
     """Parse raw input string(s) into a list of individual file paths.
 
     Supports the following delimiters:

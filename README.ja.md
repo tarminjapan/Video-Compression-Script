@@ -97,6 +97,13 @@ uv run pytest --cov
 # リント・フォーマットチェック
 uv run ruff check
 uv run ruff format --check
+
+# 厳格な型チェック（warningも失敗扱い）
+uv run pyright --warnings
+
+# フロントエンドの厳格チェック
+npm --prefix frontend run lint:strict
+npm --prefix frontend run format:check
 ```
 
 ## 📄 ライセンス

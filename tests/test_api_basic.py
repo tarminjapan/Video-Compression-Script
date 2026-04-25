@@ -1,24 +1,26 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from flask.testing import FlaskClient
 from video_compressor.api.app import create_app
 from video_compressor.api.job_runner import job_runner
+from video_compressor.settings import SettingsManager
 
 
 @pytest.fixture
-def client(settings_manager):  # noqa: ARG001
+def client(settings_manager: SettingsManager):  # noqa: ARG001
     app = create_app({"TESTING": True})
     with app.test_client() as client:
         yield client
 
 
-def test_api_health_endpoint(client):
+def test_api_health_endpoint(client: FlaskClient):
     response = client.get("/api/health")
     assert response.status_code == 200
-    assert response.json["status"] == "healthy"
+    assert response.get_json()["status"] == "healthy"
 
 
-def test_api_media_info_endpoint(client):
+def test_api_media_info_endpoint(client: FlaskClient):
     with (
         patch("video_compressor.api.blueprints.media.Path.exists", return_value=True),
         patch(
@@ -28,11 +30,11 @@ def test_api_media_info_endpoint(client):
     ):
         response = client.get("/api/media-info?path=test.mp4")
         assert response.status_code == 200
-        assert response.json["width"] == 1920
-        assert response.json["type"] == "video"
+        assert response.get_json()["width"] == 1920
+        assert response.get_json()["type"] == "video"
 
 
-def test_start_task_adds_timestamp(client):
+def test_start_task_adds_timestamp(client: FlaskClient):
     with (
         patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
         patch("video_compressor.api.blueprints.jobs.compress_video_service"),
@@ -44,7 +46,7 @@ def test_start_task_adds_timestamp(client):
 
         response = client.post("/api/jobs/video", json={"input_path": "test.mp4"})
         assert response.status_code == 202
-        task_id = response.json["task_id"]
+        task_id = response.get_json()["task_id"]
 
         with job_runner.tasks_lock:
             assert task_id in job_runner.tasks
@@ -52,7 +54,7 @@ def test_start_task_adds_timestamp(client):
             assert isinstance(job_runner.tasks[task_id]["created_at"], float)
 
 
-def test_task_completion_adds_finished_at(client):
+def test_task_completion_adds_finished_at(client: FlaskClient):
     mock_result = MagicMock()
     mock_result.status.value = "success"
     mock_result.is_success = True
@@ -84,7 +86,7 @@ def test_task_completion_adds_finished_at(client):
             assert isinstance(job_runner.tasks[task_id]["finished_at"], float)
 
 
-def test_cancel_task(client):
+def test_cancel_task(client: FlaskClient):
     with (
         patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
         patch("video_compressor.api.blueprints.jobs.compress_video_service"),
@@ -94,8 +96,8 @@ def test_cancel_task(client):
             job_runner.tasks.clear()
 
         response = client.post("/api/jobs/video", json={"input_path": "test.mp4"})
-        task_id = response.json["task_id"]
+        task_id = response.get_json()["task_id"]
 
         response = client.delete(f"/api/jobs/{task_id}")
         assert response.status_code == 200
-        assert response.json["status"] == "cancelling"
+        assert response.get_json()["status"] == "cancelling"
