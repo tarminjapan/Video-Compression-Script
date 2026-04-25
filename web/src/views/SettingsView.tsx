@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save, RefreshCw, Moon, Sun, Monitor } from 'lucide-react';
 import axios from 'axios';
+import type { AppSettings } from '../types';
 
 const API_BASE = 'http://localhost:5000/api';
 
 const SettingsView: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const [settings, setSettings] = useState<any>({
+  const [settings, setSettings] = useState<AppSettings>({
     language: 'en',
     appearance_mode: 'system',
     ffmpeg_path: '',
@@ -58,7 +59,7 @@ const SettingsView: React.FC = () => {
     setSettings({ ...settings, language: lang });
   };
 
-  const handleThemeChange = (mode: string) => {
+  const handleThemeChange = (mode: 'light' | 'dark' | 'system') => {
     setSettings({ ...settings, appearance_mode: mode });
   };
 

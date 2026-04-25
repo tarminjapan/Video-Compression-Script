@@ -9,6 +9,9 @@ export interface Progress {
 
 export interface TaskResult {
   compression_ratio?: number;
+  output_size?: number;
+  duration?: number;
+  bitrate?: number;
   [key: string]: any;
 }
 
@@ -26,4 +29,11 @@ export interface MediaInfo {
   width?: number;
   height?: number;
   bitrate?: number;
+}
+
+export interface AppSettings {
+  language: string;
+  appearance_mode: 'light' | 'dark' | 'system';
+  ffmpeg_path: string;
+  default_output_dir: string;
 }
