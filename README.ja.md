@@ -5,9 +5,9 @@ FFmpeg (SVT-AV1) を使用した高性能な動画・音声圧縮ツール。
 
 ## 🚀 主な機能
 
+- **モダンな Web インターフェース**: Electron + React により、より洗練されたレスポンシブな操作感を実現。
 - **動画圧縮**: SVT-AV1 を採用し、高い圧縮率と画質を両立。
 - **音声圧縮**: 各種フォーマットを高品質な MP3 (libmp3lame) へ変換。
-- **モダンな GUI**: CustomTkinter 製。ダーク/ライトモード、ドラッグ＆ドロップに対応。
 - **スマートツール**: 自動音量調整（ノーマライズ）およびノイズ除去機能を搭載。
 - **バッチ処理**: 複数ファイルを同時に、進捗を確認しながら一括処理可能。
 - **多言語対応**: 日本語と英語をサポート。
@@ -22,17 +22,26 @@ FFmpeg (SVT-AV1) を使用した高性能な動画・音声圧縮ツール。
 - **macOS**: `brew install ffmpeg`
 - **Linux**: `sudo apt install ffmpeg`
 
-*注意: プロジェクト直下の `bin/` フォルダ内に `ffmpeg` と `ffprobe` の実行ファイルを配置することでも動作します。*
+*注意: プロジェクトルートの `bin/` フォルダ内に `ffmpeg` と `ffprobe` の実行ファイルを配置することでも動作します。*
 
-### 2. ソースから実行
+### 2. ソースから実行 (デスクトップアプリ)
 
 ```bash
-# 依存関係のインストール
-pip install .
+# バックエンドのセットアップ
+uv sync --extra dev
 
-# GUI の起動
-python -m video_compressor --gui
+# フロントエンドのセットアップ
+cd web
+npm install
+npm run electron:dev
 ```
+
+*従来の CustomTkinter GUI を使用する場合は、`python -m video_compressor --gui` を使用してください。*
+
+## 📄 ドキュメント
+
+- [移行 & リリースガイド (英語)](documents/migration_guide.md) - 新しいアーキテクチャとセットアップの詳細。
+- [開発計画](documents/development_plan.md) - 初期の GUI ロードマップ。
 
 ## 🖥️ GUI の使い方
 
