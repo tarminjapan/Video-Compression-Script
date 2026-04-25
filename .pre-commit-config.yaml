@@ -34,16 +34,14 @@ repos:
     hooks:
       - id: frontend-eslint
         name: frontend-eslint
-        entry: bash -c "cd frontend && npx eslint --fix"
+        entry: npx --prefix frontend eslint --fix
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx)$
-        pass_filenames: false
       - id: frontend-prettier
         name: frontend-prettier
-        entry: bash -c "cd frontend && npx prettier --write"
+        entry: npx --prefix frontend prettier --write
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx|css|scss|html|json)$
-        pass_filenames: false
 
   # 基本的なチェック (行末空白、YAML等)
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -55,9 +53,17 @@ repos:
         args: [--unsafe]
       - id: check-toml
       - id: check-json
+        exclude: ^frontend/tsconfig.*\.json$
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: detect-private-key
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: forbid-new-submodules
+      - id: mixed-line-ending
+        args: [--fix=lf]
 
   # スペルチェック
   - repo: https://github.com/codespell-project/codespell
