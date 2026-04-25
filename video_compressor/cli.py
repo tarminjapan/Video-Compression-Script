@@ -153,7 +153,7 @@ def process_single_file(
     return True
 
 
-def main():
+def main():  # noqa: PLR0912, PLR0915
     """Main entry point for the CLI."""
     print_banner()
 

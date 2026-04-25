@@ -101,7 +101,7 @@ def format_file_size(size_bytes):
         return "Unknown"
 
 
-def analyze_media(
+def analyze_media(  # noqa: PLR0912, PLR0915
     input_path,
     _ffmpeg_path="ffmpeg",
     ffprobe_path="ffprobe",
@@ -276,7 +276,7 @@ def analyze_media(
     print("=" * 60)
 
 
-def compress_video(
+def compress_video(  # noqa: PLR0912, PLR0913, PLR0915
     input_path,
     output_path=None,
     crf=None,
@@ -552,7 +552,7 @@ def compress_video(
         sys.exit(1)
 
 
-def compress_video_service(
+def compress_video_service(  # noqa: PLR0911, PLR0912, PLR0913, PLR0915
     input_path: str | Path,
     output_path: str | Path | None = None,
     crf: int | None = None,

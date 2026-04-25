@@ -174,7 +174,7 @@ def get_detailed_media_info(media_path, ffprobe_path="ffprobe"):
         return None
 
 
-def get_audio_info(audio_path, ffprobe_path="ffprobe"):
+def get_audio_info(audio_path, ffprobe_path="ffprobe"):  # noqa: PLR0912
     """Get audio information using ffprobe.
 
     Args:
@@ -275,7 +275,7 @@ def get_audio_info(audio_path, ffprobe_path="ffprobe"):
     }
 
 
-def get_video_info_safe(video_path, ffprobe_path="ffprobe"):
+def get_video_info_safe(video_path, ffprobe_path="ffprobe"):  # noqa: PLR0912
     """Get video information using ffprobe (service layer safe version).
 
     Unlike get_video_info, this function does not call sys.exit on failure,
@@ -379,7 +379,7 @@ def get_video_info_safe(video_path, ffprobe_path="ffprobe"):
     return None
 
 
-def get_audio_info_safe(audio_path, ffprobe_path="ffprobe"):
+def get_audio_info_safe(audio_path, ffprobe_path="ffprobe"):  # noqa: PLR0912
     """Get audio information using ffprobe (service layer safe version).
 
     Unlike get_audio_info, this function does not call sys.exit on failure,

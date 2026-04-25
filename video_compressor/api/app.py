@@ -1,4 +1,5 @@
 import time
+from typing import Any
 
 from flask import Flask
 from flask_cors import CORS
@@ -10,7 +11,7 @@ from .config import config_by_name
 from .job_runner import job_runner
 
 
-def create_app(config_name="dev"):
+def create_app(config_name: str | dict[str, Any] = "dev"):
     app = Flask(__name__)
 
     # Configure app

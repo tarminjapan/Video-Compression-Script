@@ -30,10 +30,11 @@ repos:
         entry: pyright
         language: python
         additional_dependencies:
-          - pyright==1.1.396
+          - pyright==1.1.409
           - flask>=3.0.0
           - flask-cors>=4.0.0
           - requests>=2.33.1
+          - pytest>=8.0.0
         types: [python]
         pass_filenames: false
       - id: pytest
@@ -51,11 +52,13 @@ repos:
         entry: npx --prefix frontend eslint --fix
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
       - id: frontend-prettier
         name: frontend-prettier
         entry: npx --prefix frontend prettier --write
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx|css|scss|html|json)$
+        pass_filenames: false
 
   # 基本的なチェック (行末空白、YAML等)
   - repo: https://github.com/pre-commit/pre-commit-hooks

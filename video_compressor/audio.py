@@ -50,7 +50,7 @@ from .volume import (
 )
 
 
-def compress_audio(
+def compress_audio(  # noqa: PLR0912, PLR0913, PLR0915
     input_path,
     output_path=None,
     bitrate=None,
@@ -263,7 +263,7 @@ def compress_audio(
         sys.exit(1)
 
 
-def compress_audio_service(
+def compress_audio_service(  # noqa: PLR0912, PLR0913, PLR0915
     input_path: str | Path,
     output_path: str | Path | None = None,
     bitrate: str | None = None,
