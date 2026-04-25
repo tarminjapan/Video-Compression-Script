@@ -1,6 +1,4 @@
-"""
-Configuration settings and constants for video compression.
-"""
+"""Configuration settings and constants for video compression."""
 
 # ============================================
 # Resolution Settings (4K = 3840x2160)

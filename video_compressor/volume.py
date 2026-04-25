@@ -1,6 +1,4 @@
-"""
-Volume analysis and adjustment functionality.
-"""
+"""Volume analysis and adjustment functionality."""
 
 import math
 import re
@@ -16,8 +14,7 @@ from .config import (
 
 
 def analyze_volume_level(input_path, ffmpeg_path="ffmpeg"):
-    """
-    Analyze audio volume level using FFmpeg's volumedetect filter.
+    """Analyze audio volume level using FFmpeg's volumedetect filter.
 
     Args:
         input_path (str): Path to input file (video or audio)
@@ -83,8 +80,7 @@ def analyze_volume_level(input_path, ffmpeg_path="ffmpeg"):
 
 
 def calculate_recommended_gain(mean_volume, max_volume):
-    """
-    Calculate recommended volume gain based on current audio levels.
+    """Calculate recommended volume gain based on current audio levels.
 
     Args:
         mean_volume (float): Current mean volume in dB
@@ -110,8 +106,7 @@ def calculate_recommended_gain(mean_volume, max_volume):
 
 
 def parse_volume_gain(gain_str):
-    """
-    Parse volume gain string and return gain in dB.
+    """Parse volume gain string and return gain in dB.
 
     Args:
         gain_str (str): Gain string (e.g., "2.0", "10dB", "auto")
@@ -152,8 +147,7 @@ def parse_volume_gain(gain_str):
 
 
 def build_audio_filter(volume_gain_db=None, denoise_level=None):
-    """
-    Build audio filter string for FFmpeg.
+    """Build audio filter string for FFmpeg.
 
     Args:
         volume_gain_db (float): Volume gain in dB (None = no adjustment)
@@ -182,8 +176,7 @@ def build_audio_filter(volume_gain_db=None, denoise_level=None):
 
 
 def validate_denoise_level(denoise):
-    """
-    Validate and cap denoise level to valid range.
+    """Validate and cap denoise level to valid range.
 
     Args:
         denoise (float): Denoise level

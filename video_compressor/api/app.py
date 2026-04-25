@@ -1,21 +1,22 @@
 from flask import Flask
 from flask_cors import CORS
-from .job_runner import job_runner
+
 from .blueprints.jobs import jobs_bp
 from .blueprints.media import media_bp
 from .blueprints.settings import settings_bp
-
 from .config import config_by_name
+from .job_runner import job_runner
+
 
 def create_app(config_name="dev"):
     app = Flask(__name__)
-    
+
     # Configure app
     if isinstance(config_name, str):
         app.config.from_object(config_by_name[config_name])
     else:
         app.config.from_mapping(config_name)
-    
+
     # Restrict CORS to local development and electron context
     CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "app://."]}})
 
@@ -31,6 +32,7 @@ def create_app(config_name="dev"):
     @app.route("/api/health")
     def root_health():
         import time
+
         return {"status": "healthy", "timestamp": time.time(), "version": "1.0.0"}
 
     return app

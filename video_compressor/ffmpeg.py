@@ -1,6 +1,4 @@
-"""
-FFmpeg executable detection and path management.
-"""
+"""FFmpeg executable detection and path management."""
 
 import contextlib
 import json
@@ -11,8 +9,7 @@ from pathlib import Path
 
 
 def get_ffmpeg_executables():
-    """
-    Detect OS and return appropriate FFmpeg executable paths.
+    """Detect OS and return appropriate FFmpeg executable paths.
     Checks for local FFmpeg executables in the bin directory first.
 
     Returns:
@@ -38,8 +35,7 @@ def get_ffmpeg_executables():
 
 
 def get_video_info(video_path, ffprobe_path="ffprobe"):
-    """
-    Get video information using ffprobe.
+    """Get video information using ffprobe.
 
     Args:
         video_path (str): Path to video file
@@ -141,8 +137,7 @@ def get_video_info(video_path, ffprobe_path="ffprobe"):
 
 
 def get_detailed_media_info(media_path, ffprobe_path="ffprobe"):
-    """
-    Get detailed media information using ffprobe.
+    """Get detailed media information using ffprobe.
 
     Args:
         media_path (str): Path to media file (video or audio)
@@ -180,8 +175,7 @@ def get_detailed_media_info(media_path, ffprobe_path="ffprobe"):
 
 
 def get_audio_info(audio_path, ffprobe_path="ffprobe"):
-    """
-    Get audio information using ffprobe.
+    """Get audio information using ffprobe.
 
     Args:
         audio_path (str): Path to audio file
@@ -282,8 +276,7 @@ def get_audio_info(audio_path, ffprobe_path="ffprobe"):
 
 
 def get_video_info_safe(video_path, ffprobe_path="ffprobe"):
-    """
-    Get video information using ffprobe (service layer safe version).
+    """Get video information using ffprobe (service layer safe version).
 
     Unlike get_video_info, this function does not call sys.exit on failure,
     making it safe for API/GUI use.
@@ -387,8 +380,7 @@ def get_video_info_safe(video_path, ffprobe_path="ffprobe"):
 
 
 def get_audio_info_safe(audio_path, ffprobe_path="ffprobe"):
-    """
-    Get audio information using ffprobe (service layer safe version).
+    """Get audio information using ffprobe (service layer safe version).
 
     Unlike get_audio_info, this function does not call sys.exit on failure,
     making it safe for API/GUI use.

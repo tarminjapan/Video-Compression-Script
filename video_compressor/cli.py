@@ -1,6 +1,4 @@
-"""
-Command-line interface for video/audio compression.
-"""
+"""Command-line interface for video/audio compression."""
 
 import argparse
 import sys
@@ -33,8 +31,7 @@ _CYAN = "\033[96m"
 
 
 def resolve_output_path(input_path, output_arg, num_files):
-    """
-    Resolve the output path for a single input file based on --output argument.
+    """Resolve the output path for a single input file based on --output argument.
 
     Smart --output logic:
     - No --output: same directory as input, {stem}_compressed{suffix}
@@ -90,8 +87,7 @@ def process_single_file(
     ffprobe_path,
     output_override=None,
 ):
-    """
-    Process a single file (compress or analyze).
+    """Process a single file (compress or analyze).
 
     Args:
         input_path (str): Path to input file

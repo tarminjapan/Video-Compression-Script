@@ -26,17 +26,12 @@ classifiers = [
     "Topic :: Multimedia :: Sound/Audio",
 ]
 dependencies = [
-    "customtkinter>=5.2.2",
     "requests>=2.33.1",
     "flask>=3.0.0",
     "flask-cors>=4.0.0",
-    "windnd>=1.0.7; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
-gui = [
-    "customtkinter>=5.2",
-]
 dev = [
     "ruff>=0.11",
     "pre-commit>=4.0",
@@ -71,52 +66,56 @@ exclude = [
 
 [tool.ruff.lint]
 # Rule selection:
-#   E/W  - pycodestyle (style)
-#   F    - pyflakes (logical errors)
-#   I    - isort (import ordering)
-#   UP   - pyupgrade (modernize syntax)
-#   B    - flake8-bugbear (common pitfalls)
-#   SIM  - flake8-simplify (code simplification)
+#   E/W  - pycodestyle
+#   F    - pyflakes
+#   I    - isort
+#   UP   - pyupgrade
+#   B    - flake8-bugbear
+#   SIM  - flake8-simplify
 #   RUF  - ruff-specific rules
 #   ERA  - eradicate (commented-out code)
-#   T20  - flake8-print (print statements - warning only for library code)
-select = ["E", "W", "F", "I", "UP", "B", "SIM", "RUF", "ERA"]
-
-# Phase 2 で段階的に導入予定:
-#   ANN  - flake8-annotations (type annotations)
-#   D    - pydocstyle (docstring conventions)
+#   ANN  - flake8-annotations
+#   D    - pydocstyle
 #   S    - flake8-bandit (security)
 #   PERF - perflint (performance)
+#   N    - pep8-naming
+#   PL   - pylint
+#   ARG  - flake8-unused-arguments
+#   PTH  - flake8-use-pathlib
+select = [
+    "E", "W", "F", "I", "UP", "B", "SIM", "RUF", "ERA",
+    "ANN", "D", "S", "PERF", "N", "PL", "ARG", "PTH"
+]
 
 ignore = [
     "E501",    # line too long (handled by formatter)
-    "T201",    # print() statements - CLI toolなので許容
+    "T201",    # print() statements - CLI tool
+    "D100",    # Missing docstring in public module
+    "D104",    # Missing docstring in public package
 ]
 
 # Allow fix for all enabled rules
 fixable = ["ALL"]
 unfixable = []
 
-# Allow unused imports in __init__.py
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]  # unused imports in __init__.py
-"__main__.py" = ["T201"]  # print in entry point is fine
-
-[tool.ruff.lint.isort]
-known-first-party = ["video_compressor"]
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.format]
-# Use double quotes for consistency
+# ダブルクォート、インデント、改行コードを固定
 quote-style = "double"
 indent-style = "space"
+skip-magic-trailing-comma = false
 line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
 
 # =============================================================================
 # Pyright (Pylance static type checker)
 # =============================================================================
 [tool.pyright]
 # Use the same checker in VS Code and pre-commit, with local stubs for third-party typing gaps.
-typeCheckingMode = "standard"
+typeCheckingMode = "strict"
 pythonVersion = "3.10"
 pythonPlatform = "All"
 stubPath = "typings"

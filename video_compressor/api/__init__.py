@@ -1,6 +1,4 @@
-"""
-Flask API for AmeCompression.
-"""
+"""Flask API for AmeCompression."""
 
 from .app import create_app
 

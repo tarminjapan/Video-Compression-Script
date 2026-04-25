@@ -1,5 +1,4 @@
-"""
-Data models for compression results and progress events.
+"""Data models for compression results and progress events.
 
 These models provide a clean interface for returning compression results
 and progress information, independent of CLI/GUI/API boundaries.
@@ -34,6 +33,7 @@ class ProgressEvent:
         eta: Estimated time remaining in seconds
         status: Current status message
     """
+
     percent: float = 0.0
     current_time: float = 0.0
     total_duration: float = 0.0
@@ -59,6 +59,7 @@ class CompressionResult:
         error_message: Error message (if failed)
         metadata: Additional metadata
     """
+
     status: CompressionStatus
     input_path: str
     output_path: str | None = None
@@ -98,6 +99,7 @@ class VideoCompressionResult(CompressionResult):
         crf: CRF value used
         preset: Encoding preset used
     """
+
     width: int | None = None
     height: int | None = None
     fps: float | None = None
@@ -117,6 +119,7 @@ class AudioCompressionResult(CompressionResult):
         audio_codec: Audio codec used
         bitrate: Audio bitrate
     """
+
     sample_rate: int | None = None
     channels: int | None = None
     audio_codec: str = ""
@@ -133,6 +136,7 @@ class VolumeAnalysisResult:
         recommended_gain: Recommended gain adjustment in dB
         target_level: Target volume level in dB
     """
+
     mean_volume: float | None = None
     max_volume: float | None = None
     recommended_gain: float | None = None
@@ -161,6 +165,7 @@ class MediaInfo:
         format_name: Format name
         metadata: Additional metadata
     """
+
     width: int | None = None
     height: int | None = None
     fps: float | None = None
