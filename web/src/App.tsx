@@ -6,18 +6,21 @@ import AudioView from './views/AudioView';
 import SettingsView from './views/SettingsView';
 import ProgressPanel from './components/ProgressPanel';
 import { useJobs } from './hooks/useJobs';
-import { api } from './services/api';
+import { api, initializeApi } from './services/api';
 import './App.css';
 
 function App() {
   const { i18n } = useTranslation();
   const [activeView, setActiveView] = useState('video');
+  const [isReady, setIsReady] = useState(false);
   const { jobs, cancelJob } = useJobs();
 
   useEffect(() => {
     // Initial settings fetch to apply theme and language
     const initApp = async () => {
       try {
+        await initializeApi();
+        
         const response = await api.get('/settings');
         const { language, appearance_mode } = response.data;
         
@@ -30,11 +33,17 @@ function App() {
         }
       } catch (error) {
         console.error('Failed to initialize app settings', error);
+      } finally {
+        setIsReady(true);
       }
     };
     
     initApp();
   }, [i18n]);
+
+  if (!isReady) {
+    return <div className="loading-screen">Loading...</div>;
+  }
 
   const renderView = () => {
     switch (activeView) {

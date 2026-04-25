@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../services/api';
+import { api, initializeApi } from '../services/api';
 import type { Job } from '../types';
 
 export const useJobs = () => {
@@ -7,6 +7,7 @@ export const useJobs = () => {
 
   const fetchJobs = async () => {
     try {
+      await initializeApi();
       const response = await api.get<Job[]>('/jobs');
       setJobs(response.data);
     } catch (error) {

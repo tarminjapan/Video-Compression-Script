@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Upload, Settings, Play, Loader2, Info } from 'lucide-react';
-import { api } from '../services/api';
+import { api, initializeApi } from '../services/api';
 import type { MediaInfo } from '../types';
 
 const AudioView: React.FC = () => {
@@ -20,6 +20,7 @@ const AudioView: React.FC = () => {
   const fetchMediaInfo = async (path: string) => {
     if (!path) return;
     try {
+      await initializeApi();
       const response = await api.get<MediaInfo>(`/media-info?path=${encodeURIComponent(path)}`);
       setMediaInfo(response.data);
     } catch (error) {

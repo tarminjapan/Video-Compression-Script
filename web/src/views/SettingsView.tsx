@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save, RefreshCw, Moon, Sun, Monitor } from 'lucide-react';
-import { api } from '../services/api';
+import { api, initializeApi } from '../services/api';
 import type { AppSettings } from '../types';
 
 const SettingsView: React.FC = () => {
@@ -23,6 +23,7 @@ const SettingsView: React.FC = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
+      await initializeApi();
       const response = await api.get<AppSettings>('/settings');
       setSettings(response.data);
     } catch (error) {

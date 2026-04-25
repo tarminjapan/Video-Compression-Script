@@ -15,6 +15,7 @@ const API_URL = `http://127.0.0.1:${API_PORT}/api`;
 let mainWindow: BrowserWindow | null = null;
 let flaskProcess: ChildProcess | null = null;
 let isQuitting = false;
+let isRestarting = false;
 
 async function checkBackendHealth(): Promise<boolean> {
   try {
@@ -55,7 +56,7 @@ function startFlask() {
     console.log(`Flask process exited with code ${code}`);
     flaskProcess = null;
     
-    if (!isQuitting) {
+    if (!isQuitting && !isRestarting) {
       dialog.showMessageBox({
         type: 'error',
         title: 'Backend Process Error',
@@ -120,9 +121,14 @@ ipcMain.handle('get-backend-status', async () => {
 
 ipcMain.handle('restart-backend', async () => {
   if (flaskProcess) {
-    flaskProcess.kill();
-    // Wait a bit for it to die
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    isRestarting = true;
+    await new Promise<void>((resolve) => {
+      flaskProcess!.once('close', () => {
+        isRestarting = false;
+        resolve();
+      });
+      flaskProcess!.kill();
+    });
   }
   startFlask();
   return true;
