@@ -5,7 +5,7 @@ from video_compressor.api.app import create_app
 from video_compressor.api.job_runner import job_runner
 
 @pytest.fixture
-def client():
+def client(settings_manager):
     app = create_app({"TESTING": True})
     with app.test_client() as client:
         with job_runner.tasks_lock:
@@ -47,6 +47,9 @@ def test_full_video_compression_flow(client):
         assert response.json["status"] == "pending"
 
         # 3. Simulate job execution
+        # Ensure thread was started
+        assert mock_thread.called, "Thread was not started"
+        
         # In reality, the job runner starts a thread. We manually run the target function.
         run_task_func = mock_thread.call_args[1]["target"]
         run_task_func()

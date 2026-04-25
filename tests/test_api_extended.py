@@ -5,7 +5,7 @@ from video_compressor.api.job_runner import job_runner
 from pathlib import Path
 
 @pytest.fixture
-def client():
+def client(settings_manager):
     app = create_app({"TESTING": True})
     with app.test_client() as client:
         # Clear tasks for clean test
