@@ -8,7 +8,8 @@ from flask.testing import FlaskClient
 
 
 @pytest.fixture
-def client(settings_manager: SettingsManager):  # noqa: ARG001
+def client(settings_manager: SettingsManager):
+    _ = settings_manager
     app = create_app({"TESTING": True})
     with app.test_client() as client:
         with job_runner.tasks_lock:
@@ -92,7 +93,7 @@ def test_settings_persistence_integration(client: FlaskClient):
     update_data = {
         "language": "ja",
         "ffmpeg_path": "/usr/local/bin/ffmpeg",
-        "default_output_dir": "/tmp/output",  # noqa: S108
+        "default_output_dir": "test_output",
     }
     client.post("/api/settings", json=update_data)
 
@@ -100,4 +101,4 @@ def test_settings_persistence_integration(client: FlaskClient):
     response = client.get("/api/settings")
     assert response.get_json()["language"] == "ja"
     assert response.get_json()["ffmpeg_path"] == "/usr/local/bin/ffmpeg"
-    assert response.get_json()["default_output_dir"] == "/tmp/output"  # noqa: S108
+    assert response.get_json()["default_output_dir"] == "test_output"

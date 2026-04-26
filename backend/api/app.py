@@ -1,4 +1,3 @@
-import time
 from typing import Any
 
 from flask import Flask
@@ -30,14 +29,5 @@ def create_app(config_name: str | dict[str, Any] = "dev"):
     app.register_blueprint(jobs_bp, url_prefix="/api/jobs")
     app.register_blueprint(media_bp, url_prefix="/api")
     app.register_blueprint(settings_bp, url_prefix="/api/settings")
-
-    # Add a root health check for convenience
-    @app.route("/api/health")
-    def root_health():
-        return {"status": "healthy", "timestamp": time.time(), "version": "1.0.0"}
-
-    # Register root_health explicitly is not needed as decorator does it,
-    # but to satisfy 'not accessed' we can reference it
-    _ = root_health
 
     return app

@@ -8,7 +8,8 @@ from flask.testing import FlaskClient
 
 
 @pytest.fixture
-def client(settings_manager: SettingsManager):  # noqa: ARG001
+def client(settings_manager: SettingsManager):
+    _ = settings_manager
     app = create_app({"TESTING": True})
     with app.test_client() as client:
         # Clear tasks for clean test

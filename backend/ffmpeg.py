@@ -176,7 +176,41 @@ def get_detailed_media_info(
         return None
 
 
-def get_audio_info(audio_path: str | Path, ffprobe_path: str = "ffprobe") -> dict[str, Any]:  # noqa: PLR0912
+def _parse_audio_csv_output(output: str) -> dict[str, Any]:
+    """Parse ffprobe CSV output for audio info."""
+    duration = None
+    bitrate = None
+    sample_rate = None
+    channels = None
+
+    lines = output.strip().split("\n")
+    for line in lines:
+        parts = line.split(",")
+        if len(parts) >= 4:
+            # Stream info: bit_rate, sample_rate, channels, duration
+            with contextlib.suppress(ValueError):
+                if parts[0]:
+                    bitrate = int(parts[0])
+                if parts[1]:
+                    sample_rate = int(parts[1])
+                if parts[2]:
+                    channels = int(parts[2])
+                if parts[3]:
+                    duration = float(parts[3])
+        elif len(parts) == 1 and parts[0]:
+            # Format duration (fallback)
+            with contextlib.suppress(ValueError):
+                duration = float(parts[0])
+
+    return {
+        "duration": duration,
+        "bitrate": bitrate,
+        "sample_rate": sample_rate,
+        "channels": channels,
+    }
+
+
+def get_audio_info(audio_path: str | Path, ffprobe_path: str = "ffprobe") -> dict[str, Any]:
     """Get audio information using ffprobe.
 
     Args:
@@ -201,11 +235,6 @@ def get_audio_info(audio_path: str | Path, ffprobe_path: str = "ffprobe") -> dic
         str(audio_path),
     ]
 
-    duration = None
-    bitrate = None
-    sample_rate = None
-    channels = None
-
     try:
         result = subprocess.run(
             cmd,
@@ -215,33 +244,18 @@ def get_audio_info(audio_path: str | Path, ffprobe_path: str = "ffprobe") -> dic
             errors="replace",
             check=True,
         )
-        output = result.stdout.strip()
-        if output:
-            lines = output.split("\n")
-            for line in lines:
-                parts = line.split(",")
-                if len(parts) >= 4:
-                    # Stream info: bit_rate, sample_rate, channels, duration
-                    try:
-                        if parts[0]:
-                            bitrate = int(parts[0])
-                        if parts[1]:
-                            sample_rate = int(parts[1])
-                        if parts[2]:
-                            channels = int(parts[2])
-                        if parts[3]:
-                            duration = float(parts[3])
-                    except ValueError:
-                        pass
-                elif len(parts) == 1 and parts[0]:
-                    # Format duration (fallback)
-                    with contextlib.suppress(ValueError):
-                        duration = float(parts[0])
-    except subprocess.CalledProcessError as e:
-        print(f"Error getting audio info: {e.stderr}")
+        info = _parse_audio_csv_output(result.stdout)
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        print(f"Error getting audio info: {e}")
+        info: dict[str, Any] = {
+            "duration": None,
+            "bitrate": None,
+            "sample_rate": None,
+            "channels": None,
+        }
 
     # If duration not found, try format-level duration
-    if duration is None:
+    if info["duration"] is None:
         format_cmd = [
             ffprobe_path,
             "-v",
@@ -264,19 +278,48 @@ def get_audio_info(audio_path: str | Path, ffprobe_path: str = "ffprobe") -> dic
             format_output = format_result.stdout.strip()
             if format_output:
                 with contextlib.suppress(ValueError):
-                    duration = float(format_output)
-        except subprocess.CalledProcessError:
+                    info["duration"] = float(format_output)
+        except (subprocess.CalledProcessError, FileNotFoundError):
             pass
 
+    return info
+
+
+def _parse_video_csv_output(output: str) -> dict[str, Any]:
+    """Parse ffprobe CSV output for video info."""
+    width = None
+    height = None
+    fps = None
+    duration = None
+
+    parts = output.strip().split("x")
+    if len(parts) >= 2:
+        with contextlib.suppress(ValueError):
+            width = int(parts[0])
+            remaining = parts[1].split(",")
+            height = int(remaining[0])
+
+            if len(remaining) > 1:
+                fps_str = remaining[1]
+                if "/" in fps_str:
+                    num, den = fps_str.split("/")
+                    if float(den) != 0:
+                        fps = float(num) / float(den)
+                else:
+                    fps = float(fps_str)
+
+            if len(remaining) > 2:
+                duration = float(remaining[2])
+
     return {
+        "width": width,
+        "height": height,
+        "fps": fps,
         "duration": duration,
-        "bitrate": bitrate,
-        "sample_rate": sample_rate,
-        "channels": channels,
     }
 
 
-def get_video_info_safe(  # noqa: PLR0912
+def get_video_info_safe(
     video_path: str | Path, ffprobe_path: str = "ffprobe"
 ) -> dict[str, Any] | None:
     """Get video information using ffprobe (service layer safe version).
@@ -304,11 +347,6 @@ def get_video_info_safe(  # noqa: PLR0912
         str(video_path),
     ]
 
-    width = None
-    height = None
-    fps = None
-    duration = None
-
     try:
         result = subprocess.run(
             cmd,
@@ -318,33 +356,11 @@ def get_video_info_safe(  # noqa: PLR0912
             errors="replace",
             check=True,
         )
-        output = result.stdout.strip()
-        if output:
-            parts = output.split("x")
-            if len(parts) >= 2:
-                width = int(parts[0])
-                remaining = parts[1].split(",")
-                height = int(remaining[0])
-
-                if len(remaining) > 1:
-                    fps_str = remaining[1]
-                    if "/" in fps_str:
-                        num, den = fps_str.split("/")
-                        if float(den) != 0:
-                            fps = float(num) / float(den)
-                    else:
-                        with contextlib.suppress(ValueError):
-                            fps = float(fps_str)
-
-                if len(remaining) > 2:
-                    with contextlib.suppress(ValueError):
-                        duration = float(remaining[2])
-    except subprocess.CalledProcessError:
-        return None
-    except FileNotFoundError:
+        info = _parse_video_csv_output(result.stdout)
+    except (subprocess.CalledProcessError, FileNotFoundError, ValueError):
         return None
 
-    if duration is None:
+    if info["duration"] is None:
         format_cmd = [
             ffprobe_path,
             "-v",
@@ -367,22 +383,17 @@ def get_video_info_safe(  # noqa: PLR0912
             format_output = format_result.stdout.strip()
             if format_output:
                 with contextlib.suppress(ValueError):
-                    duration = float(format_output)
-        except subprocess.CalledProcessError:
+                    info["duration"] = float(format_output)
+        except (subprocess.CalledProcessError, FileNotFoundError):
             pass
 
-    if width is not None and height is not None:
-        return {
-            "width": width,
-            "height": height,
-            "fps": fps,
-            "duration": duration,
-        }
+    if info["width"] is not None and info["height"] is not None:
+        return info
 
     return None
 
 
-def get_audio_info_safe(  # noqa: PLR0912
+def get_audio_info_safe(
     audio_path: str | Path, ffprobe_path: str = "ffprobe"
 ) -> dict[str, Any] | None:
     """Get audio information using ffprobe (service layer safe version).
@@ -412,11 +423,6 @@ def get_audio_info_safe(  # noqa: PLR0912
         str(audio_path),
     ]
 
-    duration = None
-    bitrate = None
-    sample_rate = None
-    channels = None
-
     try:
         result = subprocess.run(
             cmd,
@@ -426,32 +432,16 @@ def get_audio_info_safe(  # noqa: PLR0912
             errors="replace",
             check=True,
         )
-        output = result.stdout.strip()
-        if output:
-            lines = output.split("\n")
-            for line in lines:
-                parts = line.split(",")
-                if len(parts) >= 4:
-                    try:
-                        if parts[0]:
-                            bitrate = int(parts[0])
-                        if parts[1]:
-                            sample_rate = int(parts[1])
-                        if parts[2]:
-                            channels = int(parts[2])
-                        if parts[3]:
-                            duration = float(parts[3])
-                    except ValueError:
-                        pass
-                elif len(parts) == 1 and parts[0]:
-                    with contextlib.suppress(ValueError):
-                        duration = float(parts[0])
-    except subprocess.CalledProcessError:
-        pass
-    except FileNotFoundError:
-        pass
+        info = _parse_audio_csv_output(result.stdout)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        info: dict[str, Any] = {
+            "duration": None,
+            "bitrate": None,
+            "sample_rate": None,
+            "channels": None,
+        }
 
-    if duration is None:
+    if info["duration"] is None:
         format_cmd = [
             ffprobe_path,
             "-v",
@@ -474,13 +464,8 @@ def get_audio_info_safe(  # noqa: PLR0912
             format_output = format_result.stdout.strip()
             if format_output:
                 with contextlib.suppress(ValueError):
-                    duration = float(format_output)
-        except subprocess.CalledProcessError:
+                    info["duration"] = float(format_output)
+        except (subprocess.CalledProcessError, FileNotFoundError):
             pass
 
-    return {
-        "duration": duration,
-        "bitrate": bitrate,
-        "sample_rate": sample_rate,
-        "channels": channels,
-    }
+    return info
