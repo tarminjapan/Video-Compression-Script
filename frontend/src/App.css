@@ -25,13 +25,13 @@
   padding: 0;
 }
 
-body,
-button,
-input,
-select,
-textarea {
+html body,
+html button,
+html input,
+html select,
+html textarea {
   font-family:
-    -apple-system, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', sans-serif !important;
+    -apple-system, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
 }

@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import * as path from 'path'
+import * as fs from 'fs'
 import { spawn, ChildProcess } from 'child_process'
 import { fileURLToPath } from 'url'
 import axios from 'axios'
@@ -36,20 +37,25 @@ function startFlask() {
     ? path.join(__dirname, '..', '..')
     : path.join(process.resourcesPath, 'app')
 
-  const pythonCmd = isDev
-    ? path.join(
-        projectRoot,
-        '.venv',
-        process.platform === 'win32' ? 'Scripts' : 'bin',
-        process.platform === 'win32' ? 'python.exe' : 'python',
-      )
-    : process.platform === 'win32'
-      ? 'python'
-      : 'python3'
+  let pythonCmd = process.platform === 'win32' ? 'python' : 'python3'
+
+  if (isDev) {
+    const venvPath = path.join(
+      projectRoot,
+      '.venv',
+      process.platform === 'win32' ? 'Scripts' : 'bin',
+      process.platform === 'win32' ? 'python.exe' : 'python',
+    )
+    if (fs.existsSync(venvPath)) {
+      pythonCmd = venvPath
+    } else {
+      console.warn(`Venv not found at ${venvPath}, falling back to system python`)
+    }
+  }
 
   const config = isDev ? 'dev' : 'prod'
 
-  console.warn(`Starting Flask with root: ${projectRoot}`)
+  console.warn(`Starting Flask with root: ${projectRoot} using ${pythonCmd}`)
 
   flaskProcess = spawn(
     pythonCmd,
@@ -141,7 +147,10 @@ function killFlask() {
       // On Windows, childProcess.kill() might not kill the entire process tree
       // (especially with Flask's reloader). taskkill is more reliable.
       if (flaskProcess.pid) {
-        spawn('taskkill', ['/pid', flaskProcess.pid.toString(), '/f', '/t'])
+        const killer = spawn('taskkill', ['/pid', flaskProcess.pid.toString(), '/f', '/t'])
+        killer.on('error', (err) => {
+          console.error('Failed to execute taskkill:', err)
+        })
       }
     } else {
       flaskProcess.kill()
@@ -197,7 +206,7 @@ app.on('activate', () => {
   }
 })
 
-app.on('before-quit', () => {
+app.on('will-quit', () => {
   isQuitting = true
   killFlask()
 })

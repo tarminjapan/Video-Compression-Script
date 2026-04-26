@@ -189,10 +189,10 @@ const MediaView: React.FC = () => {
                 <label>{t('video_settings.max_resolution')}</label>
                 <select value={maxResolution} onChange={(e) => setMaxResolution(e.target.value)}>
                   <option value="original">{t('video_settings.resolution.original')}</option>
-                  <option value="4k">{t('video_settings.resolution.4k')}</option>
-                  <option value="1080p">{t('video_settings.resolution.1080p')}</option>
-                  <option value="720p">{t('video_settings.resolution.720p')}</option>
-                  <option value="480p">{t('video_settings.resolution.480p')}</option>
+                  <option value="3840x2160">{t('video_settings.resolution.4k')}</option>
+                  <option value="1920x1080">{t('video_settings.resolution.1080p')}</option>
+                  <option value="1280x720">{t('video_settings.resolution.720p')}</option>
+                  <option value="854x480">{t('video_settings.resolution.480p')}</option>
                 </select>
               </div>
               <div className="setting-item">
