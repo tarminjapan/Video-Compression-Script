@@ -25,7 +25,7 @@ We recommend using `uv` for managing Python dependencies.
 uv sync --extra dev
 
 # Run the API server manually (optional, Electron starts it automatically)
-uv run python -m video_compressor --api --port 5000 --config dev
+uv run python -m backend --api --port 5000 --config dev
 ```
 
 ### 2. Node.js Environment (Frontend)
@@ -54,7 +54,7 @@ The backend automatically detects local executables in the `bin/` folder before 
 
 ## ⚠️ Compatibility & Constraints
 
-- **CLI Mode**: The CLI version (`uv run python -m video_compressor <input>`) remains fully compatible and functional.
+- **CLI Mode**: The CLI version (`uv run python -m backend <input>`) remains fully compatible and functional.
 - **Port Conflict**: The Flask backend defaults to port `5000`. Ensure this port is not in use by other services (e.g., macOS AirPlay Receiver).
 - **CORS**: The API is configured to only allow requests from the Electron app (`app://.`) and the Vite development server (`http://localhost:5173`).
 

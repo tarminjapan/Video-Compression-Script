@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from video_compressor.utils import (
+from backend.utils import (
     calculate_scaled_resolution,
     format_time,
     get_file_type,

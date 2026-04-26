@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from backend.api.app import create_app
+from backend.api.job_runner import job_runner
+from backend.settings import SettingsManager
 from flask.testing import FlaskClient
-from video_compressor.api.app import create_app
-from video_compressor.api.job_runner import job_runner
-from video_compressor.settings import SettingsManager
 
 
 @pytest.fixture
@@ -22,9 +22,9 @@ def test_api_health_endpoint(client: FlaskClient):
 
 def test_api_media_info_endpoint(client: FlaskClient):
     with (
-        patch("video_compressor.api.blueprints.media.Path.exists", return_value=True),
+        patch("backend.api.blueprints.media.Path.exists", return_value=True),
         patch(
-            "video_compressor.api.blueprints.media.get_video_info_safe",
+            "backend.api.blueprints.media.get_video_info_safe",
             return_value={"width": 1920, "height": 1080},
         ),
     ):
@@ -36,8 +36,8 @@ def test_api_media_info_endpoint(client: FlaskClient):
 
 def test_start_task_adds_timestamp(client: FlaskClient):
     with (
-        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
-        patch("video_compressor.api.blueprints.jobs.compress_video_service"),
+        patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
+        patch("backend.api.blueprints.jobs.compress_video_service"),
         patch("threading.Thread"),
     ):
         # Clear tasks for clean test
@@ -64,10 +64,8 @@ def test_task_completion_adds_finished_at(client: FlaskClient):
     mock_result.error_message = None
 
     with (
-        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
-        patch(
-            "video_compressor.api.blueprints.jobs.compress_video_service", return_value=mock_result
-        ),
+        patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
+        patch("backend.api.blueprints.jobs.compress_video_service", return_value=mock_result),
         patch("threading.Thread") as mock_thread,
     ):
         with job_runner.tasks_lock:
@@ -88,8 +86,8 @@ def test_task_completion_adds_finished_at(client: FlaskClient):
 
 def test_cancel_task(client: FlaskClient):
     with (
-        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
-        patch("video_compressor.api.blueprints.jobs.compress_video_service"),
+        patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
+        patch("backend.api.blueprints.jobs.compress_video_service"),
         patch("threading.Thread"),
     ):
         with job_runner.tasks_lock:

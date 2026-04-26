@@ -1,5 +1,5 @@
-from video_compressor import __version__
-from video_compressor.config import (
+from backend import __version__
+from backend.config import (
     AUDIO_CODEC,
     AUDIO_EXTENSIONS,
     CRF_MAX,

@@ -1,4 +1,4 @@
-"""Entry point for running as module: uv run python -m video_compressor
+"""Entry point for running as module: uv run python -m backend
 
 Starts the API server for the GUI application.
 """

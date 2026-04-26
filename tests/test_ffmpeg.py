@@ -1,4 +1,4 @@
-from video_compressor.ffmpeg import get_ffmpeg_executables
+from backend.ffmpeg import get_ffmpeg_executables
 
 
 class TestGetFfmpegExecutables:
