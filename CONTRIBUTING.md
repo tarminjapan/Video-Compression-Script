@@ -118,7 +118,7 @@ git push -u origin feature/your-feature-name
 - All code must pass `pyright --warnings` (warnings are treated as failures)
 - Frontend code must pass `eslint --max-warnings=0`
 - Frontend code must pass `prettier --check`
-- Do **not** use `# type: ignore` or `# noqa` to suppress errors unless absolutely necessary
+- Do **not** use `# type: ignore`, `# noqa`, or `eslint-disable` to suppress errors. All errors must be fixed properly. Error suppression comments are strictly prohibited.
 - All tests must pass
 
 ### Testing

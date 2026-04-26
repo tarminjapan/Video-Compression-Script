@@ -6,6 +6,15 @@
 # =============================================================================
 
 repos:
+  # エラー抑制コメントの禁止
+  - repo: local
+    hooks:
+      - id: prohibit-suppression-comments
+        name: prohibit suppression comments
+        entry: python scripts/check_suppression_comments.py
+        language: system
+        pass_filenames: true
+
   # Ruff - フォーマッター & リンター (Python)
   - repo: local
     hooks:

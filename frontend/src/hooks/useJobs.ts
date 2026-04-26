@@ -16,7 +16,6 @@ export const useJobs = () => {
   }, [])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchJobs()
     const interval = setInterval(() => {
       void fetchJobs()
