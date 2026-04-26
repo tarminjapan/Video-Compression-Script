@@ -6,6 +6,13 @@ Starts the API server for the GUI application.
 import argparse
 import sys
 
+try:
+    from waitress import serve
+except ImportError:
+    # We allow this to fail here as it might be dev mode where waitress isn't needed
+    # or the error will be caught in the main try-except block
+    serve = None
+
 from .api import create_app
 
 
@@ -27,9 +34,18 @@ def main():
     try:
         app = create_app(config_name=args.config)
         print(f"Starting AmeCompression API server on port {args.port} (config: {args.config})...")
-        # In production, debug should be False.
-        # The GUI usually connects to 127.0.0.1.
-        app.run(host="127.0.0.1", port=args.port, debug=(args.config == "dev"))
+
+        if args.config == "dev":
+            # Flask development server
+            app.run(host="127.0.0.1", port=args.port, debug=True)
+        else:
+            # Production-ready WSGI server
+            if serve is None:
+                raise ImportError("waitress is required for production mode")
+
+            print(f"Serving on http://127.0.0.1:{args.port}")
+            serve(app, host="127.0.0.1", port=args.port)
+
     except ImportError as e:
         print(f"Error: Required dependencies for API mode not found. {e}")
         sys.exit(1)
