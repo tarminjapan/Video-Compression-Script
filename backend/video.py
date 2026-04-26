@@ -96,7 +96,9 @@ def _prepare_video_command(
     output_path = Path(params.output_path) if params.output_path else None
     crf = params.crf if params.crf is not None else DEFAULT_CRF
     preset = params.preset if params.preset is not None else VIDEO_PRESET
-    audio_bitrate = params.audio_bitrate if params.audio_bitrate is not None else DEFAULT_AUDIO_BITRATE
+    audio_bitrate = (
+        params.audio_bitrate if params.audio_bitrate is not None else DEFAULT_AUDIO_BITRATE
+    )
 
     w_val = video_info.get("width")
     h_val = video_info.get("height")

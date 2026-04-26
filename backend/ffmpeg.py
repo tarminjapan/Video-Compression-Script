@@ -247,7 +247,12 @@ def get_audio_info(audio_path: str | Path, ffprobe_path: str = "ffprobe") -> dic
         info = _parse_audio_csv_output(result.stdout)
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"Error getting audio info: {e}")
-        info: dict[str, Any] = {"duration": None, "bitrate": None, "sample_rate": None, "channels": None}
+        info: dict[str, Any] = {
+            "duration": None,
+            "bitrate": None,
+            "sample_rate": None,
+            "channels": None,
+        }
 
     # If duration not found, try format-level duration
     if info["duration"] is None:
@@ -429,7 +434,12 @@ def get_audio_info_safe(
         )
         info = _parse_audio_csv_output(result.stdout)
     except (subprocess.CalledProcessError, FileNotFoundError):
-        info: dict[str, Any] = {"duration": None, "bitrate": None, "sample_rate": None, "channels": None}
+        info: dict[str, Any] = {
+            "duration": None,
+            "bitrate": None,
+            "sample_rate": None,
+            "channels": None,
+        }
 
     if info["duration"] is None:
         format_cmd = [
