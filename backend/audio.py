@@ -8,6 +8,7 @@ without side effects (print/exit), making them suitable for API and GUI use.
 import subprocess
 import time
 from pathlib import Path
+from typing import Any
 
 from .config import (
     DEFAULT_MP3_BITRATE,
@@ -18,14 +19,12 @@ from .config import (
 )
 from .ffmpeg import get_audio_info_safe
 from .models import (
+    AudioCompressionParams,
     AudioCompressionResult,
     CompressionStatus,
     VolumeAnalysisResult,
 )
 from .progress_handler import (
-    CancellationSource,
-    OutputCallback,
-    ProgressCallback,
     ProgressParser,
 )
 from .utils import (
@@ -37,44 +36,54 @@ from .volume import (
 )
 
 
-def compress_audio_service(  # noqa: PLR0911, PLR0912, PLR0913, PLR0915
-    input_path: str | Path,
-    output_path: str | Path | None = None,
-    bitrate: str | None = None,
-    volume_gain_db: float | None = None,
-    denoise_level: float | None = None,
-    keep_metadata: bool = True,
-    ffmpeg_path: str = "ffmpeg",
-    ffprobe_path: str = "ffprobe",
-    on_progress: ProgressCallback | None = None,
-    on_output: OutputCallback | None = None,
-    cancellation_source: CancellationSource | None = None,
-) -> AudioCompressionResult:
-    """Compress audio file to MP3 using FFmpeg (service layer).
+def _prepare_audio_command(params: AudioCompressionParams) -> list[str]:
+    """Prepare FFmpeg command for audio compression."""
+    input_path = Path(params.input_path)
+    output_path = Path(params.output_path) if params.output_path else None
+    bitrate = params.bitrate if params.bitrate is not None else DEFAULT_MP3_BITRATE
 
-    This function is designed for API/GUI use and returns structured results
-    without side effects (no print/exit). Progress is reported via callback.
+    bitrate_kbps = parse_bitrate(bitrate)
+    if bitrate_kbps < MP3_BITRATE_MIN:
+        bitrate = f"{MP3_BITRATE_MIN}k"
+    elif bitrate_kbps > MP3_BITRATE_MAX:
+        bitrate = f"{MP3_BITRATE_MAX}k"
 
-    Args:
-        input_path: Input audio file path
-        output_path: Output audio file path (optional, defaults to .mp3)
-        bitrate: MP3 bitrate (default: DEFAULT_MP3_BITRATE)
-        volume_gain_db: Volume gain in dB (default: None)
-        denoise_level: Denoise level 0.0-1.0 (default: None)
-        keep_metadata: Whether to preserve metadata (default: True)
-        ffmpeg_path: Path to ffmpeg executable
-        ffprobe_path: Path to ffprobe executable
-        on_progress: Callback for progress updates
-        on_output: Callback for raw output lines
-        cancellation_source: Source for cancellation requests
+    cmd = [params.ffmpeg_path, "-i", str(input_path), "-y"]
 
-    Returns:
-        AudioCompressionResult with status and metadata
-    """
-    if bitrate is None:
-        bitrate = DEFAULT_MP3_BITRATE
+    audio_filter = build_audio_filter(params.volume_gain_db, params.denoise_level)
+    if audio_filter:
+        cmd.extend(["-af", audio_filter])
 
-    input_path = Path(input_path)
+    cmd.extend(["-c:a", MP3_CODEC, "-b:a", bitrate])
+
+    if params.keep_metadata:
+        cmd.extend(["-map_metadata", "0"])
+
+    cmd.append(str(output_path))
+    return cmd
+
+
+def _handle_audio_progress(
+    line: str,
+    params: AudioCompressionParams,
+    parser: ProgressParser,
+    stats: dict[str, list[float]],
+) -> None:
+    """Handle a single line of output from FFmpeg."""
+    event = parser.parse_line(line)
+    if event:
+        if event.speed > 0:
+            stats["speed_list"].append(event.speed)
+        if params.on_progress:
+            params.on_progress(event)
+    elif params.on_output:
+        params.on_output(line)
+
+
+def compress_audio_service(**kwargs: Any) -> AudioCompressionResult:
+    """Compress audio file to MP3 using FFmpeg (service layer)."""
+    params = AudioCompressionParams(**kwargs)
+    input_path = Path(params.input_path)
 
     if not input_path.exists():
         return AudioCompressionResult(
@@ -83,15 +92,12 @@ def compress_audio_service(  # noqa: PLR0911, PLR0912, PLR0913, PLR0915
             error_message=f"Input file '{input_path}' does not exist",
         )
 
-    if output_path is None:
-        output_path = input_path.parent / f"{input_path.stem}_compressed.mp3"
-    else:
-        output_path = Path(output_path)
-        if output_path.suffix.lower() != ".mp3":
-            output_path = output_path.with_suffix(".mp3")
+    if params.output_path is None:
+        params.output_path = input_path.parent / f"{input_path.stem}_compressed.mp3"
+    elif Path(params.output_path).suffix.lower() != ".mp3":
+        params.output_path = Path(params.output_path).with_suffix(".mp3")
 
-    audio_info = get_audio_info_safe(input_path, ffprobe_path)
-
+    audio_info = get_audio_info_safe(input_path, params.ffprobe_path)
     if not audio_info:
         return AudioCompressionResult(
             status=CompressionStatus.FAILED,
@@ -100,41 +106,10 @@ def compress_audio_service(  # noqa: PLR0911, PLR0912, PLR0913, PLR0915
         )
 
     total_duration = audio_info["duration"] or 0
-    original_bitrate = audio_info["bitrate"]
-    sr_val = audio_info.get("sample_rate")
-    ch_val = audio_info.get("channels")
-    sample_rate = int(sr_val) if sr_val is not None else None
-    channels = int(ch_val) if ch_val is not None else None
-
-    bitrate_kbps = parse_bitrate(bitrate)
-    if bitrate_kbps < MP3_BITRATE_MIN:
-        bitrate = f"{MP3_BITRATE_MIN}k"
-    elif bitrate_kbps > MP3_BITRATE_MAX:
-        bitrate = f"{MP3_BITRATE_MAX}k"
-
-    cmd = [ffmpeg_path, "-i", str(input_path), "-y"]
-
-    audio_filter = build_audio_filter(volume_gain_db, denoise_level)
-    if audio_filter:
-        cmd.extend(["-af", audio_filter])
-
-    cmd.extend(
-        [
-            "-c:a",
-            MP3_CODEC,
-            "-b:a",
-            bitrate,
-        ]
-    )
-
-    if keep_metadata:
-        cmd.extend(["-map_metadata", "0"])
-
-    cmd.append(str(output_path))
-
+    cmd = _prepare_audio_command(params)
     input_size = input_path.stat().st_size
+    stats: dict[str, list[float]] = {"speed_list": []}
     process = None
-    stats = {"fps_list": [], "speed_list": [], "frame_list": []}
 
     try:
         process = subprocess.Popen(
@@ -145,92 +120,48 @@ def compress_audio_service(  # noqa: PLR0911, PLR0912, PLR0913, PLR0915
             encoding="utf-8",
             errors="replace",
         )
-
         parser = ProgressParser(total_duration)
         parser.set_start_time(time.time())
 
         if process.stdout:
             for line in process.stdout:
-                if cancellation_source and cancellation_source.is_cancelled:
+                if params.cancellation_source and params.cancellation_source.is_cancelled:
                     process.terminate()
-                    process.wait()
                     return AudioCompressionResult(
                         status=CompressionStatus.CANCELLED,
                         input_path=str(input_path),
-                        output_path=str(output_path),
+                        output_path=str(params.output_path),
                         input_size=input_size,
                         duration=total_duration,
-                        sample_rate=sample_rate,
-                        channels=channels,
-                        audio_codec=MP3_CODEC,
-                        bitrate=bitrate,
                     )
-
-                event = parser.parse_line(line)
-                if event:
-                    if event.fps > 0 and event.speed > 0:
-                        stats["fps_list"].append(event.fps)
-                        stats["speed_list"].append(event.speed)
-                        stats["frame_list"].append(event.frame)
-
-                    if on_progress:
-                        on_progress(event)
-                elif on_output:
-                    on_output(line)
+                _handle_audio_progress(line, params, parser, stats)
 
         process.wait()
 
         if process.returncode == 0:
-            output_size = output_path.stat().st_size
-            compression_ratio = (1 - output_size / input_size) * 100
-
+            output_size = Path(params.output_path).stat().st_size
             return AudioCompressionResult(
                 status=CompressionStatus.SUCCESS,
                 input_path=str(input_path),
-                output_path=str(output_path),
+                output_path=str(params.output_path),
                 input_size=input_size,
                 output_size=output_size,
-                compression_ratio=compression_ratio,
+                compression_ratio=(1 - output_size / input_size) * 100,
                 duration=total_duration,
-                sample_rate=sample_rate,
-                channels=channels,
+                sample_rate=audio_info.get("sample_rate"),
+                channels=audio_info.get("channels"),
                 audio_codec=MP3_CODEC,
-                bitrate=bitrate,
-                metadata={
-                    "original_bitrate": original_bitrate,
-                    "avg_fps": sum(stats["fps_list"]) / len(stats["fps_list"])
-                    if stats["fps_list"]
-                    else 0,
-                    "avg_speed": sum(stats["speed_list"]) / len(stats["speed_list"])
-                    if stats["speed_list"]
-                    else 0,
-                },
+                bitrate=params.bitrate or DEFAULT_MP3_BITRATE,
             )
-        else:
-            return AudioCompressionResult(
-                status=CompressionStatus.FAILED,
-                input_path=str(input_path),
-                input_size=input_size,
-                duration=total_duration,
-                error_message=f"FFmpeg exited with code {process.returncode}",
-                sample_rate=sample_rate,
-                channels=channels,
-                audio_codec=MP3_CODEC,
-                bitrate=bitrate,
-            )
-
-    except FileNotFoundError:
         return AudioCompressionResult(
             status=CompressionStatus.FAILED,
             input_path=str(input_path),
-            input_size=input_size,
-            error_message="FFmpeg not found",
+            error_message=f"FFmpeg exited with code {process.returncode}",
         )
     except Exception as e:
         return AudioCompressionResult(
             status=CompressionStatus.FAILED,
             input_path=str(input_path),
-            input_size=input_size,
             error_message=str(e),
         )
     finally:

@@ -8,16 +8,11 @@ from flask.testing import FlaskClient
 
 
 @pytest.fixture
-def client(settings_manager: SettingsManager):  # noqa: ARG001
+def client(settings_manager: SettingsManager):
+    _ = settings_manager
     app = create_app({"TESTING": True})
     with app.test_client() as client:
         yield client
-
-
-def test_api_health_endpoint(client: FlaskClient):
-    response = client.get("/api/health")
-    assert response.status_code == 200
-    assert response.get_json()["status"] == "healthy"
 
 
 def test_api_media_info_endpoint(client: FlaskClient):

@@ -4,9 +4,16 @@ These models provide a clean interface for returning compression results
 and progress information, independent of CLI/GUI/API boundaries.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Any
+
+# Use Forward references or TypeVars to avoid circular imports if needed
+ProgressCallback = Callable[[Any], None]
+OutputCallback = Callable[[str], None]
+CancellationSource = Any
 
 
 class CompressionStatus(Enum):
@@ -17,6 +24,44 @@ class CompressionStatus(Enum):
     SUCCESS = "success"
     FAILED = "failed"
     CANCELLED = "cancelled"
+
+
+@dataclass
+class VideoCompressionParams:
+    """Parameters for video compression."""
+
+    input_path: str | Path
+    output_path: str | Path | None = None
+    crf: int | None = None
+    preset: int | None = None
+    audio_bitrate: str | None = None
+    audio_enabled: bool = True
+    max_fps: int | None = None
+    resolution: str | None = None
+    volume_gain_db: float | None = None
+    denoise_level: float | None = None
+    ffmpeg_path: str = "ffmpeg"
+    ffprobe_path: str = "ffprobe"
+    on_progress: ProgressCallback | None = None
+    on_output: OutputCallback | None = None
+    cancellation_source: CancellationSource | None = None
+
+
+@dataclass
+class AudioCompressionParams:
+    """Parameters for audio compression."""
+
+    input_path: str | Path
+    output_path: str | Path | None = None
+    bitrate: str | None = None
+    volume_gain_db: float | None = None
+    denoise_level: float | None = None
+    keep_metadata: bool = True
+    ffmpeg_path: str = "ffmpeg"
+    ffprobe_path: str = "ffprobe"
+    on_progress: ProgressCallback | None = None
+    on_output: OutputCallback | None = None
+    cancellation_source: CancellationSource | None = None
 
 
 @dataclass
