@@ -92,7 +92,7 @@ def test_settings_persistence_integration(client: FlaskClient):
     # Update settings
     update_data = {
         "language": "ja",
-        "ffmpeg_path": "/usr/local/bin/ffmpeg",
+        "ffmpeg_path": "",
         "default_output_dir": "test_output",
     }
     client.post("/api/settings", json=update_data)
@@ -100,5 +100,5 @@ def test_settings_persistence_integration(client: FlaskClient):
     # Get settings and verify
     response = client.get("/api/settings")
     assert response.get_json()["language"] == "ja"
-    assert response.get_json()["ffmpeg_path"] == "/usr/local/bin/ffmpeg"
+    assert response.get_json()["ffmpeg_path"] == ""
     assert response.get_json()["default_output_dir"] == "test_output"

@@ -1,5 +1,6 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import * as path from 'path'
+import * as fs from 'fs'
 import { spawn, ChildProcess } from 'child_process'
 import { fileURLToPath } from 'url'
 import axios from 'axios'
@@ -17,6 +18,9 @@ let flaskProcess: ChildProcess | null = null
 let isQuitting = false
 let isRestarting = false
 
+// Remove application menu for all platforms
+Menu.setApplicationMenu(null)
+
 async function checkBackendHealth(): Promise<boolean> {
   try {
     const response = await axios.get(`${API_URL}/health`, { timeout: 2000 })
@@ -27,21 +31,35 @@ async function checkBackendHealth(): Promise<boolean> {
 }
 
 function startFlask() {
-  const pythonCmd = process.platform === 'win32' ? 'python' : 'python3'
-
   // In production, we might want to use a bundled executable
   // For now, we assume python is in the path and use the project root
   const projectRoot = isDev
     ? path.join(__dirname, '..', '..')
     : path.join(process.resourcesPath, 'app')
 
+  let pythonCmd = process.platform === 'win32' ? 'python' : 'python3'
+
+  if (isDev) {
+    const venvPath = path.join(
+      projectRoot,
+      '.venv',
+      process.platform === 'win32' ? 'Scripts' : 'bin',
+      process.platform === 'win32' ? 'python.exe' : 'python',
+    )
+    if (fs.existsSync(venvPath)) {
+      pythonCmd = venvPath
+    } else {
+      console.warn(`Venv not found at ${venvPath}, falling back to system python`)
+    }
+  }
+
   const config = isDev ? 'dev' : 'prod'
 
-  console.warn(`Starting Flask with root: ${projectRoot}`)
+  console.warn(`Starting Flask with root: ${projectRoot} using ${pythonCmd}`)
 
   flaskProcess = spawn(
     pythonCmd,
-    ['-m', 'backend', '--api', '--port', API_PORT.toString(), '--config', config],
+    ['-m', 'backend', '--port', API_PORT.toString(), '--config', config],
     {
       cwd: projectRoot,
       env: { ...process.env, PYTHONUNBUFFERED: '1' },
@@ -53,7 +71,13 @@ function startFlask() {
   })
 
   flaskProcess.stderr?.on('data', (data) => {
-    console.error(`Flask Error: ${data}`)
+    // Flask logs normal info to stderr in dev mode, so we use log/warn instead of error
+    const message = data.toString()
+    if (message.includes('ERROR') || message.includes('Exception')) {
+      console.error(`Flask Error: ${message}`)
+    } else {
+      console.warn(`Flask (stderr): ${message}`)
+    }
   })
 
   flaskProcess.on('close', (code) => {
@@ -100,6 +124,8 @@ function createWindow() {
     title: 'AmeCompression',
   })
 
+  mainWindow.setMenu(null)
+
   const startUrl = isDev
     ? 'http://localhost:5173'
     : `file://${path.join(__dirname, '../dist/index.html')}`
@@ -113,6 +139,24 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+}
+
+function killFlask() {
+  if (flaskProcess) {
+    if (process.platform === 'win32') {
+      // On Windows, childProcess.kill() might not kill the entire process tree
+      // (especially with Flask's reloader). taskkill is more reliable.
+      if (flaskProcess.pid) {
+        const killer = spawn('taskkill', ['/pid', flaskProcess.pid.toString(), '/f', '/t'])
+        killer.on('error', (err) => {
+          console.error('Failed to execute taskkill:', err)
+        })
+      }
+    } else {
+      flaskProcess.kill()
+    }
+    flaskProcess = null
+  }
 }
 
 // IPC Handlers
@@ -131,14 +175,14 @@ ipcMain.handle('get-backend-status', async () => {
 
 ipcMain.handle('restart-backend', async () => {
   if (flaskProcess) {
-    const process = flaskProcess
+    const proc = flaskProcess
     isRestarting = true
     await new Promise<void>((resolve) => {
-      process.once('close', () => {
+      proc.once('close', () => {
         isRestarting = false
         resolve()
       })
-      process.kill()
+      killFlask()
     })
   }
   startFlask()
@@ -162,10 +206,7 @@ app.on('activate', () => {
   }
 })
 
-app.on('before-quit', () => {
+app.on('will-quit', () => {
   isQuitting = true
-  if (flaskProcess) {
-    flaskProcess.kill()
-    flaskProcess = null
-  }
+  killFlask()
 })

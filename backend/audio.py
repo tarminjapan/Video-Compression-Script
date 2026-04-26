@@ -92,7 +92,7 @@ def compress_audio_service(**kwargs: Any) -> AudioCompressionResult:
             error_message=f"Input file '{input_path}' does not exist",
         )
 
-    if params.output_path is None:
+    if not params.output_path:
         params.output_path = input_path.parent / f"{input_path.stem}_compressed.mp3"
     elif Path(params.output_path).suffix.lower() != ".mp3":
         params.output_path = Path(params.output_path).with_suffix(".mp3")

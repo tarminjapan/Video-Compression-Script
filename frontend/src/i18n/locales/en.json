@@ -1,15 +1,13 @@
 {
   "app": {
     "title": "AmeCompression",
-    "version": "Version {{version}}",
     "description": "Video & Audio Compression Tool"
   },
   "nav": {
-    "video": "Video Compression",
-    "audio": "Audio Compression",
+    "video": "Video",
+    "audio": "Audio",
     "video_audio": "Video / Audio",
-    "settings": "Settings",
-    "about": "About"
+    "settings": "Settings"
   },
   "file": {
     "select": "Select File",

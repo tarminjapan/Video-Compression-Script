@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import Layout from './components/Layout'
-import VideoView from './views/VideoView'
-import AudioView from './views/AudioView'
+import MediaView from './views/MediaView'
 import SettingsView from './views/SettingsView'
 import ProgressPanel from './components/ProgressPanel'
 import { useJobs } from './hooks/useJobs'
@@ -11,7 +10,7 @@ import './App.css'
 
 function App() {
   const { i18n } = useTranslation()
-  const [activeView, setActiveView] = useState('video')
+  const [activeView, setActiveView] = useState('media')
   const [isReady, setIsReady] = useState(false)
   const { jobs, cancelJob } = useJobs()
 
@@ -47,10 +46,8 @@ function App() {
 
   const renderView = () => {
     switch (activeView) {
-      case 'video':
-        return <VideoView />
-      case 'audio':
-        return <AudioView />
+      case 'media':
+        return <MediaView />
       case 'settings':
         return <SettingsView />
       default:

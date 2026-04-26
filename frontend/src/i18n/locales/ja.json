@@ -1,15 +1,13 @@
 {
   "app": {
     "title": "AmeCompression",
-    "version": "バージョン {{version}}",
     "description": "動画・音声 圧縮ツール"
   },
   "nav": {
-    "video": "動画圧縮",
-    "audio": "音声圧縮",
+    "video": "動画",
+    "audio": "音声",
     "video_audio": "動画 / 音声",
-    "settings": "設定",
-    "about": "バージョン情報"
+    "settings": "設定"
   },
   "file": {
     "select": "ファイルを選択",

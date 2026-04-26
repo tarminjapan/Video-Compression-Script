@@ -178,7 +178,7 @@ def compress_video_service(**kwargs: Any) -> VideoCompressionResult:
             error_message=f"Input file '{input_path}' does not exist",
         )
 
-    if params.output_path is None:
+    if not params.output_path:
         params.output_path = input_path.parent / f"{input_path.stem}_compressed{input_path.suffix}"
 
     video_info = get_video_info_safe(input_path, params.ffprobe_path)

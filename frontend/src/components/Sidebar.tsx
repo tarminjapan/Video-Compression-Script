@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Video, Music, Settings, Info, Layers } from 'lucide-react'
+import { Settings, Layers } from 'lucide-react'
 
 interface SidebarProps {
   activeView: string
@@ -11,11 +11,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) => {
   const { t } = useTranslation()
 
   const navItems = [
-    { id: 'video', icon: <Video size={20} />, label: t('nav.video') },
-    { id: 'audio', icon: <Music size={20} />, label: t('nav.audio') },
-    { id: 'video_audio', icon: <Layers size={20} />, label: t('nav.video_audio') },
+    { id: 'media', icon: <Layers size={20} />, label: t('nav.video_audio') },
     { id: 'settings', icon: <Settings size={20} />, label: t('nav.settings') },
-    { id: 'about', icon: <Info size={20} />, label: t('nav.about') },
   ]
 
   return (
@@ -35,9 +32,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) => {
           </button>
         ))}
       </nav>
-      <div className="sidebar-footer">
-        <p>{t('app.version', { version: '1.0.0' })}</p>
-      </div>
     </aside>
   )
 }
