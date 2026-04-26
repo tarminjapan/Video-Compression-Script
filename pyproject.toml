@@ -29,6 +29,7 @@ dependencies = [
     "requests>=2.33.1",
     "flask>=3.0.0",
     "flask-cors>=4.0.0",
+    "waitress>=3.0.0",
 ]
 
 [project.optional-dependencies]
@@ -40,9 +41,6 @@ dev = [
     "pytest-cov>=6.0",
     "pyinstaller>=6.0",
 ]
-
-[project.scripts]
-ame-compression = "video_compressor.cli:main"
 
 # =============================================================================
 # Ruff - Linter & Formatter (replaces black, isort, flake8, etc.)

@@ -48,28 +48,6 @@ npm run electron:dev
 3. **設定**: CRF（品質）、プリセット（速度）、ノイズ除去や音量調整を設定します。
 4. **実行**: 出力先フォルダを選択し、**開始** ボタンをクリックします。
 
-## 💻 CLI の使い方
-
-コアエンジンは CLI ツールとしても利用可能です。
-
-```bash
-# 単一ファイルの圧縮
-uv run python -m video_compressor input.mp4
-
-# 複数ファイルの一括圧縮
-uv run python -m video_compressor file1.mp4 file2.mp4
-```
-
-| オプション | 説明 | デフォルト |
-| :--- | :--- | :--- |
-| `--crf` | 品質 (0-63, 低いほど高品質) | 25 |
-| `--preset` | 速度 (0-13, 高いほど高速) | 6 |
-| `--volume-gain` | 音量調整 (`auto`, `2.0`, `10dB`) | - |
-| `--denoise` | ノイズ除去の有効化 (0.0-1.0) | - |
-| `--resolution` | 最大解像度 (例: `1920x1080`) | 4K |
-
-詳細なオプションは `uv run python -m video_compressor --help` で確認できます。
-
 ## 🛠️ 開発とビルド
 
 ```bash

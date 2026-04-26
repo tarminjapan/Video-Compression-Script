@@ -5,7 +5,6 @@ from video_compressor.utils import (
     format_time,
     get_file_type,
     parse_bitrate,
-    parse_input_paths,
 )
 
 
@@ -136,38 +135,3 @@ class TestCalculateScaledResolution:
     def test_minimum_resolution(self):
         result = calculate_scaled_resolution(1, 1)
         assert result is None
-
-
-class TestParseInputPaths:
-    def test_empty_list(self):
-        assert parse_input_paths([]) == []
-
-    def test_none(self):
-        assert parse_input_paths(None) == []
-
-    def test_single_string(self):
-        assert parse_input_paths("file.mp4") == ["file.mp4"]
-
-    def test_multiple_strings(self):
-        result = parse_input_paths(["file1.mp4", "file2.mp4"])
-        assert result == ["file1.mp4", "file2.mp4"]
-
-    def test_comma_separated(self):
-        result = parse_input_paths(["file1.mp4, file2.mp4"])
-        assert result == ["file1.mp4", "file2.mp4"]
-
-    def test_quoted_paths(self):
-        result = parse_input_paths(['"C:\\My Videos\\file.mp4"'])
-        assert result == ["C:\\My Videos\\file.mp4"]
-
-    def test_mixed(self):
-        result = parse_input_paths(["file1.mp4, file2.mp4", "file3.mp4"])
-        assert result == ["file1.mp4", "file2.mp4", "file3.mp4"]
-
-    def test_whitespace_handling(self):
-        result = parse_input_paths(["  file1.mp4   file2.mp4  "])
-        assert result == ["file1.mp4", "file2.mp4"]
-
-    def test_empty_strings_filtered(self):
-        result = parse_input_paths(["file1.mp4,, ,file2.mp4"])
-        assert result == ["file1.mp4", "file2.mp4"]

@@ -7,22 +7,10 @@ that can be used by CLI, GUI, and API layers.
 from __future__ import annotations
 
 import re
-import sys
 import time
-from abc import ABC, abstractmethod
-from typing import Any, Protocol
+from typing import Protocol
 
-from .config import PROGRESS_BAR_LENGTH
 from .models import ProgressEvent
-from .utils import (
-    BOLD,
-    CYAN,
-    DIM,
-    GREEN,
-    RESET,
-    YELLOW,
-    format_time,
-)
 
 
 class ProgressCallback(Protocol):
@@ -46,16 +34,6 @@ class CancellationSource:
 
     This class provides a thread-safe way to signal cancellation
     to running compression operations.
-
-    Example:
-        cancel_source = CancellationSource()
-
-        # In compression operation
-        if cancel_source.is_cancelled:
-            return
-
-        # From external (e.g., GUI button)
-        cancel_source.cancel()
     """
 
     def __init__(self):
@@ -157,111 +135,3 @@ class ProgressParser:
             eta=eta,
             status=status,
         )
-
-
-class ProgressReporter(ABC):
-    """Abstract base class for progress reporters.
-
-    Concrete implementations handle progress reporting for different
-    interfaces (CLI, GUI, API).
-    """
-
-    @abstractmethod
-    def report(self, event: ProgressEvent) -> None:
-        """Report a progress event.
-
-        Args:
-            event: Progress event to report
-        """
-        pass
-
-    @abstractmethod
-    def report_complete(self) -> None:
-        """Report completion."""
-        pass
-
-    @abstractmethod
-    def report_error(self, message: str) -> None:
-        """Report an error.
-
-        Args:
-            message: Error message
-        """
-        pass
-
-
-class CLIProgressReporter(ProgressReporter):
-    """CLI implementation of progress reporter.
-
-    Displays progress in the terminal with a progress bar.
-    """
-
-    def __init__(self, total_duration: float):
-        """Initialize CLI progress reporter.
-
-        Args:
-            total_duration: Total media duration in seconds
-        """
-        self.total_duration = total_duration
-        self.parser = ProgressParser(total_duration)
-        self._stats = {"fps_list": [], "speed_list": [], "frame_list": []}
-
-    @property
-    def stats(self) -> dict[str, Any]:
-        """Get collected statistics."""
-        return self._stats
-
-    def report(self, event: ProgressEvent) -> None:
-        """Report progress to CLI."""
-        if event.percent <= 0:
-            return
-
-        if event.fps > 0 and event.speed > 0:
-            self._stats["fps_list"].append(event.fps)
-            self._stats["speed_list"].append(event.speed)
-            self._stats["frame_list"].append(event.frame)
-
-        eta_str = f"{YELLOW}--:--{RESET}"
-        if event.eta > 0:
-            eta_str = f"{YELLOW}{format_time(event.eta)}{RESET}"
-        elif event.percent >= 100:
-            eta_str = f"{GREEN}✓ Done{RESET}"
-
-        filled = int(PROGRESS_BAR_LENGTH * event.percent / 100)
-        bar = "█" * filled + "░" * (PROGRESS_BAR_LENGTH - filled)
-
-        current_str = format_time(event.current_time)
-        total_str = format_time(self.total_duration)
-
-        bar_color = GREEN if event.percent >= 100 else CYAN
-
-        output = (
-            f"\r  {bar_color}[{bar}]{RESET} {BOLD}{event.percent:5.1f}%{RESET}"
-            f"  {DIM}│{RESET} {current_str}{DIM}/{RESET}{total_str}"
-            f"  {DIM}│{RESET} ETA {eta_str}"
-            f"  {DIM}│{RESET} {DIM}{event.fps:>4.0f}{RESET} fps"
-            f" {DIM}·{RESET} {DIM}{event.speed:.1f}x{RESET}"
-            f" {DIM}·{RESET} {DIM}F{RESET}{event.frame}"
-        )
-        sys.stdout.write(output)
-        sys.stdout.flush()
-
-    def report_complete(self) -> None:
-        """Report completion to CLI."""
-        bar = "█" * PROGRESS_BAR_LENGTH
-        total_str = format_time(self.total_duration)
-
-        output = (
-            f"\r  {GREEN}[{bar}]{RESET} {BOLD}100.0%{RESET}"
-            f"  {DIM}│{RESET} {total_str}{DIM}/{RESET}{total_str}"
-            f"  {DIM}│{RESET} ETA {GREEN}✓ Done{RESET}"
-            f"  {DIM}│{RESET} {DIM}  --{RESET} fps"
-            f" {DIM}·{RESET} {DIM}--x{RESET}"
-            f" {DIM}·{RESET} {DIM}F{RESET}--"
-        )
-        sys.stdout.write(output)
-        sys.stdout.flush()
-
-    def report_error(self, message: str) -> None:
-        """Report error to CLI."""
-        print(f"\n  Error: {message}")

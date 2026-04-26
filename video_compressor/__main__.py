@@ -1,43 +1,57 @@
 """Entry point for running as module: uv run python -m video_compressor
 
-Supports both CLI and API modes:
-  uv run python -m video_compressor input.mp4          # CLI mode
-  uv run python -m video_compressor --api               # API mode
+Starts the API server for the GUI application.
 """
 
 import argparse
 import sys
 
+try:
+    from waitress import serve
+except ImportError:
+    # We allow this to fail here as it might be dev mode where waitress isn't needed
+    # or the error will be caught in the main try-except block
+    serve = None
+
 from .api import create_app
-from .cli import main as cli_main
 
 
 def main():
-    parser = argparse.ArgumentParser(description="AmeCompression - Video and Audio Compressor")
-    parser.add_argument("--api", action="store_true", help="Start in API mode")
-    parser.add_argument("--port", type=int, default=5000, help="Port for API mode (default: 5000)")
+    parser = argparse.ArgumentParser(description="AmeCompression API Server")
+    parser.add_argument(
+        "--port", type=int, default=5000, help="Port for API server (default: 5000)"
+    )
     parser.add_argument(
         "--config",
         type=str,
-        default="dev",
+        default="prod",
         choices=["dev", "prod", "test"],
-        help="API configuration mode",
+        help="API configuration mode (default: prod)",
     )
 
-    # Use parse_known_args to avoid failing on CLI-specific arguments
-    args, _unknown = parser.parse_known_args()
+    args = parser.parse_args()
 
-    if args.api:
-        try:
-            app = create_app(config_name=args.config)
-            print(f"Starting API server on port {args.port} (config: {args.config})...")
-            app.run(host="127.0.0.1", port=args.port, debug=False)
-        except ImportError as e:
-            print(f"Error: Flask and Flask-CORS are required for API mode. {e}")
-            sys.exit(1)
-    else:
-        # For CLI mode, we let cli_main handle everything
-        cli_main()
+    try:
+        app = create_app(config_name=args.config)
+        print(f"Starting AmeCompression API server on port {args.port} (config: {args.config})...")
+
+        if args.config == "dev":
+            # Flask development server
+            app.run(host="127.0.0.1", port=args.port, debug=True)
+        else:
+            # Production-ready WSGI server
+            if serve is None:
+                raise ImportError("waitress is required for production mode")
+
+            print(f"Serving on http://127.0.0.1:{args.port}")
+            serve(app, host="127.0.0.1", port=args.port)
+
+    except ImportError as e:
+        print(f"Error: Required dependencies for API mode not found. {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error starting API server: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

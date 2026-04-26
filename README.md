@@ -48,28 +48,6 @@ npm run electron:dev
 3. **Configure**: Adjust CRF (quality), Preset (speed), or enable Noise Reduction/Volume Gain.
 4. **Process**: Select an output directory and click **Start**.
 
-## 💻 CLI Usage
-
-The core engine is also available as a CLI tool:
-
-```bash
-# Single file compression
-uv run python -m video_compressor input.mp4
-
-# Batch compression (multiple files)
-uv run python -m video_compressor file1.mp4 file2.mp4
-```
-
-| Option | Description | Default |
-| :--- | :--- | :--- |
-| `--crf` | Quality (0-63, lower is better) | 25 |
-| `--preset` | Speed (0-13, higher is faster) | 6 |
-| `--volume-gain` | Adjust volume (`auto`, `2.0`, `10dB`) | - |
-| `--denoise` | Enable noise reduction (0.0-1.0) | - |
-| `--resolution` | Max resolution (e.g. `1920x1080`) | 4K |
-
-Run `uv run python -m video_compressor --help` for full details.
-
 ## 🛠️ Development & Build
 
 ```bash
