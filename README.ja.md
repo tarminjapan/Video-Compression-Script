@@ -26,14 +26,18 @@ Electron、React、および Flask を活用した、モダンで直感的なイ
 
 ### 2. ソースから実行
 
-```bash
-# バックエンドのセットアップ
-uv sync --extra dev
+アプリケーションのルートディレクトリで以下のコマンドを実行します。
 
-# フロントエンドのセットアップ
-cd frontend
-npm install
-npm run electron:dev
+**macOS / Linux の場合:**
+
+```bash
+make dev
+```
+
+**Windows の場合:**
+
+```bat
+dev.bat
 ```
 
 ## 📄 ドキュメント

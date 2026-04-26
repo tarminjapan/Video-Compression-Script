@@ -26,14 +26,16 @@ You must have FFmpeg installed on your system.
 
 ### 2. Run from Source
 
-```bash
-# Backend setup
-uv sync --extra dev
+Run the following command in the application root directory:
 
-# Frontend setup
-cd frontend
-npm install
-npm run electron:dev
+**macOS / Linux:**
+```bash
+make dev
+```
+
+**Windows:**
+```bat
+dev.bat
 ```
 
 ## 📄 Documentation
