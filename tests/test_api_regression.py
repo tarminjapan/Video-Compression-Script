@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from backend.api.app import create_app
+from backend.api.job_runner import job_runner
+from backend.settings import SettingsManager
 from flask.testing import FlaskClient
-from video_compressor.api.app import create_app
-from video_compressor.api.job_runner import job_runner
-from video_compressor.settings import SettingsManager
 
 
 @pytest.fixture
@@ -25,8 +25,8 @@ def test_full_video_compression_flow(client: FlaskClient):
     """
     # 1. Start job
     with (
-        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
-        patch("video_compressor.api.blueprints.jobs.compress_video_service") as mock_service,
+        patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
+        patch("backend.api.blueprints.jobs.compress_video_service") as mock_service,
         patch("threading.Thread") as mock_thread,
     ):
         # Mock service return value
@@ -68,8 +68,8 @@ def test_full_video_compression_flow(client: FlaskClient):
 def test_job_cancellation_flow(client: FlaskClient):
     """Test the flow of cancelling a job."""
     with (
-        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
-        patch("video_compressor.api.blueprints.jobs.compress_video_service"),
+        patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
+        patch("backend.api.blueprints.jobs.compress_video_service"),
         patch("threading.Thread"),
     ):
         # Start job

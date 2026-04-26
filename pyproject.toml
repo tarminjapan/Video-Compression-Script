@@ -48,7 +48,7 @@ dev = [
 [tool.ruff]
 target-version = "py310"
 line-length = 100
-src = ["video_compressor", "tests"]
+src = ["backend", "tests"]
 
 # Exclude patterns
 exclude = [
@@ -124,7 +124,7 @@ pythonPlatform = "All"
 stubPath = "typings"
 
 # Include/exclude paths
-include = ["video_compressor", "tests"]
+include = ["backend", "tests"]
 exclude = ["**/__pycache__", "**/node_modules", "**/.*"]
 
 # Strict typing
@@ -133,7 +133,6 @@ reportUnknownMemberType = "none" # Still too noisy for many libraries
 reportUnknownVariableType = "none"
 reportUnknownArgumentType = "none"
 reportUnknownParameterType = "none"
-reportUnknownReturnType = "none"
 reportUnusedImport = "error"
 reportUnusedVariable = "error"
 reportUntypedFunctionDecorator = "error"
@@ -142,7 +141,7 @@ reportUntypedBaseClass = "error"
 reportMissingTypeArgument = "error"
 reportGeneralTypeIssues = "error"
 reportMissingParameterType = "warning"
-reportMissingReturnType = "warning"
+reportMissingModuleSource = "warning"
 
 
 # =============================================================================
@@ -159,4 +158,4 @@ addopts = "-v --tb=short"
 # Scripts
 # ==============================================================================
 [tool.setuptools.packages.find]
-include = ["video_compressor"]
+include = ["backend"]

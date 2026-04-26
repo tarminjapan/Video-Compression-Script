@@ -1,6 +1,6 @@
 import math
 
-from video_compressor.volume import (
+from backend.volume import (
     build_audio_filter,
     calculate_recommended_gain,
     parse_volume_gain,

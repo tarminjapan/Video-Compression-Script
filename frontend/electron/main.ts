@@ -41,7 +41,7 @@ function startFlask() {
 
   flaskProcess = spawn(
     pythonCmd,
-    ['-m', 'video_compressor', '--api', '--port', API_PORT.toString(), '--config', config],
+    ['-m', 'backend', '--api', '--port', API_PORT.toString(), '--config', config],
     {
       cwd: projectRoot,
       env: { ...process.env, PYTHONUNBUFFERED: '1' },

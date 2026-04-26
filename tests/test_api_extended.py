@@ -1,10 +1,10 @@
 from unittest.mock import patch
 
 import pytest
+from backend.api.app import create_app
+from backend.api.job_runner import job_runner
+from backend.settings import SettingsManager
 from flask.testing import FlaskClient
-from video_compressor.api.app import create_app
-from video_compressor.api.job_runner import job_runner
-from video_compressor.settings import SettingsManager
 
 
 @pytest.fixture
@@ -38,8 +38,8 @@ def test_update_settings(client: FlaskClient):
 
 def test_audio_compression_endpoint(client: FlaskClient):
     with (
-        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
-        patch("video_compressor.api.blueprints.jobs.compress_audio_service"),
+        patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
+        patch("backend.api.blueprints.jobs.compress_audio_service"),
         patch("threading.Thread"),
     ):
         response = client.post(
@@ -51,8 +51,8 @@ def test_audio_compression_endpoint(client: FlaskClient):
 
 def test_list_jobs(client: FlaskClient):
     with (
-        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
-        patch("video_compressor.api.blueprints.jobs.compress_video_service"),
+        patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
+        patch("backend.api.blueprints.jobs.compress_video_service"),
         patch("threading.Thread"),
     ):
         client.post("/api/jobs/video", json={"input_path": "test1.mp4"})
@@ -65,8 +65,8 @@ def test_list_jobs(client: FlaskClient):
 
 def test_get_job_status(client: FlaskClient):
     with (
-        patch("video_compressor.api.blueprints.jobs.Path.exists", return_value=True),
-        patch("video_compressor.api.blueprints.jobs.compress_video_service"),
+        patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
+        patch("backend.api.blueprints.jobs.compress_video_service"),
         patch("threading.Thread"),
     ):
         resp = client.post("/api/jobs/video", json={"input_path": "test.mp4"})
@@ -85,10 +85,10 @@ def test_get_job_status_not_found(client: FlaskClient):
 
 def test_media_info_audio(client: FlaskClient):
     with (
-        patch("video_compressor.api.blueprints.media.Path.exists", return_value=True),
-        patch("video_compressor.api.blueprints.media.get_video_info_safe", return_value=None),
+        patch("backend.api.blueprints.media.Path.exists", return_value=True),
+        patch("backend.api.blueprints.media.get_video_info_safe", return_value=None),
         patch(
-            "video_compressor.api.blueprints.media.get_audio_info_safe",
+            "backend.api.blueprints.media.get_audio_info_safe",
             return_value={"bitrate": "128k"},
         ),
     ):
@@ -99,16 +99,16 @@ def test_media_info_audio(client: FlaskClient):
 
 
 def test_media_info_not_found(client: FlaskClient):
-    with patch("video_compressor.api.blueprints.media.Path.exists", return_value=False):
+    with patch("backend.api.blueprints.media.Path.exists", return_value=False):
         response = client.get("/api/media-info?path=non-existent.mp4")
         assert response.status_code == 404
 
 
 def test_analyze_volume_endpoint(client: FlaskClient):
     with (
-        patch("video_compressor.api.blueprints.media.Path.exists", return_value=True),
+        patch("backend.api.blueprints.media.Path.exists", return_value=True),
         patch(
-            "video_compressor.api.blueprints.media.analyze_volume_level",
+            "backend.api.blueprints.media.analyze_volume_level",
             return_value={"mean_volume": -15.0, "max_volume": -1.0},
         ),
     ):
@@ -119,9 +119,9 @@ def test_analyze_volume_endpoint(client: FlaskClient):
 
 def test_analyze_volume_error(client: FlaskClient):
     with (
-        patch("video_compressor.api.blueprints.media.Path.exists", return_value=True),
+        patch("backend.api.blueprints.media.Path.exists", return_value=True),
         patch(
-            "video_compressor.api.blueprints.media.analyze_volume_level",
+            "backend.api.blueprints.media.analyze_volume_level",
             return_value={"mean_volume": None},
         ),
     ):

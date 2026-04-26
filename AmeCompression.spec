@@ -7,15 +7,15 @@ from PyInstaller.utils.hooks import collect_submodules
 block_cipher = None
 
 PROJECT_ROOT = Path(SPECPATH)
-VIDEO_COMPRESSOR = PROJECT_ROOT / "video_compressor"
+BACKEND = PROJECT_ROOT / "backend"
 
 a = Analysis(
-    [str(VIDEO_COMPRESSOR / "__main__.py")],
+    [str(BACKEND / "__main__.py")],
     pathex=[str(PROJECT_ROOT)],
     binaries=[],
     data=[],
     hiddenimports=[
-        "video_compressor",
+        "backend",
         "flask",
         "flask_cors",
     ],

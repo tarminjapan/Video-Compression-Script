@@ -33,7 +33,7 @@ AmeCompression/
 │   ├── src/                # React source code
 │   ├── electron/           # Electron main/preload scripts
 │   └── package.json        # Frontend dependencies
-├── video_compressor/       # Backend package (engine & API)
+├── backend/       # Backend package (engine & API)
 │   ├── api/                # Flask REST API
 │   ├── cli.py              # CLI interface
 │   ├── config.py           # Configuration constants
@@ -69,10 +69,10 @@ Before committing, run all quality checks:
 
 ```bash
 # Backend: Linting
-uv run ruff check video_compressor tests
+uv run ruff check backend tests
 
 # Backend: Formatting check
-uv run ruff format --check video_compressor tests
+uv run ruff format --check backend tests
 
 # Backend: Type checking
 uv run pyright --warnings

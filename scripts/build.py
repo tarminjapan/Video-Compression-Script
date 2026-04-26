@@ -42,7 +42,7 @@ def build(onefile: bool = False, with_ffmpeg: bool = False):
     cmd.extend(["--name", "ame-compression-backend"])
 
     # Add hidden imports needed for dynamic imports in the backend
-    for hidden in ["video_compressor", "flask", "flask_cors"]:
+    for hidden in ["backend", "flask", "flask_cors"]:
         cmd.extend(["--hidden-import", hidden])
 
     # Exclude unnecessary modules to reduce size
