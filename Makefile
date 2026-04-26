@@ -1,5 +1,8 @@
-.PHONY: dev
+.PHONY: install dev
 
-dev:
+install:
 	uv sync --extra dev
-	cd frontend && npm install && npm run electron:dev
+	cd frontend && npm install
+
+dev: install
+	cd frontend && npm run electron:dev
