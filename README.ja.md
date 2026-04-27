@@ -20,7 +20,7 @@ Electron、React、および Flask を活用した、モダンで直感的なイ
 
 - **Windows**: `choco install ffmpeg` または [ffmpeg.org](https://ffmpeg.org/download.html) からダウンロード
 - **macOS**: `brew install ffmpeg`
-- **Linux**: `sudo apt install ffmpeg`
+- **Linux**: `sudo apt install ffmpeg libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 libasound2`
 
 *注意: プロジェクトルートの `bin/` フォルダ内に `ffmpeg` と `ffprobe` の実行ファイルを配置することでも動作します。*
 

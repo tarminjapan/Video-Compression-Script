@@ -20,7 +20,7 @@ You must have FFmpeg installed on your system.
 
 - **Windows**: `choco install ffmpeg` or download from [ffmpeg.org](https://ffmpeg.org/download.html)
 - **macOS**: `brew install ffmpeg`
-- **Linux**: `sudo apt install ffmpeg`
+- **Linux**: `sudo apt install ffmpeg libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 libasound2`
 
 *Note: You can also place `ffmpeg` and `ffprobe` executables in a `bin/` folder inside the project root.*
 

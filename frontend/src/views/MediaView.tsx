@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TFunction } from 'i18next'
+import type { TFunction } from 'i18next'
 import { Upload, Settings, Play, Loader2, Info, FileSearch } from 'lucide-react'
 import { api, initializeApi } from '../services/api'
 import type { MediaInfo } from '../types'
