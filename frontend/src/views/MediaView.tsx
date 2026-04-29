@@ -230,13 +230,19 @@ const MediaView: React.FC = () => {
       resolution = `${customWidth}x${customHeight}`
     }
 
+    const bitratePattern = /^\d+k$/
+    const resolvedVideoAudioBitrate = bitratePattern.test(videoAudioBitrate)
+      ? videoAudioBitrate
+      : '192k'
+    const resolvedAudioBitrate = bitratePattern.test(audioBitrate) ? audioBitrate : '192k'
+
     try {
       if (mediaType === 'video') {
         const response = await api.post<{ task_id: string }>('/jobs/video', {
           input_path: inputPath,
           crf,
           preset,
-          audio_bitrate: videoAudioBitrate,
+          audio_bitrate: resolvedVideoAudioBitrate,
           audio_enabled: audioEnabled,
           resolution: resolution === 'original' ? null : resolution,
           max_fps: maxFps === 'unlimited' ? null : parseInt(maxFps),
@@ -247,7 +253,7 @@ const MediaView: React.FC = () => {
       } else {
         const response = await api.post<{ task_id: string }>('/jobs/audio', {
           input_path: inputPath,
-          bitrate: audioBitrate,
+          bitrate: resolvedAudioBitrate,
           keep_metadata: keepMetadata,
           volume_gain_db: volumeGain,
           denoise_level: denoiseEnabled ? denoiseLevel : null,
@@ -417,19 +423,29 @@ const MediaView: React.FC = () => {
               </div>
               <div className="setting-item">
                 <label>{t('video_settings.max_fps')}</label>
-                <select
-                  value={maxFps}
+                <input
+                  type="text"
+                  list="fps-options"
+                  placeholder={t('video_settings.fps_options.unlimited')}
+                  value={maxFps === 'unlimited' ? '' : maxFps}
                   onChange={(e) => {
-                    setMaxFps(e.target.value)
+                    setMaxFps(e.target.value || 'unlimited')
                   }}
-                >
-                  <option value="unlimited">{t('video_settings.fps_options.unlimited')}</option>
-                  <option value="60">60 FPS</option>
-                  <option value="30">30 FPS</option>
-                  <option value="24">24 FPS</option>
-                  <option value="20">20 FPS</option>
-                  <option value="12">12 FPS</option>
-                </select>
+                />
+                <datalist id="fps-options">
+                  <option value="240" />
+                  <option value="144" />
+                  <option value="120" />
+                  <option value="90" />
+                  <option value="60" />
+                  <option value="50" />
+                  <option value="48" />
+                  <option value="30" />
+                  <option value="25" />
+                  <option value="24" />
+                  <option value="20" />
+                  <option value="12" />
+                </datalist>
               </div>
             </div>
 
@@ -437,20 +453,24 @@ const MediaView: React.FC = () => {
             <div className="settings-grid">
               <div className="setting-item">
                 <label>{t('video_settings.audio_bitrate')}</label>
-                <select
+                <input
+                  type="text"
+                  list="audio-bitrate-options"
+                  placeholder="e.g. 192k"
                   value={videoAudioBitrate}
                   onChange={(e) => {
-                    setVideoAudioBitrate(e.target.value)
+                    setVideoAudioBitrate(e.target.value || '192k')
                   }}
                   disabled={!audioEnabled}
-                >
-                  <option value="32k">32k</option>
-                  <option value="64k">64k</option>
-                  <option value="128k">128k</option>
-                  <option value="192k">192k</option>
-                  <option value="256k">256k</option>
-                  <option value="320k">320k</option>
-                </select>
+                />
+                <datalist id="audio-bitrate-options">
+                  <option value="32k" />
+                  <option value="64k" />
+                  <option value="128k" />
+                  <option value="192k" />
+                  <option value="256k" />
+                  <option value="320k" />
+                </datalist>
               </div>
               <div className="setting-item">
                 <label>
@@ -482,19 +502,23 @@ const MediaView: React.FC = () => {
             <div className="settings-grid">
               <div className="setting-item">
                 <label>{t('audio_settings.bitrate')}</label>
-                <select
+                <input
+                  type="text"
+                  list="audio-bitrate-options-audio"
+                  placeholder="e.g. 192k"
                   value={audioBitrate}
                   onChange={(e) => {
-                    setAudioBitrate(e.target.value)
+                    setAudioBitrate(e.target.value || '192k')
                   }}
-                >
-                  <option value="32k">32k</option>
-                  <option value="64k">64k</option>
-                  <option value="128k">128k</option>
-                  <option value="192k">192k</option>
-                  <option value="256k">256k</option>
-                  <option value="320k">320k</option>
-                </select>
+                />
+                <datalist id="audio-bitrate-options-audio">
+                  <option value="32k" />
+                  <option value="64k" />
+                  <option value="128k" />
+                  <option value="192k" />
+                  <option value="256k" />
+                  <option value="320k" />
+                </datalist>
               </div>
               <div className="setting-item">
                 <label>
