@@ -287,7 +287,6 @@ input[type='range'] {
   padding-bottom: 6px;
   border-bottom: 1px dashed var(--border-color);
   color: var(--text-muted);
-  padding-left: 8px;
 }
 
 .theme-toggle {
