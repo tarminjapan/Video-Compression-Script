@@ -29,7 +29,7 @@ const AudioSettingsSection: React.FC<AudioSettingsSectionProps> = ({
   setDenoiseLevel,
 }) => (
   <>
-    <div className="section-title">{t('volume.title')}</div>
+    <div className="sub-section-title">{t('volume.title')}</div>
     <div className="settings-grid">
       <div className="setting-item">
         <label>{t('volume.mode')}</label>
@@ -66,7 +66,7 @@ const AudioSettingsSection: React.FC<AudioSettingsSectionProps> = ({
       )}
     </div>
 
-    <div className="section-title">{t('denoise.title')}</div>
+    <div className="sub-section-title">{t('denoise.title')}</div>
     <div className="settings-grid">
       <div className="setting-item">
         <label>
@@ -499,6 +499,7 @@ const MediaView: React.FC = () => {
           </>
         ) : (
           <>
+            <div className="section-title">{t('audio_settings.audio_section')}</div>
             <div className="settings-grid">
               <div className="setting-item">
                 <label>{t('audio_settings.bitrate')}</label>

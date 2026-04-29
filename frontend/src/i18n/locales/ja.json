@@ -65,6 +65,7 @@
   },
   "audio_settings": {
     "title": "音声圧縮設定",
+    "audio_section": "オーディオ",
     "bitrate": "ビットレート",
     "keep_metadata": "メタデータを保持",
     "input_info": "入力ファイル情報",

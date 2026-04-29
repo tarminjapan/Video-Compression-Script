@@ -65,6 +65,7 @@
   },
   "audio_settings": {
     "title": "Audio Compression Settings",
+    "audio_section": "Audio",
     "bitrate": "Bitrate",
     "keep_metadata": "Keep Metadata",
     "input_info": "Input File Info",

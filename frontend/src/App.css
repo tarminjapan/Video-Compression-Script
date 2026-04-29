@@ -280,6 +280,16 @@ input[type='range'] {
   color: var(--text-muted);
 }
 
+.sub-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--border-color);
+  color: var(--text-muted);
+  padding-left: 8px;
+}
+
 .theme-toggle {
   display: flex;
   gap: 8px;
