@@ -450,9 +450,10 @@ const MediaView: React.FC = () => {
                 <input
                   type="text"
                   list="audio-bitrate-options"
+                  placeholder="e.g. 192k"
                   value={videoAudioBitrate}
                   onChange={(e) => {
-                    setVideoAudioBitrate(e.target.value)
+                    setVideoAudioBitrate(e.target.value || '192k')
                   }}
                   disabled={!audioEnabled}
                 />
@@ -498,9 +499,10 @@ const MediaView: React.FC = () => {
                 <input
                   type="text"
                   list="audio-bitrate-options-audio"
+                  placeholder="e.g. 192k"
                   value={audioBitrate}
                   onChange={(e) => {
-                    setAudioBitrate(e.target.value)
+                    setAudioBitrate(e.target.value || '192k')
                   }}
                 />
                 <datalist id="audio-bitrate-options-audio">
