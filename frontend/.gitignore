@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Electron compiled preload
+electron/preload.js
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
