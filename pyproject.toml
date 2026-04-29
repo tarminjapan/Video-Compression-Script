@@ -181,7 +181,6 @@ strict_optional = true
 no_implicit_reexport = true
 extra_checks = true
 
-mypy_path = ["backend"]
 files = ["backend", "tests"]
 
 [[tool.mypy.overrides]]

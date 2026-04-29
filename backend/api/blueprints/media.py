@@ -40,6 +40,8 @@ def get_info() -> Response | tuple[Response, int]:
 @media_bp.route("/volume/analyze", methods=["POST"])
 def analyze_volume_endpoint() -> Response | tuple[Response, int]:
     data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
     path = data.get("path")
     if not path:
         return jsonify({"error": "Path is required"}), 400
