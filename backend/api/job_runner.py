@@ -162,7 +162,15 @@ class JobRunner:
         """List all tasks."""
         with self.tasks_lock:
             return [
-                {"id": t["id"], "status": t["status"], "type": t["type"]}
+                {
+                    "id": t["id"],
+                    "status": t["status"],
+                    "type": t["type"],
+                    "progress": t.get("progress"),
+                    "result": t.get("result"),
+                    "created_at": t.get("created_at"),
+                    "finished_at": t.get("finished_at"),
+                }
                 for t in self.tasks.values()
             ]
 

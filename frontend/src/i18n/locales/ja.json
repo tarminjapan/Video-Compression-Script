@@ -109,6 +109,8 @@
     "eta": "残り時間",
     "fps": "FPS",
     "speed": "速度",
+    "time_position": "時間",
+    "frame": "フレーム",
     "complete": "圧縮完了！",
     "failed": "圧縮失敗",
     "cancelled": "圧縮がキャンセルされました",

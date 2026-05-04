@@ -109,6 +109,8 @@
     "eta": "ETA",
     "fps": "FPS",
     "speed": "Speed",
+    "time_position": "Time",
+    "frame": "Frame",
     "complete": "Compression Complete!",
     "failed": "Compression Failed",
     "cancelled": "Compression Cancelled",

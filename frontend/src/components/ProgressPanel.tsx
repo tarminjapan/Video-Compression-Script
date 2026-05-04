@@ -8,6 +8,27 @@ interface ProgressPanelProps {
   onCancel: (id: string) => void
 }
 
+function formatTime(seconds: number): string {
+  if (!seconds || seconds <= 0 || !isFinite(seconds)) return '--:--'
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  if (h > 0) {
+    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
+function formatTimeShort(seconds: number): string {
+  if (!seconds || seconds <= 0 || !isFinite(seconds)) return ''
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  if (h > 0) return `${h}h ${m}m`
+  if (m > 0) return `${m}m ${s}s`
+  return `${s}s`
+}
+
 const ProgressPanel: React.FC<ProgressPanelProps> = ({ jobs, onCancel }) => {
   const { t } = useTranslation()
 
@@ -32,23 +53,61 @@ const ProgressPanel: React.FC<ProgressPanelProps> = ({ jobs, onCancel }) => {
 
             {job.status === 'running' && job.progress && (
               <div className="job-progress">
-                <div className="progress-bar-bg">
-                  <div
-                    className="progress-bar-fill"
-                    style={{ width: `${job.progress.percent}%` }}
-                  ></div>
+                <div className="progress-bar-wrapper">
+                  <div className="progress-bar-bg">
+                    <div
+                      className="progress-bar-fill"
+                      style={{ width: `${Math.min(100, job.progress.percent)}%` }}
+                    ></div>
+                  </div>
+                  <span className="progress-percent">{Math.round(job.progress.percent)}%</span>
                 </div>
                 <div className="job-stats">
-                  <span>{Math.round(job.progress.percent)}%</span>
-                  <span>ETA: {Math.round(job.progress.eta)}s</span>
-                  <span>Speed: {job.progress.speed?.toFixed(1)}x</span>
+                  <span className="stat-item">
+                    <span className="stat-label">{t('compress.eta')}:</span>
+                    <span className="stat-value">{formatTimeShort(job.progress.eta) || '---'}</span>
+                  </span>
+                  {job.progress.speed !== undefined && job.progress.speed > 0 && (
+                    <span className="stat-item">
+                      <span className="stat-label">{t('compress.speed')}:</span>
+                      <span className="stat-value">{job.progress.speed.toFixed(1)}x</span>
+                    </span>
+                  )}
+                  {job.progress.fps !== undefined && job.progress.fps > 0 && (
+                    <span className="stat-item">
+                      <span className="stat-label">{t('compress.fps')}:</span>
+                      <span className="stat-value">{Math.round(job.progress.fps)}</span>
+                    </span>
+                  )}
+                </div>
+                <div className="job-stats secondary-stats">
+                  {job.progress.current_time !== undefined &&
+                    job.progress.current_time > 0 &&
+                    job.progress.total_duration !== undefined &&
+                    job.progress.total_duration > 0 && (
+                      <span className="stat-item">
+                        <span className="stat-label">{t('compress.time_position')}:</span>
+                        <span className="stat-value">
+                          {formatTime(job.progress.current_time)} /{' '}
+                          {formatTime(job.progress.total_duration)}
+                        </span>
+                      </span>
+                    )}
+                  {job.progress.frame !== undefined && job.progress.frame > 0 && (
+                    <span className="stat-item">
+                      <span className="stat-label">{t('compress.frame')}:</span>
+                      <span className="stat-value">{job.progress.frame.toLocaleString()}</span>
+                    </span>
+                  )}
                 </div>
               </div>
             )}
 
             {job.status === 'success' && job.result && (
               <div className="job-result">
-                <span>-{job.result.compression_ratio?.toFixed(1)}%</span>
+                <span className="result-compression">
+                  -{job.result.compression_ratio?.toFixed(1)}%
+                </span>
               </div>
             )}
 

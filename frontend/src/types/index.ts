@@ -5,6 +5,10 @@ export interface Progress {
   percent: number
   eta: number
   speed?: number
+  current_time?: number
+  total_duration?: number
+  fps?: number
+  frame?: number
 }
 
 export interface TaskResult {
