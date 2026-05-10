@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, session } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 import { spawn, ChildProcess } from 'child_process'
@@ -130,6 +130,26 @@ function createWindow(): void {
   mainWindow.webContents.on('will-navigate', (event) => {
     event.preventDefault()
   })
+
+  if (!isDev) {
+    const cspHeader = [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self'",
+      "connect-src 'self' http://127.0.0.1:5000 http://localhost:5000",
+      "img-src 'self' data:",
+      "font-src 'self'",
+    ].join('; ')
+
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': [cspHeader],
+        },
+      })
+    })
+  }
 
   const startUrl = isDev
     ? 'http://localhost:5173'
