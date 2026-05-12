@@ -5,6 +5,22 @@ import { Upload, Settings, Play, Loader2, Info, FileSearch } from 'lucide-react'
 import { api, initializeApi } from '../services/api'
 import type { MediaInfo } from '../types'
 
+const AUDIO_BITRATE_OPTIONS = [
+  '16k',
+  '24k',
+  '32k',
+  '40k',
+  '48k',
+  '64k',
+  '96k',
+  '128k',
+  '160k',
+  '192k',
+  '256k',
+  '320k',
+]
+const BITRATE_REGEX = /^\d+k$/
+
 interface AudioSettingsSectionProps {
   t: TFunction
   volumeMode: string
@@ -466,23 +482,15 @@ const MediaView: React.FC = () => {
                   placeholder="e.g. 192k"
                   value={videoAudioBitrate}
                   onChange={(e) => {
-                    setVideoAudioBitrate(e.target.value || '192k')
+                    const val = e.target.value
+                    setVideoAudioBitrate(BITRATE_REGEX.test(val) ? val : '192k')
                   }}
                   disabled={!audioEnabled}
                 />
                 <datalist id="audio-bitrate-options">
-                  <option value="16k" />
-                  <option value="24k" />
-                  <option value="32k" />
-                  <option value="40k" />
-                  <option value="48k" />
-                  <option value="64k" />
-                  <option value="96k" />
-                  <option value="128k" />
-                  <option value="160k" />
-                  <option value="192k" />
-                  <option value="256k" />
-                  <option value="320k" />
+                  {AUDIO_BITRATE_OPTIONS.map((br) => (
+                    <option key={br} value={br} />
+                  ))}
                 </datalist>
               </div>
               <div className="setting-item">
@@ -522,22 +530,14 @@ const MediaView: React.FC = () => {
                   placeholder="e.g. 192k"
                   value={audioBitrate}
                   onChange={(e) => {
-                    setAudioBitrate(e.target.value || '192k')
+                    const val = e.target.value
+                    setAudioBitrate(BITRATE_REGEX.test(val) ? val : '192k')
                   }}
                 />
                 <datalist id="audio-bitrate-options-audio">
-                  <option value="16k" />
-                  <option value="24k" />
-                  <option value="32k" />
-                  <option value="40k" />
-                  <option value="48k" />
-                  <option value="64k" />
-                  <option value="96k" />
-                  <option value="128k" />
-                  <option value="160k" />
-                  <option value="192k" />
-                  <option value="256k" />
-                  <option value="320k" />
+                  {AUDIO_BITRATE_OPTIONS.map((br) => (
+                    <option key={br} value={br} />
+                  ))}
                 </datalist>
               </div>
               <div className="setting-item">
