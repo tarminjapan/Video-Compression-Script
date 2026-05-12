@@ -28,7 +28,7 @@ DEFAULT_AUDIO_ENABLED = True  # Audio enabled by default
 # ============================================
 MP3_CODEC = "libmp3lame"  # MP3 encoder
 DEFAULT_MP3_BITRATE = "192k"  # Default MP3 bitrate
-MP3_BITRATE_MIN = 32  # Minimum MP3 bitrate in kbps
+MP3_BITRATE_MIN = 16  # Minimum MP3 bitrate in kbps
 MP3_BITRATE_MAX = 320  # Maximum MP3 bitrate in kbps
 
 # ============================================

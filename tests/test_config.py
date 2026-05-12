@@ -88,7 +88,7 @@ class TestMP3Codec:
         assert DEFAULT_MP3_BITRATE == "192k"
 
     def test_mp3_bitrate_range(self) -> None:
-        assert MP3_BITRATE_MIN == 32
+        assert MP3_BITRATE_MIN == 16
         assert MP3_BITRATE_MAX == 320
         assert MP3_BITRATE_MIN < MP3_BITRATE_MAX
 
