@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { Upload, Settings, Play, Loader2, Info, FileSearch } from 'lucide-react'
+import { Upload, Settings, Play, Loader2, Info, FileSearch, ChevronDown } from 'lucide-react'
 import { api, initializeApi } from '../services/api'
 import type { MediaInfo } from '../types'
 
@@ -21,6 +21,115 @@ const AUDIO_BITRATE_OPTIONS = [
 ]
 const FPS_OPTIONS = ['240', '144', '120', '90', '60', '50', '48', '30', '25', '24', '20', '12']
 const BITRATE_REGEX = /^\d+$/
+
+interface ComboBoxProps {
+  value: string
+  onChange: (val: string) => void
+  options: { value: string; label: string }[]
+  placeholder?: string
+  disabled?: boolean
+}
+
+const ComboBox: React.FC<ComboBoxProps> = ({ value, onChange, options, placeholder, disabled }) => {
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (
+        containerRef.current &&
+        e.target instanceof Element &&
+        !containerRef.current.contains(e.target)
+      ) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return (): void => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative' }}>
+      <div style={{ display: 'flex' }}>
+        <input
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          disabled={disabled}
+          onChange={(e) => {
+            onChange(e.target.value)
+          }}
+          style={{ flex: 1, borderRadius: '4px 0 0 4px' }}
+        />
+        <button
+          type="button"
+          className="secondary-button"
+          disabled={disabled}
+          onClick={() => {
+            setOpen(!open)
+          }}
+          style={{
+            borderRadius: '0 4px 4px 0',
+            padding: '0 8px',
+            borderLeft: 'none',
+            minWidth: '32px',
+          }}
+        >
+          <ChevronDown size={14} />
+        </button>
+      </div>
+      {open && (
+        <ul
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            listStyle: 'none',
+            margin: 0,
+            padding: 0,
+            maxHeight: '200px',
+            overflowY: 'auto',
+            background: 'var(--color-surface, #1e1e2e)',
+            border: '1px solid var(--color-border, #444)',
+            borderRadius: '4px',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+          }}
+        >
+          {options.map((opt) => (
+            <li
+              key={opt.value}
+              onClick={(): void => {
+                onChange(opt.value)
+                setOpen(false)
+              }}
+              style={{
+                padding: '6px 10px',
+                cursor: 'pointer',
+                background: value === opt.value ? 'var(--color-primary, #6c63ff)' : 'transparent',
+                color: value === opt.value ? '#fff' : 'inherit',
+              }}
+              onMouseEnter={(e) => {
+                if (value !== opt.value) {
+                  e.currentTarget.style.background = 'var(--color-hover, rgba(255,255,255,0.1))'
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background =
+                  value === opt.value ? 'var(--color-primary, #6c63ff)' : 'transparent'
+              }}
+            >
+              {opt.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
 
 interface AudioSettingsSectionProps {
   t: TFunction
@@ -446,19 +555,17 @@ const MediaView: React.FC = () => {
               </div>
               <div className="setting-item">
                 <label>{t('video_settings.max_fps')}</label>
-                <select
-                  value={maxFps}
-                  onChange={(e) => {
-                    setMaxFps(e.target.value)
+                <ComboBox
+                  value={maxFps === 'unlimited' ? '' : maxFps}
+                  onChange={(val) => {
+                    setMaxFps(val || 'unlimited')
                   }}
-                >
-                  <option value="unlimited">{t('video_settings.fps_options.unlimited')}</option>
-                  {FPS_OPTIONS.map((fps) => (
-                    <option key={fps} value={fps}>
-                      {t('video_settings.fps_options.' + fps, fps + ' FPS')}
-                    </option>
-                  ))}
-                </select>
+                  placeholder={t('video_settings.fps_options.unlimited')}
+                  options={FPS_OPTIONS.map((fps) => ({
+                    value: fps,
+                    label: t('video_settings.fps_options.' + fps, fps + ' FPS'),
+                  }))}
+                />
               </div>
             </div>
 
@@ -466,19 +573,15 @@ const MediaView: React.FC = () => {
             <div className="settings-grid">
               <div className="setting-item">
                 <label>{t('video_settings.audio_bitrate')}</label>
-                <select
+                <ComboBox
                   value={videoAudioBitrate}
-                  onChange={(e) => {
-                    setVideoAudioBitrate(e.target.value)
+                  onChange={(val) => {
+                    setVideoAudioBitrate(BITRATE_REGEX.test(val) ? val : '192')
                   }}
+                  placeholder="e.g. 192"
                   disabled={!audioEnabled}
-                >
-                  {AUDIO_BITRATE_OPTIONS.map((br) => (
-                    <option key={br} value={br}>
-                      {br}
-                    </option>
-                  ))}
-                </select>
+                  options={AUDIO_BITRATE_OPTIONS.map((br) => ({ value: br, label: br }))}
+                />
               </div>
               <div className="setting-item">
                 <label>
@@ -511,18 +614,14 @@ const MediaView: React.FC = () => {
             <div className="settings-grid">
               <div className="setting-item">
                 <label>{t('audio_settings.bitrate')}</label>
-                <select
+                <ComboBox
                   value={audioBitrate}
-                  onChange={(e) => {
-                    setAudioBitrate(e.target.value)
+                  onChange={(val) => {
+                    setAudioBitrate(BITRATE_REGEX.test(val) ? val : '192')
                   }}
-                >
-                  {AUDIO_BITRATE_OPTIONS.map((br) => (
-                    <option key={br} value={br}>
-                      {br}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="e.g. 192"
+                  options={AUDIO_BITRATE_OPTIONS.map((br) => ({ value: br, label: br }))}
+                />
               </div>
               <div className="setting-item">
                 <label>
