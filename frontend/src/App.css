@@ -563,5 +563,5 @@ input[type='range'] {
 }
 
 .combobox-option:hover {
-  background: var(--border-color);
+  background: rgba(59, 130, 246, 0.1);
 }
