@@ -19,7 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) => {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <img src={logoSvg} alt="AmeCompression" className="sidebar-logo" />
+        <img src={logoSvg} alt={t('app.title')} className="sidebar-logo" />
         <h2>{t('app.title')}</h2>
       </div>
       <nav className="sidebar-nav">
