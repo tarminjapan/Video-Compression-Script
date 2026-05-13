@@ -62,6 +62,9 @@ const ComboBox: React.FC<ComboBoxProps> = ({ value, onChange, options, placehold
             onChange(e.target.value)
           }}
           style={{ flex: 1, borderRadius: '4px 0 0 4px' }}
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="listbox"
         />
         <button
           type="button"
@@ -76,12 +79,14 @@ const ComboBox: React.FC<ComboBoxProps> = ({ value, onChange, options, placehold
             borderLeft: 'none',
             minWidth: '32px',
           }}
+          aria-label="Toggle dropdown"
         >
           <ChevronDown size={14} />
         </button>
       </div>
       {open && (
         <ul
+          role="listbox"
           style={{
             position: 'absolute',
             top: '100%',
@@ -102,24 +107,18 @@ const ComboBox: React.FC<ComboBoxProps> = ({ value, onChange, options, placehold
           {options.map((opt) => (
             <li
               key={opt.value}
+              role="option"
+              aria-selected={value === opt.value}
               onClick={(): void => {
                 onChange(opt.value)
                 setOpen(false)
               }}
+              className="combobox-option"
               style={{
                 padding: '6px 10px',
                 cursor: 'pointer',
                 background: value === opt.value ? 'var(--color-primary, #6c63ff)' : 'transparent',
                 color: value === opt.value ? '#fff' : 'inherit',
-              }}
-              onMouseEnter={(e) => {
-                if (value !== opt.value) {
-                  e.currentTarget.style.background = 'var(--color-hover, rgba(255,255,255,0.1))'
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background =
-                  value === opt.value ? 'var(--color-primary, #6c63ff)' : 'transparent'
               }}
             >
               {opt.label}
