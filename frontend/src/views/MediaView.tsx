@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { Upload, Settings, Play, Loader2, Info, FileSearch, ChevronDown } from 'lucide-react'
+import { Upload, Settings, Play, Loader2, FileSearch, ChevronDown } from 'lucide-react'
 import { api, initializeApi } from '../services/api'
 import type { MediaInfo } from '../types'
 
@@ -281,7 +281,6 @@ const MediaView: React.FC = () => {
   const [denoiseLevel, setDenoiseLevel] = useState(0.15)
 
   const [loading, setLoading] = useState(false)
-  const [taskId, setTaskId] = useState<string | null>(null)
   const [mediaType, setMediaType] = useState<'video' | 'audio'>('video')
   const [isDragging, setIsDragging] = useState(false)
 
@@ -369,7 +368,7 @@ const MediaView: React.FC = () => {
 
     try {
       if (mediaType === 'video') {
-        const response = await api.post<{ task_id: string }>('/jobs/video', {
+        await api.post('/jobs/video', {
           input_path: inputPath,
           crf,
           preset,
@@ -380,16 +379,14 @@ const MediaView: React.FC = () => {
           volume_gain_db: volumeGain,
           denoise_level: denoiseEnabled ? denoiseLevel : null,
         })
-        setTaskId(response.data.task_id)
       } else {
-        const response = await api.post<{ task_id: string }>('/jobs/audio', {
+        await api.post('/jobs/audio', {
           input_path: inputPath,
           bitrate: resolvedAudioBitrate,
           keep_metadata: keepMetadata,
           volume_gain_db: volumeGain,
           denoise_level: denoiseEnabled ? denoiseLevel : null,
         })
-        setTaskId(response.data.task_id)
       }
     } catch (error) {
       console.error('Failed to start compression', error)
@@ -660,12 +657,6 @@ const MediaView: React.FC = () => {
           {t('compress.start')}
         </button>
       </section>
-
-      {taskId && (
-        <div className="task-status-hint">
-          <Info size={16} /> {t('status.processing')} (ID: {taskId})
-        </div>
-      )}
     </div>
   )
 }
