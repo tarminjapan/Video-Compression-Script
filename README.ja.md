@@ -1,4 +1,4 @@
-# AmeCompression
+# AME Compression
 
 FFmpeg (SVT-AV1) を使用した高性能な動画・音声圧縮ツール。
 Electron、React、および Flask を活用した、モダンで直感的なインターフェースを提供します。

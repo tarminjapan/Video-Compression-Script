@@ -1,6 +1,6 @@
-# Contributing to AmeCompression
+# Contributing to AME Compression
 
-Thank you for your interest in contributing to AmeCompression! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to AME Compression! This document provides guidelines for contributing to the project.
 
 ## Development Setup
 

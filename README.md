@@ -1,4 +1,4 @@
-# AmeCompression
+# AME Compression
 
 A high-performance video and audio compression tool using FFmpeg with SVT-AV1.
 Featuring a modern, intuitive interface powered by Electron, React, and Flask.

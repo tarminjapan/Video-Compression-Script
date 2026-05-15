@@ -1,6 +1,6 @@
-# AmeCompression Frontend
+# AME Compression Frontend
 
-The desktop user interface for AmeCompression, built with Electron, React, and Vite.
+The desktop user interface for AME Compression, built with Electron, React, and Vite.
 
 ## 🚀 Features
 

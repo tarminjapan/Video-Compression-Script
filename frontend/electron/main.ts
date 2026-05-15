@@ -129,7 +129,7 @@ function createWindow(): void {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
     },
-    title: 'AmeCompression',
+    title: 'AME Compression',
   })
 
   mainWindow.setMenu(null)

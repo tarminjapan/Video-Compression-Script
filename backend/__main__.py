@@ -17,7 +17,7 @@ from .api import create_app
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="AmeCompression API Server")
+    parser = argparse.ArgumentParser(description="AME Compression API Server")
     parser.add_argument(
         "--port", type=int, default=5000, help="Port for API server (default: 5000)"
     )
@@ -33,7 +33,7 @@ def main() -> None:
 
     try:
         app = create_app(config_name=args.config)
-        print(f"Starting AmeCompression API server on port {args.port} (config: {args.config})...")
+        print(f"Starting AME Compression API server on port {args.port} (config: {args.config})...")
 
         if args.config == "dev":
             # Flask development server

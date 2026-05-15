@@ -1,4 +1,4 @@
-"""AmeCompression build script for creating standalone executables with PyInstaller.
+"""AME Compression build script for creating standalone executables with PyInstaller.
 
 Usage:
     uv run scripts/build.py              # Build directory mode (default)
@@ -75,7 +75,7 @@ def build(onefile: bool = False, with_ffmpeg: bool = False):
         print("\nBuild completed successfully!")
         print(f"Output directory: {DIST_DIR}")
         if not onefile and with_ffmpeg:
-            target_bin = DIST_DIR / "AmeCompression" / "bin"
+            target_bin = DIST_DIR / "ame-compression-backend" / "bin"
             if target_bin.exists():
                 print(f"FFmpeg bundled at: {target_bin}")
     else:
@@ -84,7 +84,7 @@ def build(onefile: bool = False, with_ffmpeg: bool = False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build AmeCompression executable")
+    parser = argparse.ArgumentParser(description="Build AME Compression executable")
     parser.add_argument("--onefile", action="store_true", help="Build as single .exe file")
     parser.add_argument(
         "--with-ffmpeg", action="store_true", help="Bundle FFmpeg from bin/ directory"

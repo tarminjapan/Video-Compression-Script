@@ -1,5 +1,5 @@
 # =============================================================================
-# Pre-commit Hooks for AmeCompression
+# Pre-commit Hooks for AME Compression
 # =============================================================================
 # インストール: pre-commit install
 # 手動実行: pre-commit run --all-files

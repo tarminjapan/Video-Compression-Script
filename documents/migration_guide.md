@@ -1,4 +1,4 @@
-# AmeCompression Migration & Release Guide (Issue #50)
+# AME Compression Migration & Release Guide (Issue #50)
 
 This document outlines the transition from the CustomTkinter-based GUI to the new Electron + React + Flask architecture, along with operational requirements and development setup instructions.
 
