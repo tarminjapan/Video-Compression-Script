@@ -233,7 +233,11 @@ ipcMain.handle('restart-backend', async () => {
 
 ipcMain.handle('send-notification', (_event, title: string, body: string) => {
   if (Notification.isSupported()) {
-    const notification = new Notification({ title, body })
+    const notification = new Notification({
+      title,
+      body,
+      icon: getIconPath(),
+    })
     notification.show()
   }
 })

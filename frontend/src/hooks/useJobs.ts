@@ -33,12 +33,12 @@ export const useJobs = (): {
           if (wasRunning && job.status === 'success') {
             sendNotification(
               t('compress.complete'),
-              t('notification.success_body', { type: job.type }),
+              t('notification.success_body', { type: t('nav.' + job.type) }),
             )
           } else if (wasRunning && job.status === 'failed') {
             sendNotification(
               t('compress.failed'),
-              t('notification.failed_body', { type: job.type }),
+              t('notification.failed_body', { type: t('nav.' + job.type) }),
             )
           }
         }
