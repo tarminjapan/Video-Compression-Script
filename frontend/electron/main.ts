@@ -1,4 +1,13 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, session } from 'electron'
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Menu,
+  nativeImage,
+  Notification,
+  session,
+} from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 import { spawn, ChildProcess } from 'child_process'
@@ -220,6 +229,13 @@ ipcMain.handle('restart-backend', async () => {
   }
   startFlask()
   return true
+})
+
+ipcMain.handle('send-notification', (_event, title: string, body: string) => {
+  if (Notification.isSupported()) {
+    const notification = new Notification({ title, body })
+    notification.show()
+  }
 })
 
 ipcMain.handle('select-file', async () => {

@@ -213,5 +213,9 @@
     "resume": "再開",
     "paused": "一時停止中",
     "summary_detail": "成功: {{success}} | 失敗: {{failed}} | スキップ: {{skipped}}"
+  },
+  "notification": {
+    "success_body": "{{type}}圧縮が完了しました。",
+    "failed_body": "{{type}}圧縮に失敗しました。"
   }
 }

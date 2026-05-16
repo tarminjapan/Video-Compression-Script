@@ -213,5 +213,9 @@
     "resume": "Resume",
     "paused": "Paused",
     "summary_detail": "Success: {{success}} | Failed: {{failed}} | Skipped: {{skipped}}"
+  },
+  "notification": {
+    "success_body": "{{type}} compression completed successfully.",
+    "failed_body": "{{type}} compression failed."
   }
 }

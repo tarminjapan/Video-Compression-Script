@@ -10,6 +10,7 @@ export interface IElectronAPI {
   getBackendStatus: () => Promise<BackendStatus>
   restartBackend: () => Promise<boolean>
   selectFile: () => Promise<string | null>
+  sendNotification: (title: string, body: string) => Promise<void>
   getPathForFile?: (file: File) => string | undefined
 }
 
