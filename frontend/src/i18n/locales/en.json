@@ -124,7 +124,8 @@
     "batch_summary": "Batch Summary",
     "batch_success": "{{count}} file(s) succeeded",
     "batch_failed": "{{count}} file(s) failed",
-    "batch_skipped": "{{count}} file(s) skipped"
+    "batch_skipped": "{{count}} file(s) skipped",
+    "dismiss": "Close"
   },
   "settings": {
     "title": "Settings",

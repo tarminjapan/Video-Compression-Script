@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import Layout from './components/Layout'
 import MediaView from './views/MediaView'
@@ -24,6 +24,25 @@ function App(): React.JSX.Element {
       return next
     })
   }
+
+  const cleanupDismissed = useCallback(() => {
+    setDismissedJobIds((prev) => {
+      if (prev.size === 0) return prev
+      const currentJobIds = new Set(jobs.map((job) => job.id))
+      const next = new Set<string>()
+      for (const id of prev) {
+        if (currentJobIds.has(id)) {
+          next.add(id)
+        }
+      }
+      if (next.size === prev.size) return prev
+      return next
+    })
+  }, [jobs])
+
+  useEffect(() => {
+    cleanupDismissed()
+  }, [cleanupDismissed])
 
   useEffect(() => {
     // Initial settings fetch to apply theme and language

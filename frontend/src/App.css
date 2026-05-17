@@ -552,7 +552,7 @@ input[type='range'] {
   font-size: 0.85rem;
 }
 
-.cancel-button {
+.job-action-button {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -560,6 +560,9 @@ input[type='range'] {
   background: none;
   cursor: pointer;
   color: var(--text-muted);
+}
+
+.cancel-button {
   display: none;
 }
 
@@ -567,21 +570,7 @@ input[type='range'] {
   display: block;
 }
 
-.cancel-button:hover {
-  color: #ef4444;
-}
-
-.dismiss-button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--text-muted);
-}
-
-.dismiss-button:hover {
+.job-action-button:hover {
   color: #ef4444;
 }
 

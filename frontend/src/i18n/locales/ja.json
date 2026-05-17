@@ -124,7 +124,8 @@
     "batch_summary": "バッチ処理サマリー",
     "batch_success": "{{count}} 件成功",
     "batch_failed": "{{count}} 件失敗",
-    "batch_skipped": "{{count}} 件スキップ"
+    "batch_skipped": "{{count}} 件スキップ",
+    "dismiss": "閉じる"
   },
   "settings": {
     "title": "設定",

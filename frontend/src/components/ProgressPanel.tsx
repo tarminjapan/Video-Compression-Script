@@ -113,7 +113,7 @@ const ProgressPanel: React.FC<ProgressPanelProps> = ({ jobs, onCancel, onDismiss
 
             {(job.status === 'running' || job.status === 'starting') && (
               <button
-                className="cancel-button"
+                className="cancel-button job-action-button"
                 onClick={() => {
                   onCancel(job.id)
                 }}
@@ -124,10 +124,11 @@ const ProgressPanel: React.FC<ProgressPanelProps> = ({ jobs, onCancel, onDismiss
 
             {(job.status === 'success' || job.status === 'failed') && (
               <button
-                className="dismiss-button"
+                className="dismiss-button job-action-button"
                 onClick={() => {
                   onDismiss(job.id)
                 }}
+                aria-label={t('compress.dismiss')}
               >
                 <X size={14} />
               </button>
