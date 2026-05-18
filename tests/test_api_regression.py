@@ -25,41 +25,34 @@ def test_full_video_compression_flow(client: FlaskClient) -> None:
     3. Simulate job completion.
     4. Check the final status and results.
     """
-    # 1. Start job
+    mock_executor = MagicMock()
+    mock_result = MagicMock()
+    mock_result.status.value = "success"
+    mock_result.is_success = True
+    mock_result.output_path = "output.mp4"
+    mock_result.output_size = 500000
+    mock_result.compression_ratio = 0.45
+    mock_result.error_message = None
+
     with (
         patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
-        patch("backend.api.blueprints.jobs.compress_video_service") as mock_service,
-        patch("threading.Thread") as mock_thread,
+        patch("backend.api.blueprints.jobs.compress_video_service", return_value=mock_result),
+        patch.object(job_runner, "executor", mock_executor),
     ):
-        # Mock service return value
-        mock_result = MagicMock()
-        mock_result.status.value = "success"
-        mock_result.is_success = True
-        mock_result.output_path = "output.mp4"
-        mock_result.output_size = 500000
-        mock_result.compression_ratio = 0.45
-        mock_result.error_message = None
-        mock_service.return_value = mock_result
-
         response = client.post(
             "/api/jobs/video", json={"input_path": "input.mp4", "crf": 28, "preset": 8}
         )
         assert response.status_code == 202
         task_id = response.get_json()["task_id"]
 
-        # 2. Check initial status
         response = client.get(f"/api/jobs/{task_id}")
         assert response.get_json()["status"] == "pending"
 
-        # 3. Simulate job execution
-        # Ensure thread was started
-        assert mock_thread.called, "Thread was not started"
+        assert mock_executor.submit.called, "Task was not submitted"
 
-        # In reality, the job runner starts a thread. We manually run the target function.
-        run_task_func = mock_thread.call_args[1]["target"]
+        run_task_func = mock_executor.submit.call_args[0][0]
         run_task_func()
 
-        # 4. Check final status
         response = client.get(f"/api/jobs/{task_id}")
         assert response.status_code == 200
         assert response.get_json()["status"] == "success"
@@ -72,7 +65,7 @@ def test_job_cancellation_flow(client: FlaskClient) -> None:
     with (
         patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
         patch("backend.api.blueprints.jobs.compress_video_service"),
-        patch("threading.Thread"),
+        patch.object(job_runner, "executor", MagicMock()),
     ):
         # Start job
         response = client.post("/api/jobs/video", json={"input_path": "input.mp4"})

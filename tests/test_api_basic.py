@@ -34,7 +34,7 @@ def test_start_task_adds_timestamp(client: FlaskClient) -> None:
     with (
         patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
         patch("backend.api.blueprints.jobs.compress_video_service"),
-        patch("threading.Thread"),
+        patch.object(job_runner, "executor", MagicMock()),
     ):
         # Clear tasks for clean test
         with job_runner.tasks_lock:
@@ -59,21 +59,20 @@ def test_task_completion_adds_finished_at(client: FlaskClient) -> None:
     mock_result.compression_ratio = 0.5
     mock_result.error_message = None
 
+    mock_executor = MagicMock()
     with (
         patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
         patch("backend.api.blueprints.jobs.compress_video_service", return_value=mock_result),
-        patch("threading.Thread") as mock_thread,
+        patch.object(job_runner, "executor", mock_executor),
     ):
         with job_runner.tasks_lock:
             job_runner.tasks.clear()
 
         client.post("/api/jobs/video", json={"input_path": "test.mp4"})
 
-        # Get the run_task function from the Thread call
-        run_task_func = mock_thread.call_args[1]["target"]
+        run_task_func = mock_executor.submit.call_args[0][0]
         run_task_func()
 
-        # Now check if finished_at is set
         with job_runner.tasks_lock:
             task_id = next(iter(job_runner.tasks.keys()))
             assert "finished_at" in job_runner.tasks[task_id]
@@ -84,7 +83,7 @@ def test_cancel_task(client: FlaskClient) -> None:
     with (
         patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
         patch("backend.api.blueprints.jobs.compress_video_service"),
-        patch("threading.Thread"),
+        patch.object(job_runner, "executor", MagicMock()),
     ):
         with job_runner.tasks_lock:
             job_runner.tasks.clear()

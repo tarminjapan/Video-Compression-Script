@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from backend.api.app import create_app
@@ -42,7 +42,7 @@ def test_audio_compression_endpoint(client: FlaskClient) -> None:
     with (
         patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
         patch("backend.api.blueprints.jobs.compress_audio_service"),
-        patch("threading.Thread"),
+        patch.object(job_runner, "executor", MagicMock()),
     ):
         response = client.post(
             "/api/jobs/audio", json={"input_path": "test.mp3", "bitrate": "128k"}
@@ -55,7 +55,7 @@ def test_list_jobs(client: FlaskClient) -> None:
     with (
         patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
         patch("backend.api.blueprints.jobs.compress_video_service"),
-        patch("threading.Thread"),
+        patch.object(job_runner, "executor", MagicMock()),
     ):
         client.post("/api/jobs/video", json={"input_path": "test1.mp4"})
         client.post("/api/jobs/video", json={"input_path": "test2.mp4"})
@@ -69,7 +69,7 @@ def test_get_job_status(client: FlaskClient) -> None:
     with (
         patch("backend.api.blueprints.jobs.Path.exists", return_value=True),
         patch("backend.api.blueprints.jobs.compress_video_service"),
-        patch("threading.Thread"),
+        patch.object(job_runner, "executor", MagicMock()),
     ):
         resp = client.post("/api/jobs/video", json={"input_path": "test.mp4"})
         task_id = resp.get_json()["task_id"]

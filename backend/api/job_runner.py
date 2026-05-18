@@ -2,6 +2,7 @@ import threading
 import time
 import uuid
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -11,11 +12,11 @@ from ..progress_handler import CancellationSource, ProgressEvent
 class JobRunner:
     """Manages background tasks for media compression."""
 
-    def __init__(self, max_concurrent_tasks: int = 1) -> None:
+    def __init__(self, max_workers: int = 1) -> None:
         """Initialize JobRunner."""
         self.tasks: dict[str, Any] = {}
         self.tasks_lock = threading.Lock()
-        self.semaphore = threading.Semaphore(max_concurrent_tasks)
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
         self._cleanup_thread_started = False
 
     def start_cleanup_thread(self) -> None:
@@ -82,61 +83,58 @@ class JobRunner:
             }
 
         def run_task() -> None:
-            with self.semaphore:
 
-                def on_progress(event: ProgressEvent) -> None:
-                    self._update_task_safe(
-                        task_id,
-                        {
-                            "progress": {
-                                "percent": event.percent,
-                                "current_time": event.current_time,
-                                "total_duration": event.total_duration,
-                                "fps": event.fps,
-                                "speed": event.speed,
-                                "frame": event.frame,
-                                "eta": event.eta,
-                                "status": event.status,
-                            },
-                            "status": "running",
+            def on_progress(event: ProgressEvent) -> None:
+                self._update_task_safe(
+                    task_id,
+                    {
+                        "progress": {
+                            "percent": event.percent,
+                            "current_time": event.current_time,
+                            "total_duration": event.total_duration,
+                            "fps": event.fps,
+                            "speed": event.speed,
+                            "frame": event.frame,
+                            "eta": event.eta,
+                            "status": event.status,
                         },
-                    )
+                        "status": "running",
+                    },
+                )
 
-                try:
-                    result = compression_func(
-                        on_progress=on_progress, cancellation_source=cancel_source, **kwargs
-                    )
+            try:
+                result = compression_func(
+                    on_progress=on_progress, cancellation_source=cancel_source, **kwargs
+                )
 
-                    self._update_task_safe(
-                        task_id,
-                        {
-                            "status": result.status.value,
-                            "result": {
-                                "is_success": result.is_success,
-                                "output_path": result.output_path,
-                                "output_size": result.output_size,
-                                "compression_ratio": result.compression_ratio,
-                                "error_message": result.error_message,
-                            },
-                            "finished_at": time.time(),
+                self._update_task_safe(
+                    task_id,
+                    {
+                        "status": result.status.value,
+                        "result": {
+                            "is_success": result.is_success,
+                            "output_path": result.output_path,
+                            "output_size": result.output_size,
+                            "compression_ratio": result.compression_ratio,
+                            "error_message": result.error_message,
                         },
-                    )
-                except Exception as e:
-                    self._update_task_safe(
-                        task_id,
-                        {
-                            "status": "failed",
-                            "result": {
-                                "is_success": False,
-                                "error_message": str(e),
-                            },
-                            "finished_at": time.time(),
+                        "finished_at": time.time(),
+                    },
+                )
+            except Exception as e:
+                self._update_task_safe(
+                    task_id,
+                    {
+                        "status": "failed",
+                        "result": {
+                            "is_success": False,
+                            "error_message": str(e),
                         },
-                    )
+                        "finished_at": time.time(),
+                    },
+                )
 
-        thread = threading.Thread(target=run_task)
-        thread.daemon = True
-        thread.start()
+        self.executor.submit(run_task)
 
         return task_id
 

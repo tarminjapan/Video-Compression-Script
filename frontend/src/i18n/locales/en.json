@@ -26,7 +26,8 @@
     "no_files": "No files selected",
     "selected_count": "{{count}} file(s) selected",
     "move_up": "Up",
-    "move_down": "Down"
+    "move_down": "Down",
+    "failed_count": "{{count}} file(s) failed to compress"
   },
   "video_settings": {
     "title": "Video Compression Settings",

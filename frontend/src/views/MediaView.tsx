@@ -494,6 +494,7 @@ const MediaView: React.FC = () => {
   const [denoiseLevel, setDenoiseLevel] = useState(0.15)
 
   const [loading, setLoading] = useState(false)
+  const [failedFiles, setFailedFiles] = useState<string[]>([])
   const [mediaType, setMediaType] = useState<'video' | 'audio'>('video')
   const [isDragging, setIsDragging] = useState(false)
 
@@ -612,6 +613,7 @@ const MediaView: React.FC = () => {
 
   const startCompression = async (): Promise<void> => {
     setLoading(true)
+    setFailedFiles([])
 
     let volumeGain = null
     if (volumeMode === 'auto') volumeGain = 'auto'
@@ -628,6 +630,7 @@ const MediaView: React.FC = () => {
       : '192k'
     const resolvedAudioBitrate = BITRATE_REGEX.test(audioBitrate) ? audioBitrate + 'k' : '192k'
 
+    const failed: string[] = []
     try {
       for (const inputPath of inputPaths) {
         const detectedType = detectMediaType(inputPath)
@@ -646,6 +649,7 @@ const MediaView: React.FC = () => {
             })
             .catch((error) => {
               console.error(`Failed to start compression for ${inputPath}`, error)
+              failed.push(inputPath)
             })
         } else {
           await api
@@ -658,10 +662,12 @@ const MediaView: React.FC = () => {
             })
             .catch((error) => {
               console.error(`Failed to start compression for ${inputPath}`, error)
+              failed.push(inputPath)
             })
         }
       }
     } finally {
+      if (failed.length > 0) setFailedFiles(failed)
       setLoading(false)
     }
   }
@@ -738,6 +744,28 @@ const MediaView: React.FC = () => {
             <span className="file-count text-muted">{t('file.no_files')}</span>
           )}
         </div>
+        {failedFiles.length > 0 && (
+          <div
+            style={{
+              marginTop: '12px',
+              padding: '8px 12px',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '6px',
+            }}
+          >
+            <p
+              style={{ margin: '0 0 4px', color: '#dc2626', fontWeight: 600, fontSize: '0.85rem' }}
+            >
+              {t('file.failed_count', { count: failedFiles.length })}
+            </p>
+            <ul style={{ margin: 0, paddingLeft: '20px', color: '#991b1b', fontSize: '0.8rem' }}>
+              {failedFiles.map((f) => (
+                <li key={f}>{f.split(/[\\/]/).pop()}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div style={{ marginTop: '16px' }}>
           <label style={{ display: 'inline-block', marginRight: '16px' }}>
             <input

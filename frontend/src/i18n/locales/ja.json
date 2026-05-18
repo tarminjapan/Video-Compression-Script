@@ -26,7 +26,8 @@
     "no_files": "ファイルが選択されていません",
     "selected_count": "{{count}} 個のファイルが選択されました",
     "move_up": "上へ",
-    "move_down": "下へ"
+    "move_down": "下へ",
+    "failed_count": "{{count}} 個のファイルの圧縮に失敗しました"
   },
   "video_settings": {
     "title": "動画圧縮設定",
