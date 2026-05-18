@@ -8,6 +8,7 @@
   --text-color: #1f2937;
   --text-muted: #6b7280;
   --border-color: #e5e7eb;
+  --border-radius: 0;
 }
 
 [data-theme='dark'] {
@@ -147,7 +148,7 @@ body {
 .card {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 0;
+  border-radius: var(--border-radius);
   padding: 24px;
   margin-bottom: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -172,7 +173,7 @@ select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border-color);
-  border-radius: 0;
+  border-radius: var(--border-radius);
   background-color: var(--bg-color);
   color: var(--text-color);
   font-size: 0.95rem;
@@ -205,7 +206,7 @@ input[type='range'] {
   color: white;
   border: none;
   padding: 12px 24px;
-  border-radius: 0;
+  border-radius: var(--border-radius);
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -229,7 +230,7 @@ input[type='range'] {
   border: 1px solid var(--border-color);
   color: var(--text-color);
   padding: 10px 20px;
-  border-radius: 0;
+  border-radius: var(--border-radius);
   cursor: pointer;
 }
 
@@ -243,20 +244,6 @@ input[type='range'] {
   justify-content: space-between;
   margin-bottom: 8px;
   font-weight: 500;
-}
-
-.progress-bar-bg {
-  height: 12px;
-  background-color: var(--border-color);
-  border-radius: 0;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background-color: var(--primary-color);
-  transition: width 0.3s ease;
 }
 
 .progress-stats {
@@ -303,7 +290,7 @@ input[type='range'] {
   gap: 8px;
   background-color: var(--bg-color);
   padding: 4px;
-  border-radius: 0;
+  border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   width: fit-content;
 }
@@ -315,7 +302,7 @@ input[type='range'] {
   padding: 8px 12px;
   border: none;
   background: none;
-  border-radius: 0;
+  border-radius: var(--border-radius);
   cursor: pointer;
   color: var(--text-color);
   font-size: 0.9rem;
@@ -373,7 +360,7 @@ input[type='range'] {
 .media-info-display {
   background-color: rgba(59, 130, 246, 0.05);
   padding: 12px;
-  border-radius: 0;
+  border-radius: var(--border-radius);
   margin-top: 12px;
   font-size: 0.9rem;
 }
@@ -394,7 +381,7 @@ input[type='range'] {
   max-height: 480px;
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 0;
+  border-radius: var(--border-radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
@@ -417,7 +404,7 @@ input[type='range'] {
 
 .job-item {
   padding: 12px;
-  border-radius: 0;
+  border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   margin-bottom: 8px;
   position: relative;
@@ -440,7 +427,7 @@ input[type='range'] {
 .job-status-badge {
   margin-left: auto;
   padding: 2px 6px;
-  border-radius: 0;
+  border-radius: var(--border-radius);
   font-size: 0.7rem;
   display: flex;
   align-items: center;
@@ -496,7 +483,7 @@ input[type='range'] {
 .progress-bar-bg {
   height: 16px;
   background-color: var(--border-color);
-  border-radius: 0;
+  border-radius: var(--border-radius);
   overflow: hidden;
   position: relative;
 }
@@ -504,7 +491,7 @@ input[type='range'] {
 .progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--primary-color), #60a5fa);
-  border-radius: 0;
+  border-radius: var(--border-radius);
   transition: width 0.3s ease;
   position: relative;
 }
@@ -583,7 +570,7 @@ input[type='range'] {
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid var(--border-color);
-  border-radius: 0;
+  border-radius: var(--border-radius);
   background-color: var(--bg-color);
 }
 
@@ -646,7 +633,7 @@ input[type='range'] {
   flex: 1;
   padding: 8px 12px;
   border: 1px solid var(--border-color);
-  border-radius: 0;
+  border-radius: var(--border-radius);
   background-color: var(--bg-color);
   color: var(--text-color);
   font-size: 0.9rem;
@@ -665,7 +652,7 @@ input[type='range'] {
   max-height: 180px;
   overflow-y: auto;
   border: 1px solid var(--border-color);
-  border-radius: 0;
+  border-radius: var(--border-radius);
   background-color: var(--bg-color);
 }
 
@@ -695,7 +682,7 @@ input[type='range'] {
   color: var(--text-muted);
   padding: 2px 6px;
   background-color: rgba(59, 130, 246, 0.1);
-  border-radius: 0;
+  border-radius: var(--border-radius);
   white-space: nowrap;
 }
 
@@ -705,6 +692,6 @@ input[type='range'] {
   justify-content: center;
   padding: 4px 8px;
   min-width: 28px;
-  border-radius: 0;
+  border-radius: var(--border-radius);
   font-size: 0.8rem;
 }

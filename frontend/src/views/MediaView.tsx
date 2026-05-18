@@ -133,7 +133,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({ value, onChange, options, placehold
           onChange={(e) => {
             onChange(e.target.value)
           }}
-          style={{ flex: 1, borderRadius: '0' }}
+          style={{ flex: 1, borderRadius: 'var(--border-radius, 0)' }}
           role="combobox"
           aria-expanded={open}
           aria-haspopup="listbox"
@@ -146,7 +146,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({ value, onChange, options, placehold
             setOpen(!open)
           }}
           style={{
-            borderRadius: '0',
+            borderRadius: 'var(--border-radius, 0)',
             padding: '0 8px',
             borderLeft: 'none',
             minWidth: '32px',
@@ -172,7 +172,7 @@ const ComboBox: React.FC<ComboBoxProps> = ({ value, onChange, options, placehold
             overflowY: 'auto',
             background: 'var(--card-bg)',
             border: '1px solid var(--border-color)',
-            borderRadius: '0',
+            borderRadius: 'var(--border-radius, 0)',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           }}
         >
