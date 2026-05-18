@@ -43,7 +43,11 @@ const ProgressPanel: React.FC<ProgressPanelProps> = ({ jobs, onCancel, onDismiss
           <div key={job.id} className={`job-item ${job.status}`}>
             <div className="job-info">
               <span className="job-type">{job.type === 'video' ? 'Video' : 'Audio'}</span>
-              {job.filename && <span className="job-filename">{job.filename}</span>}
+              {job.filename && (
+                <span className="job-filename" title={job.filename}>
+                  {job.filename}
+                </span>
+              )}
               <span className={`job-status-badge ${job.status}`}>
                 {job.status === 'running' && <Loader2 size={14} className="spin" />}
                 {job.status === 'success' && <CheckCircle size={14} />}
