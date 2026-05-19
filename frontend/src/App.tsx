@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import Layout from './components/Layout'
 import MediaView from './views/MediaView'
+import type { MediaViewHandle } from './views/MediaView'
+import type { MediaProfile } from './profiles'
 import SettingsView from './views/SettingsView'
-import ProgressPanel from './components/ProgressPanel'
+import FloatingBar from './components/FloatingBar'
 import { useJobs } from './hooks/useJobs'
 import { api, initializeApi } from './services/api'
 import './App.css'
@@ -14,10 +16,13 @@ function App(): React.JSX.Element {
   const [isReady, setIsReady] = useState(false)
   const { jobs, cancelJob } = useJobs()
   const [dismissedJobIds, setDismissedJobIds] = useState<Set<string>>(new Set())
-  const [panelHidden, setPanelHidden] = useState(false)
-  const prevRunningIdsRef = useRef<Set<string>>(new Set())
+  const mediaViewRef = useRef<MediaViewHandle>(null)
 
-  const visibleJobs = panelHidden ? [] : jobs.filter((job) => !dismissedJobIds.has(job.id))
+  const [compressionDisabled, setCompressionDisabled] = useState(true)
+  const [compressionLoading, setCompressionLoading] = useState(false)
+  const [currentSettings, setCurrentSettings] = useState<Omit<MediaProfile, 'name'> | null>(null)
+
+  const visibleJobs = jobs.filter((job) => !dismissedJobIds.has(job.id))
 
   const handleDismissJob = (id: string): void => {
     setDismissedJobIds((prev) => {
@@ -47,22 +52,6 @@ function App(): React.JSX.Element {
   }, [cleanupDismissed])
 
   useEffect(() => {
-    const currentRunningIds = new Set(
-      jobs.filter((j) => j.status === 'running' || j.status === 'starting').map((j) => j.id),
-    )
-
-    if (panelHidden) {
-      const prevRunningIds = prevRunningIdsRef.current
-      const hasNewJob = [...currentRunningIds].some((id) => !prevRunningIds.has(id))
-      if (hasNewJob) {
-        setPanelHidden(false)
-      }
-    }
-    prevRunningIdsRef.current = currentRunningIds
-  }, [jobs, panelHidden])
-
-  useEffect(() => {
-    // Initial settings fetch to apply theme and language
     const initApp = async (): Promise<void> => {
       try {
         await initializeApi()
@@ -94,7 +83,16 @@ function App(): React.JSX.Element {
   const renderView = (): React.JSX.Element => {
     switch (activeView) {
       case 'media':
-        return <MediaView />
+        return (
+          <MediaView
+            ref={mediaViewRef}
+            onStateChange={({ inputPaths, loading, settings }) => {
+              setCompressionDisabled(inputPaths.length === 0)
+              setCompressionLoading(loading)
+              setCurrentSettings(settings)
+            }}
+          />
+        )
       case 'settings':
         return <SettingsView />
       default:
@@ -107,19 +105,38 @@ function App(): React.JSX.Element {
     }
   }
 
+  const handleStartCompression = (): void => {
+    void mediaViewRef.current?.startCompression()
+  }
+
+  const handleCancelJob = (id: string): void => {
+    void cancelJob(id)
+  }
+
+  const isMediaView = activeView === 'media'
+
   return (
     <>
       <Layout activeView={activeView} onViewChange={setActiveView}>
         {renderView()}
       </Layout>
-      <ProgressPanel
-        jobs={visibleJobs}
-        onCancel={(id) => void cancelJob(id)}
-        onDismiss={handleDismissJob}
-        onClosePanel={() => {
-          setPanelHidden(true)
-        }}
-      />
+      {isMediaView && currentSettings && (
+        <FloatingBar
+          onStartCompression={handleStartCompression}
+          compressionDisabled={compressionDisabled}
+          compressionLoading={compressionLoading}
+          jobs={visibleJobs}
+          onCancelJob={handleCancelJob}
+          onDismissJob={handleDismissJob}
+          currentSettings={currentSettings}
+          onApplyProfile={(settings) => {
+            mediaViewRef.current?.applyProfile(settings)
+          }}
+          onApplyDefaults={() => {
+            mediaViewRef.current?.applyDefaults()
+          }}
+        />
+      )}
     </>
   )
 }

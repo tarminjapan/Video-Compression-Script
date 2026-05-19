@@ -126,7 +126,8 @@
     "batch_success": "{{count}} file(s) succeeded",
     "batch_failed": "{{count}} file(s) failed",
     "batch_skipped": "{{count}} file(s) skipped",
-    "dismiss": "Close"
+    "dismiss": "Close",
+    "no_jobs": "No active jobs"
   },
   "settings": {
     "title": "Settings",

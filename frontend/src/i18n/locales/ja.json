@@ -126,7 +126,8 @@
     "batch_success": "{{count}} 件成功",
     "batch_failed": "{{count}} 件失敗",
     "batch_skipped": "{{count}} 件スキップ",
-    "dismiss": "閉じる"
+    "dismiss": "閉じる",
+    "no_jobs": "アクティブなジョブはありません"
   },
   "settings": {
     "title": "設定",
