@@ -10,7 +10,7 @@ import {
   ChevronDown,
   X,
   Save,
-  FolderOpen,
+  Download,
   RotateCcw,
   Trash2,
 } from 'lucide-react'
@@ -391,10 +391,10 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
   }
 
   return (
-    <div style={{ marginBottom: '12px' }}>
-      <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Save size={16} /> {t('profile.title')}
-      </div>
+    <div>
+      <h2>
+        <Save size={18} /> {t('profile.title')}
+      </h2>
       <div className="profile-bar">
         <input
           type="text"
@@ -443,7 +443,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
                 title={t('profile.load')}
                 aria-label={t('profile.load')}
               >
-                <FolderOpen size={14} />
+                <Download size={14} />
               </button>
               <button
                 className="secondary-button profile-action-btn"
@@ -791,17 +791,19 @@ const MediaView: React.FC = () => {
       </section>
 
       <section className="card">
-        <h2>
-          <Settings size={18} />{' '}
-          {mediaType === 'video' ? t('video_settings.title') : t('audio_settings.title')}
-        </h2>
-
         <ProfileSection
           t={t}
           currentSettings={currentSettings}
           onApplyProfile={applyProfile}
           onApplyDefaults={applyDefaults}
         />
+      </section>
+
+      <section className="card">
+        <h2>
+          <Settings size={18} />{' '}
+          {mediaType === 'video' ? t('video_settings.title') : t('audio_settings.title')}
+        </h2>
 
         {mediaType === 'video' ? (
           <>
