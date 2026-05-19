@@ -14,8 +14,9 @@ function App(): React.JSX.Element {
   const [isReady, setIsReady] = useState(false)
   const { jobs, cancelJob } = useJobs()
   const [dismissedJobIds, setDismissedJobIds] = useState<Set<string>>(new Set())
+  const [panelHidden, setPanelHidden] = useState(false)
 
-  const visibleJobs = jobs.filter((job) => !dismissedJobIds.has(job.id))
+  const visibleJobs = panelHidden ? [] : jobs.filter((job) => !dismissedJobIds.has(job.id))
 
   const handleDismissJob = (id: string): void => {
     setDismissedJobIds((prev) => {
@@ -43,6 +44,15 @@ function App(): React.JSX.Element {
   useEffect(() => {
     cleanupDismissed()
   }, [cleanupDismissed])
+
+  useEffect(() => {
+    if (panelHidden && jobs.length > 0) {
+      const hasRunning = jobs.some((j) => j.status === 'running' || j.status === 'starting')
+      if (hasRunning) {
+        setPanelHidden(false)
+      }
+    }
+  }, [jobs, panelHidden])
 
   useEffect(() => {
     // Initial settings fetch to apply theme and language
@@ -99,6 +109,9 @@ function App(): React.JSX.Element {
         jobs={visibleJobs}
         onCancel={(id) => void cancelJob(id)}
         onDismiss={handleDismissJob}
+        onClosePanel={() => {
+          setPanelHidden(true)
+        }}
       />
     </>
   )
