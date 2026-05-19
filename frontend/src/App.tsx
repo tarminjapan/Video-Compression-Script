@@ -47,21 +47,18 @@ function App(): React.JSX.Element {
   }, [cleanupDismissed])
 
   useEffect(() => {
+    const currentRunningIds = new Set(
+      jobs.filter((j) => j.status === 'running' || j.status === 'starting').map((j) => j.id),
+    )
+
     if (panelHidden) {
-      const currentRunningIds = new Set(
-        jobs.filter((j) => j.status === 'running' || j.status === 'starting').map((j) => j.id),
-      )
       const prevRunningIds = prevRunningIdsRef.current
       const hasNewJob = [...currentRunningIds].some((id) => !prevRunningIds.has(id))
       if (hasNewJob) {
         setPanelHidden(false)
       }
-      prevRunningIdsRef.current = currentRunningIds
-    } else {
-      prevRunningIdsRef.current = new Set(
-        jobs.filter((j) => j.status === 'running' || j.status === 'starting').map((j) => j.id),
-      )
     }
+    prevRunningIdsRef.current = currentRunningIds
   }, [jobs, panelHidden])
 
   useEffect(() => {
