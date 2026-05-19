@@ -7,6 +7,31 @@ import type { MediaProfile } from '../profiles'
 import { loadProfiles, saveProfiles } from '../profiles'
 import { ProgressPanel } from './ProgressPanel'
 
+function useClickOutside(
+  ref: React.RefObject<HTMLDivElement | null>,
+  isOpen: boolean,
+  onClose: () => void,
+  triggerSelector: string,
+): void {
+  useEffect(() => {
+    if (!isOpen) return
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (
+        ref.current &&
+        e.target instanceof Element &&
+        !ref.current.contains(e.target) &&
+        !e.target.closest(triggerSelector)
+      ) {
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [ref, isOpen, onClose, triggerSelector])
+}
+
 interface FloatingBarProps {
   onStartCompression: () => void
   compressionDisabled: boolean
@@ -181,52 +206,24 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
   const profileModalRef = useRef<HTMLDivElement>(null)
   const progressModalRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent): void => {
-      if (
-        profileModalOpen &&
-        profileModalRef.current &&
-        e.target instanceof Element &&
-        !profileModalRef.current.contains(e.target) &&
-        !e.target.closest('[data-profile-trigger]')
-      ) {
-        setProfileModalOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [profileModalOpen])
+  const closeProfileModal = useCallback((): void => {
+    setProfileModalOpen(false)
+  }, [])
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent): void => {
-      if (
-        progressModalOpen &&
-        progressModalRef.current &&
-        e.target instanceof Element &&
-        !progressModalRef.current.contains(e.target) &&
-        !e.target.closest('[data-progress-trigger]')
-      ) {
-        setProgressModalOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [progressModalOpen])
+  const closeProgressModal = useCallback((): void => {
+    setProgressModalOpen(false)
+  }, [])
+
+  useClickOutside(profileModalRef, profileModalOpen, closeProfileModal, '[data-profile-trigger]')
+  useClickOutside(
+    progressModalRef,
+    progressModalOpen,
+    closeProgressModal,
+    '[data-progress-trigger]',
+  )
 
   const runningJobs = jobs.filter((j) => j.status === 'running' || j.status === 'starting')
   const hasJobs = jobs.length > 0
-
-  const closeProfileModal = (): void => {
-    setProfileModalOpen(false)
-  }
-
-  const closeProgressModal = (): void => {
-    setProgressModalOpen(false)
-  }
 
   return (
     <>
@@ -336,7 +333,7 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
                 />
               ) : (
                 <div className="progress-empty">
-                  <p className="text-muted">{t('profile.no_profiles')}</p>
+                  <p className="text-muted">{t('compress.no_jobs')}</p>
                 </div>
               )}
             </div>
