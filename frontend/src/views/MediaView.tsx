@@ -392,9 +392,9 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
 
   return (
     <div>
-      <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Save size={16} /> {t('profile.title')}
-      </div>
+      <h2>
+        <Save size={18} /> {t('profile.title')}
+      </h2>
       <div className="profile-bar">
         <input
           type="text"
