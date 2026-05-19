@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import Layout from './components/Layout'
 import MediaView from './views/MediaView'
@@ -14,8 +14,10 @@ function App(): React.JSX.Element {
   const [isReady, setIsReady] = useState(false)
   const { jobs, cancelJob } = useJobs()
   const [dismissedJobIds, setDismissedJobIds] = useState<Set<string>>(new Set())
+  const [panelHidden, setPanelHidden] = useState(false)
+  const prevRunningIdsRef = useRef<Set<string>>(new Set())
 
-  const visibleJobs = jobs.filter((job) => !dismissedJobIds.has(job.id))
+  const visibleJobs = panelHidden ? [] : jobs.filter((job) => !dismissedJobIds.has(job.id))
 
   const handleDismissJob = (id: string): void => {
     setDismissedJobIds((prev) => {
@@ -43,6 +45,21 @@ function App(): React.JSX.Element {
   useEffect(() => {
     cleanupDismissed()
   }, [cleanupDismissed])
+
+  useEffect(() => {
+    const currentRunningIds = new Set(
+      jobs.filter((j) => j.status === 'running' || j.status === 'starting').map((j) => j.id),
+    )
+
+    if (panelHidden) {
+      const prevRunningIds = prevRunningIdsRef.current
+      const hasNewJob = [...currentRunningIds].some((id) => !prevRunningIds.has(id))
+      if (hasNewJob) {
+        setPanelHidden(false)
+      }
+    }
+    prevRunningIdsRef.current = currentRunningIds
+  }, [jobs, panelHidden])
 
   useEffect(() => {
     // Initial settings fetch to apply theme and language
@@ -99,6 +116,9 @@ function App(): React.JSX.Element {
         jobs={visibleJobs}
         onCancel={(id) => void cancelJob(id)}
         onDismiss={handleDismissJob}
+        onClosePanel={() => {
+          setPanelHidden(true)
+        }}
       />
     </>
   )

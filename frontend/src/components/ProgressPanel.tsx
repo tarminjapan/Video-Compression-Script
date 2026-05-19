@@ -7,6 +7,7 @@ interface ProgressPanelProps {
   jobs: Job[]
   onCancel: (id: string) => void
   onDismiss: (id: string) => void
+  onClosePanel: () => void
 }
 
 function formatTime(seconds: number): string {
@@ -30,14 +31,28 @@ function formatTimeShort(seconds: number): string {
   return `${s}s`
 }
 
-const ProgressPanel: React.FC<ProgressPanelProps> = ({ jobs, onCancel, onDismiss }) => {
+const ProgressPanel: React.FC<ProgressPanelProps> = ({
+  jobs,
+  onCancel,
+  onDismiss,
+  onClosePanel,
+}) => {
   const { t } = useTranslation()
 
   if (jobs.length === 0) return null
 
   return (
     <div className="progress-panel">
-      <h3>{t('compress.progress')}</h3>
+      <div className="progress-panel-header">
+        <h3>{t('compress.progress')}</h3>
+        <button
+          className="panel-close-button"
+          onClick={onClosePanel}
+          aria-label={t('compress.dismiss')}
+        >
+          <X size={16} />
+        </button>
+      </div>
       <div className="job-list">
         {jobs.map((job) => (
           <div key={job.id} className={`job-item ${job.status}`}>
