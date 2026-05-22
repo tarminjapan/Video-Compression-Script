@@ -235,6 +235,7 @@
     "defaults_loaded": "デフォルト設定を読み込みました。",
     "name_required": "プロファイル名を入力してください。",
     "overwrite_confirm": "プロファイル「{{name}}」は既に存在します。上書きしますか？",
+    "load_confirm": "プロファイル「{{name}}」を読み込みますか？現在の設定は上書きされます。",
     "select_profile": "プロファイルを選択"
   }
 }

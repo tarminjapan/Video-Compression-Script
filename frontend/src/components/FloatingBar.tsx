@@ -49,6 +49,8 @@ interface ProfileModalContentProps {
   currentSettings: Omit<MediaProfile, 'name'>
   onApplyProfile: (settings: Omit<MediaProfile, 'name'>) => void
   onApplyDefaults: () => void
+  onClose: () => void
+  onNotify: (message: string) => void
 }
 
 const ProfileModalContent: React.FC<ProfileModalContentProps> = ({
@@ -56,6 +58,8 @@ const ProfileModalContent: React.FC<ProfileModalContentProps> = ({
   currentSettings,
   onApplyProfile,
   onApplyDefaults,
+  onClose,
+  onNotify,
 }) => {
   const [profiles, setProfiles] = useState<MediaProfile[]>(loadProfiles)
   const [profileName, setProfileName] = useState('')
@@ -90,9 +94,11 @@ const ProfileModalContent: React.FC<ProfileModalContentProps> = ({
   }
 
   const handleLoad = (profile: MediaProfile): void => {
+    if (!window.confirm(t('profile.load_confirm', { name: profile.name }))) return
     const { name: _name, ...settings } = profile
     onApplyProfile(settings)
-    showMessage(t('profile.loaded', { name: _name }))
+    onNotify(t('profile.loaded', { name: _name }))
+    onClose()
   }
 
   const handleDelete = (name: string): void => {
@@ -203,8 +209,19 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
   const { t } = useTranslation()
   const [profileModalOpen, setProfileModalOpen] = useState(false)
   const [progressModalOpen, setProgressModalOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const profileModalRef = useRef<HTMLDivElement>(null)
   const progressModalRef = useRef<HTMLDivElement>(null)
+
+  const showToast = useCallback((msg: string): void => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    setToastMessage(msg)
+    toastTimerRef.current = setTimeout(() => {
+      setToastMessage('')
+      toastTimerRef.current = null
+    }, 3000)
+  }, [])
 
   const closeProfileModal = useCallback((): void => {
     setProfileModalOpen(false)
@@ -298,6 +315,8 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
                 currentSettings={currentSettings}
                 onApplyProfile={onApplyProfile}
                 onApplyDefaults={onApplyDefaults}
+                onClose={closeProfileModal}
+                onNotify={showToast}
               />
             </div>
           </div>
@@ -340,6 +359,7 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
           </div>
         </div>
       )}
+      {toastMessage && <div className="toast-notification">{toastMessage}</div>}
     </>
   )
 }
