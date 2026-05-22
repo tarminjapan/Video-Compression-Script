@@ -127,7 +127,8 @@
     "batch_failed": "{{count}} 件失敗",
     "batch_skipped": "{{count}} 件スキップ",
     "dismiss": "閉じる",
-    "no_jobs": "アクティブなジョブはありません"
+    "no_jobs": "アクティブなジョブはありません",
+    "process_complete": "圧縮処理が完了しました。"
   },
   "settings": {
     "title": "設定",

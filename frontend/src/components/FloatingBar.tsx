@@ -35,7 +35,7 @@ function useClickOutside(
 interface FloatingBarProps {
   onStartCompression: () => void
   compressionDisabled: boolean
-  compressionLoading: boolean
+  isCompressing: boolean
   jobs: Job[]
   onCancelJob: (id: string) => void
   onDismissJob: (id: string) => void
@@ -198,7 +198,7 @@ const ProfileModalContent: React.FC<ProfileModalContentProps> = ({
 const FloatingBar: React.FC<FloatingBarProps> = ({
   onStartCompression,
   compressionDisabled,
-  compressionLoading,
+  isCompressing,
   jobs,
   onCancelJob,
   onDismissJob,
@@ -213,6 +213,7 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const profileModalRef = useRef<HTMLDivElement>(null)
   const progressModalRef = useRef<HTMLDivElement>(null)
+  const prevIsCompressingRef = useRef(false)
 
   const showToast = useCallback((msg: string): void => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
@@ -222,6 +223,19 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
       toastTimerRef.current = null
     }, 3000)
   }, [])
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+    if (prevIsCompressingRef.current && !isCompressing) {
+      timer = setTimeout(() => {
+        showToast(t('compress.process_complete'))
+      }, 1500)
+    }
+    prevIsCompressingRef.current = isCompressing
+    return () => {
+      if (timer) clearTimeout(timer)
+    }
+  }, [isCompressing, showToast, t])
 
   const closeProfileModal = useCallback((): void => {
     setProfileModalOpen(false)
@@ -234,13 +248,19 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
   useClickOutside(profileModalRef, profileModalOpen, closeProfileModal, '[data-profile-trigger]')
   useClickOutside(
     progressModalRef,
-    progressModalOpen,
+    progressModalOpen && !isCompressing,
     closeProgressModal,
     '[data-progress-trigger]',
   )
 
   const runningJobs = jobs.filter((j) => j.status === 'running' || j.status === 'starting')
   const hasJobs = jobs.length > 0
+
+  const handleStartClick = (): void => {
+    setProgressModalOpen(true)
+    setProfileModalOpen(false)
+    onStartCompression()
+  }
 
   return (
     <>
@@ -250,8 +270,11 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
             className="floating-bar-btn"
             onClick={() => {
               setProfileModalOpen(!profileModalOpen)
-              setProgressModalOpen(false)
+              if (!isCompressing) setProgressModalOpen(false)
             }}
+            disabled={isCompressing}
+            aria-haspopup="dialog"
+            aria-expanded={profileModalOpen}
             data-profile-trigger
           >
             <Save size={16} />
@@ -261,6 +284,7 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
           <button
             className="floating-bar-btn"
             onClick={() => {
+              if (isCompressing && progressModalOpen) return
               setProgressModalOpen(!progressModalOpen)
               setProfileModalOpen(false)
             }}
@@ -279,10 +303,10 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
         <div className="floating-bar-right">
           <button
             className="primary-button floating-bar-start-btn"
-            onClick={onStartCompression}
-            disabled={compressionDisabled || compressionLoading}
+            onClick={handleStartClick}
+            disabled={compressionDisabled || isCompressing}
           >
-            {compressionLoading ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
+            {isCompressing ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
             {t('compress.start')}
           </button>
         </div>
@@ -324,7 +348,7 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
       )}
 
       {progressModalOpen && (
-        <div className="modal-overlay" onClick={closeProgressModal}>
+        <div className="modal-overlay" onClick={isCompressing ? undefined : closeProgressModal}>
           <div
             className="modal-content modal-content-progress"
             ref={progressModalRef}
@@ -334,13 +358,15 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
           >
             <div className="modal-header">
               <h3>{t('compress.progress')}</h3>
-              <button
-                className="panel-close-button"
-                onClick={closeProgressModal}
-                aria-label={t('common.close')}
-              >
-                <X size={16} />
-              </button>
+              {!isCompressing && (
+                <button
+                  className="panel-close-button"
+                  onClick={closeProgressModal}
+                  aria-label={t('common.close')}
+                >
+                  <X size={16} />
+                </button>
+              )}
             </div>
             <div className="modal-body">
               {hasJobs ? (
