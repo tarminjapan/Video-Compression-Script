@@ -20,11 +20,18 @@ function App(): React.JSX.Element {
 
   const [compressionDisabled, setCompressionDisabled] = useState(true)
   const [compressionLoading, setCompressionLoading] = useState(false)
+  const [compressionInitiated, setCompressionInitiated] = useState(false)
   const [currentSettings, setCurrentSettings] = useState<Omit<MediaProfile, 'name'> | null>(null)
 
   const visibleJobs = jobs.filter((job) => !dismissedJobIds.has(job.id))
   const hasRunningJobs = jobs.some((j) => j.status === 'running' || j.status === 'starting')
-  const isCompressing = compressionLoading || hasRunningJobs
+  const isCompressing = compressionInitiated || compressionLoading || hasRunningJobs
+
+  useEffect(() => {
+    if (compressionInitiated && hasRunningJobs) {
+      setCompressionInitiated(false)
+    }
+  }, [compressionInitiated, hasRunningJobs])
 
   const handleDismissJob = (id: string): void => {
     setDismissedJobIds((prev) => {
@@ -108,6 +115,7 @@ function App(): React.JSX.Element {
   }
 
   const handleStartCompression = (): void => {
+    setCompressionInitiated(true)
     void mediaViewRef.current?.startCompression()
   }
 

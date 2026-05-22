@@ -225,10 +225,16 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
   }, [])
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
     if (prevIsCompressingRef.current && !isCompressing) {
-      showToast(t('compress.process_complete'))
+      timer = setTimeout(() => {
+        showToast(t('compress.process_complete'))
+      }, 1500)
     }
     prevIsCompressingRef.current = isCompressing
+    return () => {
+      if (timer) clearTimeout(timer)
+    }
   }, [isCompressing, showToast, t])
 
   const closeProfileModal = useCallback((): void => {
@@ -266,6 +272,9 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
               setProfileModalOpen(!profileModalOpen)
               if (!isCompressing) setProgressModalOpen(false)
             }}
+            disabled={isCompressing}
+            aria-haspopup="dialog"
+            aria-expanded={profileModalOpen}
             data-profile-trigger
           >
             <Save size={16} />
