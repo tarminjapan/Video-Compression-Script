@@ -210,13 +210,16 @@ const FloatingBar: React.FC<FloatingBarProps> = ({
   const [profileModalOpen, setProfileModalOpen] = useState(false)
   const [progressModalOpen, setProgressModalOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const profileModalRef = useRef<HTMLDivElement>(null)
   const progressModalRef = useRef<HTMLDivElement>(null)
 
   const showToast = useCallback((msg: string): void => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
     setToastMessage(msg)
-    setTimeout(() => {
+    toastTimerRef.current = setTimeout(() => {
       setToastMessage('')
+      toastTimerRef.current = null
     }, 3000)
   }, [])
 
