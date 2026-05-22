@@ -127,7 +127,8 @@
     "batch_failed": "{{count}} file(s) failed",
     "batch_skipped": "{{count}} file(s) skipped",
     "dismiss": "Close",
-    "no_jobs": "No active jobs"
+    "no_jobs": "No active jobs",
+    "process_complete": "Compression process completed."
   },
   "settings": {
     "title": "Settings",

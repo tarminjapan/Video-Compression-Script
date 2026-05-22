@@ -23,6 +23,8 @@ function App(): React.JSX.Element {
   const [currentSettings, setCurrentSettings] = useState<Omit<MediaProfile, 'name'> | null>(null)
 
   const visibleJobs = jobs.filter((job) => !dismissedJobIds.has(job.id))
+  const hasRunningJobs = jobs.some((j) => j.status === 'running' || j.status === 'starting')
+  const isCompressing = compressionLoading || hasRunningJobs
 
   const handleDismissJob = (id: string): void => {
     setDismissedJobIds((prev) => {
@@ -124,7 +126,7 @@ function App(): React.JSX.Element {
         <FloatingBar
           onStartCompression={handleStartCompression}
           compressionDisabled={compressionDisabled}
-          compressionLoading={compressionLoading}
+          isCompressing={isCompressing}
           jobs={visibleJobs}
           onCancelJob={handleCancelJob}
           onDismissJob={handleDismissJob}
